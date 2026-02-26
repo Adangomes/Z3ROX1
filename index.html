@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZERO XIS - Advanced Interface</title>
+    <title>ZERO XIS - Ultra Fast</title>
     <style>
         body { margin: 0; background: #000; overflow: hidden; color: #00f2ff; font-family: 'Segoe UI', sans-serif; }
         #ui-layer { position: fixed; top: 20px; left: 20px; font-size: 11px; letter-spacing: 2px; z-index: 10; font-weight: bold; text-shadow: 0 0 5px #00f2ff; }
@@ -20,8 +20,8 @@
 <body>
 
 <div id="ui-layer">ZEROX_V1</div>
-<div id="status-zero">SISTEMA AGUARDANDO COMANDO...</div>
-<button id="startBtn" id="btnInit">ATIVAR INTERFACE E VOZ</button>
+<div id="status-zero">AGUARDANDO...</div>
+<button id="startBtn">ATIVAR INTERFACE</button>
 
 <video id="webcam" autoplay playsinline></video>
 <div id="yt-player"></div>
@@ -32,9 +32,7 @@
 <script src="https://www.youtube.com/iframe_api"></script>
 
 <script>
-    // Cole aqui sua chave do Google Cloud (YouTube API v3)
     const YOUTUBE_API_KEY = "AIzaSyA1YzpPogtFgGavsIdc7fh6X4gvmgYfO9I"; 
-    
     let player, recognition, synth = window.speechSynthesis;
     let explosionFactor = 1.0, targetExplosion = 1.0;
 
@@ -45,7 +43,6 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // Globo de Partículas
     const particleCount = 4000;
     const geo = new THREE.BufferGeometry();
     const pos = new Float32Array(particleCount * 3);
@@ -59,7 +56,6 @@
     const globe = new THREE.Points(geo, new THREE.PointsMaterial({color: 0x00f2ff, size: 0.015}));
     scene.add(globe);
 
-    // Mão Geométrica Nítida
     const handGroup = new THREE.Group(); scene.add(handGroup);
     const joints = []; 
     for(let i=0; i<21; i++){
@@ -68,127 +64,100 @@
     }
     const linesGroup = new THREE.Group(); handGroup.add(linesGroup);
     const HAND_CONN = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
-    
     camera3D.position.z = 5;
 
-    // --- VOZ BRASILEIRA MASCULINA ---
+    // --- VOZ ---
     function falar(texto) {
         synth.cancel();
         const utter = new SpeechSynthesisUtterance(texto);
         const voices = synth.getVoices();
-        
-        // Tenta encontrar a voz brasileira mais natural
-        let vozBr = voices.find(v => v.lang === 'pt-BR' && v.name.includes('Google')) || 
-                    voices.find(v => v.lang === 'pt-BR') || voices[0];
-        
-        utter.voice = vozBr;
-        utter.pitch = 0.7; // Mais grave
-        utter.rate = 1.0;
+        utter.voice = voices.find(v => v.lang === 'pt-BR' && v.name.includes('Google')) || voices.find(v => v.lang === 'pt-BR');
+        utter.pitch = 0.7; utter.rate = 1.1;
         synth.speak(utter);
         document.getElementById('status-zero').innerText = "ZERO XIS: " + texto;
     }
 
-    // --- ESCUTA OCULTA ---
+    // --- COMANDOS RÁPIDOS ---
     function initVoice() {
         const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
         recognition = new Speech();
         recognition.lang = 'pt-BR';
         recognition.continuous = true;
-        recognition.interimResults = false;
-
         recognition.onresult = (event) => {
             const fala = event.results[event.results.length - 1][0].transcript.toLowerCase();
-            console.log("Comando identificado:", fala);
-
-            if (fala.includes("olá") || fala.includes("oi") || fala.includes("xerox") || fala.includes("xis")) {
+            if (fala.includes("olá") || fala.includes("xis") || fala.includes("xerox")) {
                 falar("Sim, em que posso te ajudar hoje?");
-            } 
-            else if (fala.includes("tocar") || fala.includes("música")) {
+            } else if (fala.includes("tocar") || fala.includes("música")) {
                 let termo = fala.replace(/tocar|música|de|o|a/g, "").trim();
-                buscarMusica(termo);
+                buscarMusicaTurbo(termo);
             }
         };
-
-        recognition.onend = () => recognition.start(); // Sempre ouvindo
         recognition.start();
     }
 
-    async function buscarMusica(termo) {
+    async function buscarMusicaTurbo(termo) {
         if(!termo) return;
-        falar("Localizando " + termo);
+        falar("Buscando " + termo);
+        // Busca otimizada: apenas o ID do vídeo para ganhar milissegundos
+        const url = `https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(termo)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`;
+        
         try {
-            const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(termo)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
-            const data = await res.json();
-            if (data.items && data.items.length > 0) {
-                player.loadVideoById(data.items[0].id.videoId);
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data.items && data.items[0]) {
+                const videoId = data.items[0].id.videoId;
+                player.loadVideoById(videoId);
                 player.playVideo();
-                falar("Áudio iniciado.");
+                document.getElementById('status-zero').innerText = "ZERO XIS: Reproduzindo " + termo;
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error("Erro na busca turbo"); }
     }
 
     function onYouTubeIframeAPIReady() {
         player = new YT.Player('yt-player', { height: '0', width: '0' });
     }
 
-    // --- START ---
     async function initExperience() {
         document.getElementById('startBtn').style.display = 'none';
-        falar("Zero Xis ativado. Bem-vindo.");
+        falar("Zero Xis online. Sensores em prontidão.");
         initVoice();
 
         const handTracker = new Hands({ locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}` });
         handTracker.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
-
         handTracker.onResults(res => {
             while(linesGroup.children.length > 0) linesGroup.remove(linesGroup.children[0]);
             if(res.multiHandLandmarks && res.multiHandLandmarks[0]){
                 const pts = res.multiHandLandmarks[0];
-                pts.forEach((p,i) => {
-                    joints[i].position.set(-(p.x-0.5)*8, -(p.y-0.5)*6, -p.z*4);
-                });
+                pts.forEach((p,i) => joints[i].position.set(-(p.x-0.5)*8, -(p.y-0.5)*6, -p.z*4));
                 HAND_CONN.forEach(c => {
                     const lGeo = new THREE.BufferGeometry().setFromPoints([joints[c[0]].position, joints[c[1]].position]);
                     linesGroup.add(new THREE.Line(lGeo, new THREE.LineBasicMaterial({color: 0x00f2ff, opacity: 0.4, transparent: true})));
                 });
-                
-                // Lógica de Explosão (Abre mão = Explode)
                 const dist = Math.hypot(pts[0].x - pts[12].x, pts[0].y - pts[12].y);
                 targetExplosion = dist > 0.35 ? 2.5 : 1.0;
             }
         });
 
-        const cam = new Camera(document.getElementById('webcam'), {
+        new Camera(document.getElementById('webcam'), {
             onFrame: async () => { await handTracker.send({image: document.getElementById('webcam')}); },
             width: 1280, height: 720
-        });
-        cam.start();
+        }).start();
     }
 
     document.getElementById('startBtn').onclick = initExperience;
 
     function animate() {
         requestAnimationFrame(animate);
-        
-        // Suavização da explosão
-        explosionFactor = THREE.MathUtils.lerp(explosionFactor, targetExplosion, 0.1);
+        explosionFactor = THREE.MathUtils.lerp(explosionFactor, targetExplosion, 0.15);
         const attr = globe.geometry.attributes.position;
         for(let i=0; i<particleCount; i++){
             attr.setXYZ(i, originPos[i*3]*explosionFactor, originPos[i*3+1]*explosionFactor, originPos[i*3+2]*explosionFactor);
         }
         attr.needsUpdate = true;
-        
         globe.rotation.y += 0.002;
         renderer.render(scene, camera3D);
     }
     animate();
-
-    window.addEventListener('resize', () => {
-        camera3D.aspect = window.innerWidth / window.innerHeight;
-        camera3D.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    });
 </script>
-
 </body>
 </html>
