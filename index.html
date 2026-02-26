@@ -3,176 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snoop Lanche Tech</title>
+    <title>Snoop Tech - Gesture Control</title>
     <style>
-        body { margin: 0; padding: 0; background: black; overflow: hidden; color: cyan; font-family: monospace; }
-        #app { display: flex; flex-direction: column; height: 100vh; }
-        #header { padding: 10px; text-align: left; }
-        #main { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; }
+        body { margin: 0; padding: 0; background: black; overflow: hidden; color: #00f2ff; font-family: 'Inter', monospace; }
+        #ui-layer {
+            position: fixed; top: 20px; left: 20px; 
+            font-size: 10px; letter-spacing: 2px; z-index: 10;
+        }
+        #startBtn {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            padding: 15px 30px; background: transparent; color: #00f2ff;
+            border: 2px solid #00f2ff; cursor: pointer; font-weight: bold; z-index: 20;
+        }
         canvas { display: block; }
-        #video-container { position: absolute; bottom: 10px; right: 10px; width: 150px; height: 112px; border: 1px solid cyan; }
-        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
     </style>
 </head>
 <body>
-    <div id="app">
-        <div id="header">
-            SNOOP TECH // GESTURE_CONTROL_v2.0
-        </div>
-        <div id="main">
-            <div id="video-container">
-                <video id="webcam" autoplay playsinline></video>
-            </div>
-        </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+<div id="ui-layer">SNOOP TECH // GESTURE_CONTROL_v2.0</div>
+<button id="startBtn" onclick="initCamera()">CONECTAR INTERFACE</button>
+<video id="webcam" style="display:none;" autoplay playsinline></video>
 
-    <script>
-        // Configuração da câmera
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+<script>
+    let explosionFactor = 1.0;
+    let targetExplosion = 1.0;
+
+    // --- CONFIGURAÇÃO THREE.JS ---
+    const scene = new THREE.Scene();
+    const camera3D = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // --- GLOBO DE PARTÍCULAS (EFEITO 3D) ---
+    const particleCount = 4000;
+    const geo = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    const originalPositions = new Float32Array(particleCount * 3);
+
+    for (let i = 0; i < particleCount; i++) {
+        const r = 1.5;
+        const theta = 2 * Math.PI * Math.random();
+        const phi = Math.acos(2 * Math.random() - 1);
+
+        const x = r * Math.sin(phi) * Math.cos(theta);
+        const y = r * Math.sin(phi) * Math.sin(theta);
+        const z = r * Math.cos(phi);
+
+        positions[i * 3] = x;
+        positions[i * 3 + 1] = y;
+        positions[i * 3 + 2] = z;
+        originalPositions[i * 3] = x;
+        originalPositions[i * 3 + 1] = y;
+        originalPositions[i * 3 + 2] = z;
+    }
+
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const globe = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0x00f2ff, size: 0.015 }));
+    scene.add(globe);
+
+    // --- MÃO GEOMÉTRICA NÍTIDA ---
+    const handGroup = new THREE.Group();
+    scene.add(handGroup);
+
+    const joints = [];
+    const jointGeo = new THREE.IcosahedronGeometry(0.03, 0); 
+    const jointMat = new THREE.MeshBasicMaterial({ color: 0x00f2ff });
+
+    for (let i = 0; i < 21; i++) {
+        const m = new THREE.Mesh(jointGeo, jointMat);
+        joints.push(m);
+        handGroup.add(m);
+    }
+
+    const linesGroup = new THREE.Group();
+    handGroup.add(linesGroup);
+    const lineMat = new THREE.LineBasicMaterial({ color: 0x00aaff });
+
+    const HAND_CONNECTIONS = [
+        [0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],
+        [10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]
+    ];
+
+    camera3D.position.z = 5;
+
+    // --- LÓGICA MEDIAPIPE ---
+    const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+    hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.7, minTrackingConfidence: 0.7 });
+
+    hands.onResults(results => {
+        // Limpar linhas
+        while(linesGroup.children.length > 0) { linesGroup.remove(linesGroup.children[0]); }
+
+        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+            const pts = results.multiHandLandmarks[0];
+
+            // Atualizar pontos da mão (Espelhado e Pequeno)
+            pts.forEach((p, i) => {
+                const x = -(p.x - 0.5) * 7; 
+                const y = -(p.y - 0.5) * 5;
+                const z = -p.z * 4;
+                joints[i].position.lerp(new THREE.Vector3(x, y, z), 0.7);
+            });
+
+            // Criar as linhas conectoras geométricas
+            HAND_CONNECTIONS.forEach(conn => {
+                const points = [joints[conn[0]].position, joints[conn[1]].position];
+                const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+                linesGroup.add(new THREE.Line(lineGeo, lineMat));
+            });
+
+            // Efeito de Rotação e Explosão
+            globe.rotation.y += (pts[8].x - 0.5) * 0.1;
+            const dist = Math.hypot(pts[0].x - pts[12].x, pts[0].y - pts[12].y);
+            targetExplosion = dist > 0.35 ? 2.5 : 1.0;
+        }
+    });
+
+    // --- LOOP DE ANIMAÇÃO ---
+    function animate() {
+        requestAnimationFrame(animate);
+        
+        explosionFactor = THREE.MathUtils.lerp(explosionFactor, targetExplosion, 0.1);
+        const attr = globe.geometry.attributes.position;
+        for (let i = 0; i < particleCount; i++) {
+            attr.setXYZ(i, 
+                originalPositions[i*3] * explosionFactor, 
+                originalPositions[i*3+1] * explosionFactor, 
+                originalPositions[i*3+2] * explosionFactor
+            );
+        }
+        attr.needsUpdate = true;
+        globe.rotation.y += 0.002;
+        renderer.render(scene, camera3D);
+    }
+    animate();
+
+    function initCamera() {
+        document.getElementById("startBtn").style.display = 'none';
         const videoElement = document.getElementById('webcam');
         const camera = new Camera(videoElement, {
-            onFrame: async () => {
-                await hands.send({image: videoElement});
-            },
-            width: 640,
-            height: 480
+            onFrame: async () => { await hands.send({image: videoElement}); },
+            width: 1280, height: 720
         });
         camera.start();
+    }
 
-        // Configuração do Three.js
-        const scene = new THREE.Scene();
-        const camera3d = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+    window.addEventListener('resize', () => {
+        camera3D.aspect = window.innerWidth / window.innerHeight;
+        camera3D.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
-        document.getElementById('main').appendChild(renderer.domElement);
+    });
+</script>
 
-        camera3d.position.z = 5;
-
-        // Criar a esfera de partículas (igual à sua referência)
-        const particleCount = 5000;
-        const particlesGeometry = new THREE.BufferGeometry();
-        const positions = new Float32Array(particleCount * 3);
-        const sphereRadius = 2.5;
-
-        for (let i = 0; i < particleCount; i++) {
-            const u = Math.random();
-            const v = Math.random();
-            const theta = 2 * Math.PI * u;
-            const phi = Math.acos(2 * v - 1);
-            const r = sphereRadius;
-            positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-            positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-            positions[i * 3 + 2] = r * Math.cos(phi);
-        }
-        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        const particlesMaterial = new THREE.PointsMaterial({ color: 0x00ffff, size: 0.02 });
-        const particleSphere = new THREE.Points(particlesGeometry, particlesMaterial);
-        scene.add(particleSphere);
-
-        // Criar a malha da mão geometrica (nítida, igual à imagem)
-        const handGroup = new THREE.Group();
-        scene.add(handGroup);
-
-        const landmarksCount = 21;
-        const landmarksMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff });
-        const connectionsMaterial = new THREE.LineBasicMaterial({ color: 0x00aaff, linewidth: 1 }); // Linhas azuis nítidas
-
-        // Conexões da mão definidas pelo MediaPipe
-        const HAND_CONNECTIONS = [
-            [0, 1], [1, 2], [2, 3], [3, 4], // Polegar
-            [0, 5], [5, 6], [6, 7], [7, 8], // Indicador
-            [5, 9], [9, 10], [10, 11], [11, 12], // Médio
-            [9, 13], [13, 14], [14, 15], [15, 16], // Anelar
-            [13, 17], [17, 18], [18, 19], [19, 20], // Mínimo
-            [0, 17] // Pulso
-        ];
-
-        for (let i = 0; i < landmarksCount; i++) {
-            const geometry = new THREE.IcosahedronGeometry(0.05, 0); // Pontos geométricos
-            const landmarkMesh = new THREE.Mesh(geometry, landmarksMaterial);
-            landmarkMesh.name = `landmark_${i}`;
-            handGroup.add(landmarkMesh);
-        }
-
-        const linesGroup = new THREE.Group();
-        handGroup.add(linesGroup);
-
-        // Função de detecção de mãos
-        const hands = new Hands({locateFile: (file) => {
-            return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-        }});
-        hands.setOptions({
-            maxNumHands: 1,
-            modelComplexity: 1,
-            minDetectionConfidence: 0.5,
-            minTrackingConfidence: 0.5
-        });
-        hands.onResults(onResults);
-
-        function onResults(results) {
-            // Limpar linhas antigas
-            linesGroup.children.forEach(child => child.geometry.dispose());
-            linesGroup.clear();
-
-            if (results.multiHandLandmarks) {
-                for (const landmarks of results.multiHandLandmarks) {
-                    // Atualizar pontos brancos (flutuantes da image_3.png) - mantendo para mostrar sua lógica, mas eles agora se movem com a mão
-                    // landmarksMaterial.color.setHex(0xffffff); // Pontos brancos flutuantes
-
-                    // Atualizar a malha geométrica (para ficar idêntico à imagem desejada)
-                    // Configurar a cor dos pontos para ciano (image_1.png)
-                    landmarksMaterial.color.setHex(0x00ffff);
-
-                    for (let i = 0; i < landmarksCount; i++) {
-                        const landmarkMesh = handGroup.getObjectByName(`landmark_${i}`);
-                        const landmark = landmarks[i];
-                        landmarkMesh.position.x = (landmark.x - 0.5) * 8;
-                        landmarkMesh.position.y = -(landmark.y - 0.5) * 6;
-                        landmarkMesh.position.z = -landmark.z * 5; // Adicionar profundidade
-                    }
-
-                    // Desenhar conexões de malha geométrica nítida (image_1.png)
-                    for (const connection of HAND_CONNECTIONS) {
-                        const start = handGroup.getObjectByName(`landmark_${connection[0]}`).position;
-                        const end = handGroup.getObjectByName(`landmark_${connection[1]}`).position;
-                        const points = [start, end];
-                        const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-                        const line = new THREE.Line(lineGeometry, connectionsMaterial);
-                        linesGroup.add(line);
-                    }
-                }
-            } else {
-                // Esconder a mão se não houver landmarks
-                handGroup.children.forEach(child => {
-                    if (child.name.startsWith('landmark')) {
-                        child.visible = false;
-                    }
-                });
-            }
-        }
-
-        // Loop de renderização
-        function animate() {
-            requestAnimationFrame(animate);
-            // Rotacionar lentamente a esfera de partículas
-            particleSphere.rotation.y += 0.001;
-            renderer.render(scene, camera3d);
-        }
-        animate();
-
-        // Ajustar redimensionamento
-        window.addEventListener('resize', () => {
-            camera3d.aspect = window.innerWidth / window.innerHeight;
-            camera3d.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-    </script>
 </body>
 </html>
+
 
