@@ -4,18 +4,51 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ZEROX GOD</title>
+
 <style>
-body { margin:0; background:#000; overflow:hidden; font-family:Arial; color:#00f2ff; }
-#hud { position:fixed; top:20px; left:20px; z-index:10; font-size:12px; }
-/* STATUS OCULTO CONFORME PEDIDO */
-#status { display:none; }
-#start { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); padding:20px 40px; background:#00f2ff; border:none; font-weight:bold; cursor:pointer; z-index:100; }
+body {
+    margin:0;
+    background:#000;
+    overflow:hidden;
+    font-family:Arial;
+    color:#00f2ff;
+}
+
+#hud {
+    position:fixed;
+    top:20px;
+    left:20px;
+    z-index:10;
+    font-size:12px;
+}
+
+/* 1. STATUS OCULTO COMO VOCÊ PEDIU */
+#status {
+    display: none;
+}
+
+#start {
+    position:fixed;
+    bottom:30px;
+    left:50%;
+    transform:translateX(-50%);
+    padding:20px 40px;
+    background:#00f2ff;
+    border:none;
+    font-weight:bold;
+    cursor:pointer;
+}
 </style>
 </head>
+
 <body>
 
-<div id="hud"> ZEROX GOD MODE <div id="status"></div> </div>
-<button id="start">ATIVAR SISTEMA</button>
+<div id="hud">
+    ZEROX GOD MODE
+    <div id="status">AGUARDANDO...</div>
+</div>
+
+<button id="start">ATIVAR</button>
 
 <video id="webcam" autoplay playsinline style="display:none"></video>
 <div id="player"></div>
@@ -26,75 +59,88 @@ body { margin:0; background:#000; overflow:hidden; font-family:Arial; color:#00f
 <script src="https://www.youtube.com/iframe_api"></script>
 
 <script>
-// ================= CONFIG (COLE SUA CHAVE AQUI) =================
-const YOUTUBE_API_KEY = "AIzaSyCiYqB5IZRGMPxaBXLGqehItGwr7oG81Tw"; 
+// ================= CONFIG =================
+const YOUTUBE_API_KEY = "AIzaSyCiYqB5IZRGMPxaBXLGqehItGwr7oG81Tw";
 
 let player, recognition;
 let synth = window.speechSynthesis;
+
 let explosionFactor = 1;
 let targetExplosion = 1;
-let musicaTocando = false;
 
-// ================= VOZ BRASILEIRA =================
+// ================= VOZ =================
 function falar(texto){
     synth.cancel();
     let u = new SpeechSynthesisUtterance(texto);
     u.lang = "pt-BR";
-    u.pitch = 0.9;
     synth.speak(u);
-    console.log("ZEROX diz:", texto);
+    document.getElementById("status").innerText = texto;
 }
 
 // ================= YOUTUBE =================
 function onYouTubeIframeAPIReady(){
     player = new YT.Player('player',{
-        height:'0', width:'0',
-        events:{ onReady:e=>e.target.mute() }
+        height:'0',
+        width:'0',
+        events:{
+            onReady:e=>e.target.mute()
+        }
     });
 }
 
 async function tocar(termo){
     falar("Buscando " + termo);
+
     const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(termo)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
     const data = await res.json();
 
-    if(data.items && data.items[0]){
+    if(data.items[0]){
         const id = data.items[0].id.videoId;
         player.loadVideoById(id);
+
         setTimeout(()=>{
             player.unMute();
             player.setVolume(100);
-            musicaTocando = true;
-        },1000);
-        falar("Tocando agora.");
+        },500);
+
+        falar("Tocando agora");
     }
 }
 
-// ================= INTELIGÊNCIA E COMANDOS =================
+// ================= IA COM ESCUTA ATIVA =================
 function responder(fala){
-    // Se ele ouvir o nome dele, abaixa a música
-    if(fala.includes("zerox") || fala.includes("xerox") || fala.includes("xis")){
-        if(musicaTocando) player.setVolume(20); // ABAIXA 80% DO VOLUME
+    console.log("Ouvi:", fala);
+
+    // SE FALAR ZERO-X, ABAIXA O VOLUME PARA OUVIR O COMANDO
+    if(fala.includes("zero-x") || fala.includes("zerox") || fala.includes("xis")){
         
-        if(fala.includes("toca") || fala.includes("tocar")){
-            let termo = fala.replace(/zerox|toca|tocar/gi,"").trim();
-            tocar(termo);
-        } 
-        else if(fala.includes("hora")){
+        if(player) player.setVolume(20); // ABAIXA O VOLUME EM 80%
+
+        if(fala.includes("hora")){
             falar("Agora são " + new Date().toLocaleTimeString());
-            setTimeout(() => { if(musicaTocando) player.setVolume(100); }, 3000);
+            setTimeout(() => { if(player) player.setVolume(100); }, 3000);
+        }
+        else if(fala.includes("toca")){
+            let termo = fala.replace(/zero-x|zerox|toca/gi,"").trim();
+            tocar(termo);
+        }
+        else if(fala.includes("explodir")){
+            targetExplosion = 3;
+            falar("Ativando energia máxima");
+            setTimeout(() => { if(player) player.setVolume(100); }, 3000);
         }
         else {
             falar("Sim, como posso ajudar?");
-            // Se não pedir nada em 5 seg, o volume volta
-            setTimeout(() => { if(musicaTocando) player.setVolume(100); }, 5000);
+            // Se não pedir nada, volta o volume em 5 segundos
+            setTimeout(() => { if(player) player.setVolume(100); }, 5000);
         }
     }
 }
 
-// ================= ESCUTA ATIVA =================
+// ================= VOICE (OUVIDO SEMPRE ABERTO) =================
 function iniciarVoz(){
     const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+
     recognition = new Speech();
     recognition.lang = "pt-BR";
     recognition.continuous = true;
@@ -105,15 +151,17 @@ function iniciarVoz(){
         responder(fala);
     };
 
-    recognition.onend = () => { recognition.start(); }; // NUNCA PARA DE OUVIR
+    // FAZ ELE REINICIAR SOZINHO SE PARAR
+    recognition.onend = () => { recognition.start(); };
+    
     recognition.start();
 }
 
-// ================= 3D (O SEU QUE FUNCIONA) =================
+// ================= 3D =================
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
 camera.position.z = 5;
-const renderer = new THREE.WebGLRenderer({alpha:true, antialias: true});
+const renderer = new THREE.WebGLRenderer({alpha:true});
 renderer.setSize(innerWidth,innerHeight);
 document.body.appendChild(renderer.domElement);
 
@@ -123,14 +171,17 @@ const globe = new THREE.Points(geo, new THREE.PointsMaterial({color:0x00f2ff,siz
 scene.add(globe);
 
 const pGeo = new THREE.BufferGeometry();
-const arr = new Float32Array(1500*3);
-for(let i=0;i<arr.length;i++){ arr[i]=(Math.random()-0.5)*20; }
+const pCount = 1500;
+const arr = new Float32Array(pCount*3);
+for(let i=0;i<pCount*3;i++){ arr[i]=(Math.random()-0.5)*20; }
 pGeo.setAttribute('position',new THREE.BufferAttribute(arr,3));
 const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({size:0.02,color:0x00f2ff}));
 scene.add(particles);
 
-// ================= MÃO (MANTENDO SUA LÓGICA) =================
-const hands = new Hands({ locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}` });
+// ================= MÃO =================
+const hands = new Hands({
+    locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
+});
 hands.setOptions({maxNumHands:1});
 hands.onResults(res=>{
     if(res.multiHandLandmarks && res.multiHandLandmarks[0]){
@@ -141,12 +192,11 @@ hands.onResults(res=>{
 });
 
 function iniciarHand(){
-    const videoElement = document.getElementById("webcam");
-    const cameraHandler = new Camera(videoElement,{
-        onFrame: async ()=>{ await hands.send({image: videoElement}); },
-        width: 1280, height: 720
-    });
-    cameraHandler.start();
+    new Camera(document.getElementById("webcam"),{
+        onFrame: async ()=>{
+            await hands.send({image:webcam});
+        }
+    }).start();
 }
 
 // ================= ANIMAÇÃO =================
@@ -168,12 +218,12 @@ function animate(){
 animate();
 
 // ================= START =================
-document.getElementById("start").onclick = function(){
-    this.style.display = 'none';
-    falar("Zero Xis ativado.");
+document.getElementById("start").onclick = ()=>{
+    document.getElementById("start").style.display = "none";
+    falar("Zero X iniciado");
     iniciarVoz();
     iniciarHand();
-    if(player) player.unMute();
+    if(player){ player.unMute(); }
 };
 </script>
 </body>
