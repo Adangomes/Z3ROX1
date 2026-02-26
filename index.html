@@ -2,149 +2,313 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>ZEROX GOD FINAL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZEROX GOD</title>
+
 <style>
-    body { margin:0; background:#000; overflow:hidden; font-family:Arial; color:#00f2ff; }
-    #hud { position:fixed; top:20px; left:20px; z-index:10; font-size:12px; }
-    #status { display: none; }
-    #start { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); padding:20px 40px; background:#00f2ff; border:none; font-weight:bold; cursor:pointer; z-index:999; }
+body {
+    margin:0;
+    background:#000;
+    overflow:hidden;
+    font-family:Arial;
+    color:#00f2ff;
+}
+
+#hud {
+    position:fixed;
+    top:20px;
+    left:20px;
+    z-index:10;
+    font-size:12px;
+}
+
+/* STATUS OCULTO */
+#status {
+    display:none;
+}
+
+#start {
+    position:fixed;
+    bottom:30px;
+    left:50%;
+    transform:translateX(-50%);
+    padding:20px 40px;
+    background:#00f2ff;
+    border:none;
+    font-weight:bold;
+    cursor:pointer;
+}
 </style>
 </head>
+
 <body>
 
-<div id="hud"> ZEROX GOD MODE <div id="status">AGUARDANDO...</div> </div>
-<button id="start">ATIVAR SISTEMA</button>
+<div id="hud">
+    ZEROX GOD MODE
+    <div id="status">AGUARDANDO...</div>
+</div>
 
-<video id="webcam" autoplay playsinline style="display:none"></video>
+<button id="start">ATIVAR</button>
 <div id="player"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script src="https://www.youtube.com/iframe_api"></script>
 
 <script>
-const YOUTUBE_API_KEY = "AIzaSyCiYqB5IZRGMPxaBXLGqehItGwr7oG81Tw";
-let player, recognition, hands;
-let targetExplosion = 1;
-let explosionFactor = 1;
+// ================= CONFIG =================
+const YOUTUBE_API_KEY = "privado";
 
-// 1. VOZ
+let player, recognition;
+let synth = window.speechSynthesis;
+
+let ativo = false;
+let aguardandoConfirmacao = false;
+let ultimoVolume = 100;
+let ultimoTermo = "";
+let autoPlay = false;
+
+// ================= VOZ =================
 function falar(texto){
-    window.speechSynthesis.cancel();
+    synth.cancel();
     let u = new SpeechSynthesisUtterance(texto);
     u.lang = "pt-BR";
-    window.speechSynthesis.speak(u);
-    document.getElementById("status").innerText = texto;
+    synth.speak(u);
+
+    const el = document.getElementById("status");
+    if(el) el.innerText = texto;
 }
 
-// 2. YOUTUBE
+// ================= YOUTUBE =================
 function onYouTubeIframeAPIReady(){
     player = new YT.Player('player',{
-        height:'0', width:'0',
-        events:{ onReady: e => console.log("Player Pronto") }
+        height:'0',
+        width:'0',
+        events:{
+            onReady:e=>e.target.mute(),
+            onStateChange:e=>{
+                // terminou → toca outra automaticamente
+                if(e.data === 0 && autoPlay && ultimoTermo){
+                    tocar(ultimoTermo);
+                }
+            }
+        }
     });
 }
 
 async function tocar(termo){
-    let busca = termo.replace(/zerox|zero x|xis|toca/gi, "").trim();
-    if(!busca) return;
-    
-    falar("Buscando " + busca);
-    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(busca)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
+    if(!ativo) return;
+
+    ultimoTermo = termo;
+    autoPlay = true;
+
+    falar("Buscando " + termo);
+
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(termo)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
     const data = await res.json();
 
-    if(data.items && data.items[0]){
-        player.loadVideoById(data.items[0].id.videoId);
-        setTimeout(() => { player.unMute(); player.setVolume(100); }, 1000);
-        falar("Tocando.");
+    if(data.items[0]){
+        const id = data.items[0].id.videoId;
+
+        player.loadVideoById(id);
+
+        setTimeout(()=>{
+            player.unMute();
+            player.setVolume(100);
+        },500);
+
+        falar("Tocando agora");
     }
 }
 
-// 3. IA
+// ================= IA =================
 function responder(fala){
-    if(fala.includes("zerox") || fala.includes("zero x") || fala.includes("xis")){
-        if(player) player.setVolume(10);
-        
-        if(fala.includes("toca")) {
-            tocar(fala);
-        } else if(fala.includes("parar") || fala.includes("desligar")) {
-            player.pauseVideo();
-            falar("Parado.");
-        } else if(fala.includes("ligar") || fala.includes("continuar")) {
-            player.playVideo();
-            falar("Ligando.");
-            setTimeout(() => player.setVolume(100), 2000);
-        } else {
-            falar("Sim?");
-            setTimeout(() => player.setVolume(100), 3000);
+
+    // ATIVADOR
+    if(fala.includes("zero x") || fala.includes("zerox")){
+        if(player){
+            ultimoVolume = player.getVolume();
+            player.setVolume(10);
+        }
+        falar("Pode falar");
+        return;
+    }
+
+    // CONFIRMAÇÃO
+    if(aguardandoConfirmacao){
+        if(fala.includes("sim")){
+            player.setVolume(ultimoVolume);
+            falar("Continuando");
+        }else{
+            player.stopVideo();
+            autoPlay = false;
+            falar("Música parada");
+        }
+        aguardandoConfirmacao = false;
+        return;
+    }
+
+    // HORA + PERGUNTA
+    if(fala.includes("hora")){
+        falar("Agora são " + new Date().toLocaleTimeString());
+
+        if(player && player.getPlayerState() === 1){
+            aguardandoConfirmacao = true;
+            setTimeout(()=>{
+                falar("Deseja continuar a música?");
+            },1000);
+        }
+    }
+
+    // TOCAR (CORRIGIDO)
+    else if(fala.includes("toca")){
+        let termo = fala
+            .replace(/zero\s?x/gi,"")
+            .replace(/toca/gi,"")
+            .trim();
+
+        tocar(termo);
+    }
+
+    // PRÓXIMA
+    else if(fala.includes("proxima") || fala.includes("próxima")){
+        if(ultimoTermo){
+            tocar(ultimoTermo);
+        }
+    }
+
+    // PAUSAR
+    else if(fala.includes("pausar")){
+        player.pauseVideo();
+    }
+
+    // CONTINUAR
+    else if(fala.includes("continuar")){
+        player.playVideo();
+    }
+
+    // VOLUME
+    else if(fala.includes("volume")){
+        let num = fala.match(/\d+/);
+        if(num){
+            let vol = Math.min(100, num[0]*10);
+            player.setVolume(vol);
+            falar("Volume ajustado");
         }
     }
 }
 
-// 4. MÃO
-function configMao(){
-    hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
-    hands.setOptions({maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.5});
-    hands.onResults(res => {
-        if(res.multiHandLandmarks && res.multiHandLandmarks[0]){
-            const pts = res.multiHandLandmarks[0];
-            const dist = Math.hypot(pts[4].x - pts[8].x, pts[4].y - pts[8].y);
-            targetExplosion = dist > 0.15 ? 3 : 1;
-        }
-    });
-
-    const camera = new Camera(document.getElementById("webcam"), {
-        onFrame: async () => { await hands.send({image: document.getElementById("webcam")}); },
-        width: 640, height: 480
-    });
-    camera.start();
-}
-
-// 5. 3D (O SEU QUE FUNCIONA)
-const scene = new THREE.Scene();
-const cam3d = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-cam3d.position.z = 5;
-const renderer = new THREE.WebGLRenderer({alpha:true});
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
-
-const geo = new THREE.SphereGeometry(1.6, 64, 64);
-const base = geo.attributes.position.array.slice();
-const globe = new THREE.Points(geo, new THREE.PointsMaterial({color:0x00f2ff, size:0.015}));
-scene.add(globe);
-
-function animate(){
-    requestAnimationFrame(animate);
-    explosionFactor += (targetExplosion - explosionFactor) * 0.1;
-    const attr = globe.geometry.attributes.position;
-    for(let i=0; i<attr.count; i++){
-        const scale = explosionFactor + Math.sin(i + Date.now()*0.005) * 0.05;
-        attr.setXYZ(i, base[i*3]*scale, base[i*3+1]*scale, base[i*3+2]*scale);
-    }
-    attr.needsUpdate = true;
-    globe.rotation.y += 0.002;
-    renderer.render(scene, cam3d);
-}
-animate();
-
-// START
-document.getElementById("start").onclick = function(){
-    this.style.display = "none";
-    falar("Zero Xis Ativado.");
-    
-    // Inicia Voz
+// ================= VOICE =================
+function iniciarVoz(){
     const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+
     recognition = new Speech();
     recognition.lang = "pt-BR";
     recognition.continuous = true;
-    recognition.onresult = e => responder(e.results[e.results.length-1][0].transcript.toLowerCase());
-    recognition.onend = () => recognition.start();
-    recognition.start();
 
-    // Inicia Mão
-    configMao();
+    recognition.onresult = e=>{
+        const fala = e.results[e.results.length-1][0].transcript.toLowerCase();
+        responder(fala);
+    };
+
+    recognition.start();
+}
+
+function pararVoz(){
+    if(recognition) recognition.stop();
+}
+
+// ================= 3D =================
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
+camera.position.z = 5;
+
+const renderer = new THREE.WebGLRenderer({alpha:true});
+renderer.setSize(innerWidth,innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// GLOBO
+const geo = new THREE.SphereGeometry(1.6,64,64);
+const base = geo.attributes.position.array.slice();
+
+const globe = new THREE.Points(
+    geo,
+    new THREE.PointsMaterial({color:0x00f2ff,size:0.015})
+);
+
+scene.add(globe);
+
+// PARTICULAS
+const pGeo = new THREE.BufferGeometry();
+const arr = new Float32Array(1500*3);
+
+for(let i=0;i<arr.length;i++){
+    arr[i]=(Math.random()-0.5)*20;
+}
+
+pGeo.setAttribute('position',new THREE.BufferAttribute(arr,3));
+
+const particles = new THREE.Points(
+    pGeo,
+    new THREE.PointsMaterial({size:0.02,color:0x00f2ff})
+);
+
+scene.add(particles);
+
+// ================= ANIMAÇÃO =================
+let explosionFactor = 1;
+let pulse = 1;
+
+function animate(){
+    requestAnimationFrame(animate);
+
+    pulse += 0.1;
+
+    let tocando = player && player.getPlayerState && player.getPlayerState() === 1;
+    let target = tocando ? 3 : 1;
+
+    explosionFactor += (target - explosionFactor)*0.08;
+
+    const attr = globe.geometry.attributes.position;
+
+    for(let i=0;i<attr.count;i++){
+        const scale = explosionFactor + Math.sin(i+pulse)*0.05;
+
+        attr.setXYZ(
+            i,
+            base[i*3]*scale,
+            base[i*3+1]*scale,
+            base[i*3+2]*scale
+        );
+    }
+
+    attr.needsUpdate = true;
+
+    globe.rotation.y += 0.003;
+    particles.rotation.y += 0.0005;
+
+    renderer.render(scene,camera);
+}
+
+animate();
+
+// ================= START =================
+document.getElementById("start").onclick = ()=>{
+    ativo = !ativo;
+
+    if(ativo){
+        falar("Zero X iniciado");
+        iniciarVoz();
+        document.getElementById("start").innerText = "DESATIVAR";
+    }else{
+        pararVoz();
+        if(player) player.stopVideo();
+        autoPlay = false;
+        falar("Desativado");
+        document.getElementById("start").innerText = "ATIVAR";
+    }
 };
 </script>
+
 </body>
 </html>
