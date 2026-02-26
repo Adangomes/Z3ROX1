@@ -1,169 +1,181 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZEROX</title>
-    <style>
-        body { margin: 0; background: #000; overflow: hidden; color: #00f2ff; font-family: 'Segoe UI', sans-serif; }
-        #ui-layer { position: fixed; top: 20px; left: 20px; font-size: 11px; letter-spacing: 2px; z-index: 10; font-weight: bold; text-shadow: 0 0 5px #00f2ff; }
-        #status-zero { position: fixed; top: 50px; left: 20px; font-size: 16px; color: #fff; background: rgba(0,242,255,0.1); padding: 10px; border-left: 4px solid #00f2ff; min-width: 280px; z-index: 10; border-radius: 0 5px 5px 0; }
-        #startBtn { 
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            padding: 20px 40px; background: #00f2ff; color: #000; border: none;
-            border-radius: 5px; font-weight: 900; cursor: pointer; z-index: 100; box-shadow: 0 0 30px rgba(0, 242, 255, 0.5);
-        }
-        #webcam { display: none; }
-        #yt-container { position: absolute; top: -1000px; left: -1000px; opacity: 0; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZEROX</title>
+
+<style>
+body {
+    margin: 0;
+    background: #000;
+    overflow: hidden;
+    color: #00f2ff;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+#ui-layer {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    z-index: 10;
+    font-weight: bold;
+}
+
+#status-zero {
+    position: fixed;
+    top: 50px;
+    left: 20px;
+    font-size: 14px;
+    color: #fff;
+    background: rgba(0,242,255,0.1);
+    padding: 10px;
+    border-left: 4px solid #00f2ff;
+    min-width: 280px;
+}
+
+#startBtn {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 20px 40px;
+    background: #00f2ff;
+    color: #000;
+    border: none;
+    font-weight: 900;
+    cursor: pointer;
+}
+</style>
 </head>
+
 <body>
 
-<div id="ui-layer">ZEROX_V1</div>
+<div id="ui-layer">ZEROX_V2</div>
 <div id="status-zero">AGUARDANDO...</div>
 <button id="startBtn">ATIVAR</button>
 
-<video id="webcam" autoplay playsinline></video>
-<div id="yt-container"><div id="player"></div></div>
+<video id="webcam" autoplay playsinline style="display:none"></video>
+<div id="player"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script src="https://www.youtube.com/iframe_api"></script>
 
 <script>
-    const YOUTUBE_API_KEY = "AIzaSyA1YzpPogtFgGavsIdc7fh6X4gvmgYfO9I"; 
-    let player, recognition, synth = window.speechSynthesis;
-    let explosionFactor = 1.0, targetExplosion = 1.0;
+const YOUTUBE_API_KEY = "AIzaSyA1YzpPogtFgGavsIdc7fh6X4gvmgYfO9I";
 
-    // --- CENA 3D ---
-    const scene = new THREE.Scene();
-    const camera3D = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+let player;
+let recognition;
+let synth = window.speechSynthesis;
 
-    const globeGeo = new THREE.SphereGeometry(1.6, 64, 64);
-    const globePos = globeGeo.attributes.position.array.slice();
-    const globe = new THREE.Points(globeGeo, new THREE.PointsMaterial({color: 0x00f2ff, size: 0.015}));
-    scene.add(globe);
+// ================= VOZ =================
+function falar(texto){
+    synth.cancel();
 
-    const handGroup = new THREE.Group(); scene.add(handGroup);
-    const joints = []; 
-    for(let i=0; i<21; i++){
-        const m = new THREE.Mesh(new THREE.IcosahedronGeometry(0.03, 0), new THREE.MeshBasicMaterial({color: 0xffffff}));
-        joints.push(m); handGroup.add(m);
-    }
-    const linesGroup = new THREE.Group(); handGroup.add(linesGroup);
-    const HAND_CONN = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
-    camera3D.position.z = 5;
+    const utter = new SpeechSynthesisUtterance(texto);
+    utter.lang = "pt-BR";
+    utter.rate = 1;
 
-    // --- VOZ EM PORTUGUÊS (BRASIL) ---
-    function falar(texto) {
-        synth.cancel();
-        const utter = new SpeechSynthesisUtterance(texto);
-        const voices = synth.getVoices();
-        // Filtro rigoroso para voz brasileira
-        let vozBR = voices.find(v => v.lang === 'pt-BR' && v.name.includes('Google')) || 
-                    voices.find(v => v.lang.includes('pt-BR')) || voices[0];
-        
-        utter.voice = vozBR;
-        utter.lang = 'pt-BR';
-        utter.pitch = 0.8; 
-        utter.rate = 1.0;
-        synth.speak(utter);
-        document.getElementById('status-zero').innerText = "ZERO XIS: " + texto;
-    }
+    synth.speak(utter);
+    document.getElementById("status-zero").innerText = "ZEROX: " + texto;
+}
 
-    // --- RECONHECIMENTO ---
-    function initVoice() {
-        const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-        recognition = new Speech();
-        recognition.lang = 'pt-BR';
-        recognition.continuous = true;
-        recognition.onresult = (event) => {
-            const fala = event.results[event.results.length - 1][0].transcript.toLowerCase();
-            if (fala.includes("olá") || fala.includes("xis") || fala.includes("xerox") || fala.includes("oi")) {
-                falar("Sim, em que posso te ajudar hoje?");
-            } else if (fala.includes("tocar") || fala.includes("música")) {
-                let termo = fala.replace(/tocar|música|de|o|a/g, "").trim();
-                buscarNoYouTube(termo);
+// ================= YOUTUBE =================
+function onYouTubeIframeAPIReady(){
+    player = new YT.Player('player',{
+        height:'0',
+        width:'0',
+        playerVars:{
+            autoplay:1,
+            controls:0
+        },
+        events:{
+            onReady:(e)=>{
+                e.target.mute(); // inicia mudo
             }
-        };
-        recognition.start();
-    }
+        }
+    });
+}
 
-    async function buscarNoYouTube(termo) {
-        if(!termo) return;
-        falar("Buscando " + termo + " no YouTube.");
-        try {
-            const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(termo)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
-            const data = await res.json();
-            if (data.items && data.items[0]) {
-                const id = data.items[0].id.videoId;
-                player.loadVideoById(id);
+async function buscarNoYouTube(termo){
+    if(!termo) return;
+
+    falar("Buscando " + termo);
+
+    try{
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(termo)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
+        const data = await res.json();
+
+        if(data.items && data.items.length > 0){
+            const id = data.items[0].id.videoId;
+
+            player.loadVideoById(id);
+
+            setTimeout(()=>{
                 player.unMute();
                 player.setVolume(100);
                 player.playVideo();
-                falar("Reproduzindo agora.");
-            }
-        } catch (e) { falar("Erro na busca."); }
-    }
+            },500);
 
-    // --- YOUTUBE PLAYER ---
-    function onYouTubeIframeAPIReady() {
-        player = new YT.Player('player', {
-            height: '0', width: '0',
-            playerVars: { 'autoplay': 1, 'controls': 0 },
-            events: { 'onReady': (e) => e.target.mute() } // Começa mudo para o navegador permitir o play
-        });
-    }
-
-    async function initExperience() {
-        document.getElementById('startBtn').style.display = 'none';
-        
-        // Ativar audio context (importante para navegadores modernos)
-        if (player) { player.unMute(); player.setVolume(100); }
-        
-        falar("Zero Xis ativado. Sistemas em português.");
-        initVoice();
-
-        const hands = new Hands({ locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}` });
-        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6 });
-        hands.onResults(res => {
-            while(linesGroup.children.length > 0) linesGroup.remove(linesGroup.children[0]);
-            if(res.multiHandLandmarks && res.multiHandLandmarks[0]){
-                const pts = res.multiHandLandmarks[0];
-                pts.forEach((p,i) => joints[i].position.set(-(p.x-0.5)*8, -(p.y-0.5)*6, -p.z*4));
-                HAND_CONN.forEach(c => {
-                    const lGeo = new THREE.BufferGeometry().setFromPoints([joints[c[0]].position, joints[c[1]].position]);
-                    linesGroup.add(new THREE.Line(lGeo, new THREE.LineBasicMaterial({color: 0x00f2ff, opacity: 0.4})));
-                });
-                const dist = Math.hypot(pts[0].x - pts[12].x, pts[0].y - pts[12].y);
-                targetExplosion = dist > 0.35 ? 2.5 : 1.0;
-            }
-        });
-
-        new Camera(document.getElementById('webcam'), {
-            onFrame: async () => { await hands.send({image: document.getElementById('webcam')}); },
-            width: 1280, height: 720
-        }).start();
-    }
-
-    document.getElementById('startBtn').onclick = initExperience;
-
-    function animate() {
-        requestAnimationFrame(animate);
-        explosionFactor = THREE.MathUtils.lerp(explosionFactor, targetExplosion, 0.1);
-        const attr = globe.geometry.attributes.position;
-        for(let i=0; i<attr.count; i++){
-            attr.setXYZ(i, globePos[i*3]*explosionFactor, globePos[i*3+1]*explosionFactor, globePos[i*3+2]*explosionFactor);
+            falar("Tocando agora");
+        } else {
+            falar("Não encontrei essa música");
         }
-        attr.needsUpdate = true;
-        globe.rotation.y += 0.002;
-        renderer.render(scene, camera3D);
+
+    }catch(e){
+        falar("Erro ao buscar música");
     }
-    animate();
+}
+
+// ================= VOZ =================
+function initVoice(){
+    const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    recognition = new Speech();
+    recognition.lang = "pt-BR";
+    recognition.continuous = true;
+
+    recognition.onresult = (event)=>{
+        const fala = event.results[event.results.length-1][0].transcript.toLowerCase();
+
+        console.log("Você disse:", fala);
+
+        // ATIVAÇÃO
+        if(fala.includes("zerox") || fala.includes("zero x") || fala.includes("xerox")){
+            falar("Olá, boa tarde! Em que posso ajudar?");
+        }
+
+        // TOCAR MUSICA
+        if(fala.includes("toca") || fala.includes("tocar")){
+            let termo = fala
+                .replace("toca","")
+                .replace("tocar","")
+                .trim();
+
+            buscarNoYouTube(termo);
+        }
+    };
+
+    recognition.start();
+}
+
+// ================= START =================
+function iniciar(){
+    document.getElementById("startBtn").style.display = "none";
+
+    // libera audio (importante pro navegador)
+    if(player){
+        player.unMute();
+        player.setVolume(100);
+    }
+
+    falar("Sistema iniciado");
+    initVoice();
+}
+
+document.getElementById("startBtn").onclick = iniciar;
+
 </script>
 </body>
 </html>
