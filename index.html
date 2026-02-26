@@ -2,131 +2,105 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>ZEROX GOD MODE</title>
+<title>ZEROX - TESTE DE SOM</title>
 <style>
-    body { margin:0; background:#000; overflow:hidden; font-family:sans-serif; color:#00f2ff; }
-    #start { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); padding:30px; background:#00f2ff; color:#000; border:none; font-weight:bold; cursor:pointer; z-index:9999; font-size:20px; border-radius:10px; }
-    #player { position: absolute; top: -9999px; left: -9999px; }
+    body { margin:0; background:#000; display:flex; align-items:center; justify-content:center; height:100vh; color:#00f2ff; font-family:sans-serif; }
+    #start { padding:20px 40px; background:#00f2ff; border:none; font-weight:bold; cursor:pointer; font-size:20px; }
+    #status { position:fixed; top:20px; width:100%; text-align:center; }
 </style>
 </head>
 <body>
 
-<button id="start">LIGAR SISTEMA ZEROX</button>
-<video id="webcam" autoplay playsinline style="display:none"></video>
+<div id="status">CLIQUE NO BOTÃO PARA INICIAR</div>
+<button id="start">LIGAR ZEROX</button>
 <div id="player"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script src="https://www.youtube.com/iframe_api"></script>
 
 <script>
 const YOUTUBE_API_KEY = "AIzaSyApmJHahtrbmxS-hsVApE37qmHBVP67Du8";
-let player, recognition, hands;
-let targetExplosion = 1, explosionFactor = 1;
+let player, recognition;
 
 function falar(t) {
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(t);
     u.lang = "pt-BR";
     window.speechSynthesis.speak(u);
+    document.getElementById("status").innerText = t;
 }
 
 function onYouTubeIframeAPIReady() {
-    player = new YT.Player('player', { height: '1', width: '1', events: { onReady: () => console.log("YT OK") } });
+    player = new YT.Player('player', { height: '1', width: '1' });
 }
 
 async function tocar(fala) {
-    // Pega só o que vem depois de "toca" e limpa o nome do bot
-    let busca = fala.split("toca")[1] || fala;
-    busca = busca.replace(/zerox|zero x|xis/gi, "").trim();
-    
-    falar("Buscando " + busca);
-    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(busca)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
-    const data = await res.json();
-
-    if (data.items && data.items[0]) {
-        player.loadVideoById(data.items[0].id.videoId);
-        setTimeout(() => { player.unMute(); player.setVolume(100); player.playVideo(); }, 1200);
+    // LIMPEZA TOTAL: Ignora tudo até a palavra "toca"
+    let busca = "";
+    if(fala.includes("toca")) {
+        busca = fala.split("toca")[1].trim();
+    } else {
+        busca = fala.replace(/zerox|zero x|xis/gi, "").trim();
     }
+    
+    // Remove qualquer "zero x" que tenha sobrado
+    busca = busca.replace(/zerox|zero x|xis/gi, "").trim();
+
+    if (!busca) return;
+    
+    falar("A procurar " + busca);
+    
+    const url = `https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(busca)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`;
+    
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.items && data.items[0]) {
+            player.loadVideoById(data.items[0].id.videoId);
+            setTimeout(() => { 
+                player.unMute(); 
+                player.setVolume(100); 
+                player.playVideo(); 
+            }, 1000);
+            falar("A tocar agora.");
+        }
+    } catch(e) { falar("Erro na busca."); }
 }
 
 function responder(fala) {
-    console.log("Comando:", fala);
+    console.log("Ouvi:", fala);
     if (fala.includes("zerox") || fala.includes("zero x") || fala.includes("xis")) {
-        player && player.setVolume(15);
+        if(player) player.setVolume(20);
+
         if (fala.includes("toca")) {
             tocar(fala);
         } else if (fala.includes("parar") || fala.includes("desligar")) {
             player.pauseVideo();
-            falar("Parado");
+            falar("Pausado.");
+        } else if (fala.includes("ligar") || fala.includes("continuar")) {
+            player.playVideo();
+            falar("Ok.");
+            setTimeout(() => player.setVolume(100), 2000);
         } else {
-            falar("Sim?");
+            falar("Sim, mestre?");
             setTimeout(() => player.setVolume(100), 3000);
         }
     }
 }
 
-// CONFIGURAÇÃO DA MÃO
-function ligarMao() {
-    hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
-    hands.setOptions({maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6});
-    hands.onResults(res => {
-        if (res.multiHandLandmarks && res.multiHandLandmarks[0]) {
-            const pts = res.multiHandLandmarks[0];
-            const dist = Math.hypot(pts[4].x - pts[8].x, pts[4].y - pts[8].y);
-            targetExplosion = dist > 0.2 ? 3.5 : 1;
-        } else { targetExplosion = 1; }
-    });
-    new Camera(document.getElementById("webcam"), {
-        onFrame: async () => { await hands.send({image: document.getElementById("webcam")}); },
-        width: 640, height: 480
-    }).start();
-}
-
-// 3D GLOBO
-const scene = new THREE.Scene();
-const cam = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-cam.position.z = 5;
-const renderer = new THREE.WebGLRenderer({alpha:true});
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
-
-const geo = new THREE.SphereGeometry(1.6, 64, 64);
-const base = geo.attributes.position.array.slice();
-const globe = new THREE.Points(geo, new THREE.PointsMaterial({color:0x00f2ff, size:0.015}));
-scene.add(globe);
-
-function animate() {
-    requestAnimationFrame(animate);
-    explosionFactor += (targetExplosion - explosionFactor) * 0.1;
-    const attr = globe.geometry.attributes.position;
-    for(let i=0; i<attr.count; i++) {
-        let s = explosionFactor + Math.sin(i + Date.now()*0.005) * 0.05;
-        attr.setXYZ(i, base[i*3]*s, base[i*3+1]*s, base[i*3+2]*s);
-    }
-    attr.needsUpdate = true;
-    globe.rotation.y += 0.002;
-    renderer.render(scene, cam);
-}
-animate();
-
-// BOTÃO START
 document.getElementById("start").onclick = function() {
     this.style.display = "none";
-    falar("Zero Xis ativado");
+    falar("Zero Xis Online.");
     
-    // 1. Liga Voz
     const sr = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new sr();
     recognition.lang = "pt-BR";
     recognition.continuous = true;
-    recognition.onresult = e => responder(e.results[e.results.length-1][0].transcript.toLowerCase());
+    recognition.onresult = e => {
+        const fala = e.results[e.results.length-1][0].transcript.toLowerCase();
+        responder(fala);
+    };
     recognition.onend = () => recognition.start();
     recognition.start();
-
-    // 2. Liga Mão depois de 1.5s pra não travar
-    setTimeout(ligarMao, 1500);
 };
 </script>
 </body>
