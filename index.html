@@ -1,169 +1,321 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>ZER0X GOD MODE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZEROX GOD</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>  
+body { margin:0; background:#000; overflow:hidden; color:#00f2ff; font-family:Arial; }
 
-<style>
-body {
-  margin:0; 
-  overflow:hidden;
-  background:black;
-  font-family:Arial;
+#hud { position:fixed; top:20px; left:20px; z-index:10; font-size:12px; }
+
+#status {
+    margin-top:10px;
+    background:rgba(0,242,255,0.1);
+    padding:10px;
+    border-left:3px solid #00f2ff;
 }
 
-#globeCanvas {
-  position:absolute;
-  top:0;
-  left:0;
-  z-index:1;
-}
-
-#webcam {
-  position:absolute;
-  bottom:20px;
-  right:20px;
-  width:200px;
-  border:2px solid #00ffff;
-  z-index:3;
-}
-
-#player {
-  position:absolute;
-  top:20px;
-  left:20px;
-  z-index:3;
-}
-
-#ui {
-  position:absolute;
-  top:20px;
-  right:20px;
-  z-index:4;
-}
-
-button {
-  padding:10px;
-  background:#00ffff;
-  border:none;
-  cursor:pointer;
+#start {
+    position:fixed;
+    bottom:30px;
+    left:50%;
+    transform:translateX(-50%);
+    padding:20px 40px;
+    background:#00f2ff;
+    border:none;
+    font-weight:bold;
+    cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
-<canvas id="globeCanvas"></canvas>
-<video id="webcam" autoplay playsinline></video>
-
-<div id="player"></div>
-
-<div id="ui">
-  <button onclick="startMusic()">INICIAR ZER0X</button>
+<div id="hud">
+    ZEROX GOD MODE
+    <div id="status">AGUARDANDO...</div>
 </div>
 
+<button id="start">ATIVAR</button>
+
+<video id="webcam" autoplay playsinline style="display:none"></video>
+<div id="player"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
+
 <script>
-/* =========================
-   🌍 GLOBO 3D
-========================= */
-const canvas = document.getElementById("globeCanvas");
-const renderer = new THREE.WebGLRenderer({canvas});
-renderer.setSize(window.innerWidth, window.innerHeight);
+// ================= CONFIG =================
+const YOUTUBE_API_KEY = "AIzaSyA1YzpPogtFgGavsIdc7fh6X4gvmgYfO9I";
 
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight,0.1,1000);
-camera.position.z = 3;
+let player, recognition;
+let synth = window.speechSynthesis;
 
-const geometry = new THREE.SphereGeometry(1,64,64);
-const material = new THREE.MeshBasicMaterial({
-  wireframe:true,
-  color:0x00ffff
-});
-const globe = new THREE.Mesh(geometry, material);
-scene.add(globe);
+let explosionFactor = 1;
+let targetExplosion = 1;
 
-let handX = 0;
-let handY = 0;
+let musicaTocando = false;
+let aguardandoResposta = false;
+let aguardandoContinuar = false;
+let ultimoTermo = "";
 
-/* =========================
-   🤚 CONTROLE (mouse = mão fake)
-========================= */
-window.addEventListener("mousemove", (e)=>{
-  handX = (e.clientX / window.innerWidth - 0.5) * 2;
-  handY = (e.clientY / window.innerHeight - 0.5) * 2;
-});
-
-/* =========================
-   🔄 LOOP DO GLOBO
-========================= */
-function animateGlobe(){
-  requestAnimationFrame(animateGlobe);
-
-  globe.rotation.y += 0.01 + handX * 0.05;
-  globe.rotation.x += handY * 0.02;
-
-  renderer.render(scene, camera);
+// ================= VOZ =================
+function falar(texto){
+    synth.cancel();
+    let u = new SpeechSynthesisUtterance(texto);
+    u.lang = "pt-BR";
+    synth.speak(u);
+    document.getElementById("status").innerText = texto;
 }
-animateGlobe();
 
-/* =========================
-   🎥 WEBCAM
-========================= */
-navigator.mediaDevices.getUserMedia({video:true})
-.then(stream=>{
-  document.getElementById("webcam").srcObject = stream;
-});
-
-/* =========================
-   🎵 YOUTUBE PLAYER
-========================= */
-let player;
-let playlist = [
-  "kXYiU_JCYtU", // linkin park
-  "hTWKbfoikeg", // nirvana
-  "3JZ4pnNtyxQ"  // eminem
-];
-
-let current = 0;
-
+// ================= YOUTUBE =================
 function onYouTubeIframeAPIReady(){
-  player = new YT.Player('player', {
-    height: '200',
-    width: '300',
-    videoId: playlist[0],
-    events: {
-      'onStateChange': onPlayerStateChange
-    }
-  });
+    player = new YT.Player('player',{
+        height:'0',
+        width:'0',
+        playerVars:{
+            autoplay:0,
+            controls:0
+        },
+        events:{
+            onReady:e=>e.target.mute(),
+            onStateChange:onPlayerStateChange
+        }
+    });
 }
 
 function onPlayerStateChange(event){
-  if(event.data === YT.PlayerState.ENDED){
-    nextMusic();
-  }
+    // terminou vídeo → busca outro automaticamente
+    if(event.data === YT.PlayerState.ENDED && ultimoTermo){
+        tocar(ultimoTermo, true);
+    }
 }
 
-function nextMusic(){
-  current++;
-  if(current >= playlist.length){
-    current = 0;
-  }
-  player.loadVideoById(playlist[current]);
+async function tocar(termo, auto=false){
+    if(!auto){
+        falar("Buscando " + termo);
+        ultimoTermo = termo;
+    }
+
+    try{
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(termo)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
+        const data = await res.json();
+
+        if(data.items && data.items[0]){
+            const id = data.items[0].id.videoId;
+
+            player.loadVideoById(id);
+
+            setTimeout(()=>{
+                player.unMute();
+                player.setVolume(100);
+            },500);
+
+            musicaTocando = true;
+
+            if(!auto){
+                falar("Tocando agora");
+            }
+        } else {
+            falar("Não encontrei essa música");
+        }
+    }catch(e){
+        falar("Erro ao buscar música");
+    }
 }
 
-function startMusic(){
-  player.playVideo();
+// ================= VOLUME =================
+function baixarVolume(){
+    if(player && musicaTocando){
+        player.setVolume(30);
+    }
 }
 
-/* =========================
-   🔥 CARREGA API YOUTUBE
-========================= */
-let tag = document.createElement('script');
-tag.src = "https://www.youtube.com/iframe_api";
-document.body.appendChild(tag);
+function normalVolume(){
+    if(player && musicaTocando){
+        player.setVolume(100);
+    }
+}
 
+// ================= IA =================
+function responder(fala){
+
+    if(fala.includes("zerox")){
+        baixarVolume();
+        falar("Olá, boa tarde. Em que posso ajudar?");
+        aguardandoResposta = true;
+        return;
+    }
+
+    if(aguardandoResposta){
+        aguardandoResposta = false;
+
+        if(fala.includes("hora")){
+            falar("Agora são " + new Date().toLocaleTimeString());
+        } else {
+            falar("Entendi sua solicitação.");
+        }
+
+        if(musicaTocando){
+            setTimeout(()=>{
+                falar("Deseja continuar a música?");
+                aguardandoContinuar = true;
+            },1500);
+        }
+
+        return;
+    }
+
+    if(aguardandoContinuar){
+        aguardandoContinuar = false;
+
+        if(fala.includes("sim")){
+            normalVolume();
+            falar("Retomando a música");
+        } else {
+            if(player) player.pauseVideo();
+            musicaTocando = false;
+            falar("Música pausada. Aguardando comando.");
+        }
+
+        return;
+    }
+
+    if(fala.includes("toca")){
+        let termo = fala.replace("toca","").trim();
+        if(termo){
+            tocar(termo);
+        }
+    }
+
+    else if(fala.includes("explodir")){
+        targetExplosion = 3;
+        falar("Ativando energia máxima");
+    }
+}
+
+// ================= VOICE =================
+function iniciarVoz(){
+    const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    recognition = new Speech();
+    recognition.lang = "pt-BR";
+    recognition.continuous = true;
+
+    recognition.onresult = e=>{
+        const fala = e.results[e.results.length-1][0].transcript.toLowerCase();
+        responder(fala);
+    };
+
+    recognition.start();
+}
+
+// ================= 3D =================
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
+camera.position.z = 5;
+
+const renderer = new THREE.WebGLRenderer({alpha:true});
+renderer.setSize(innerWidth,innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const geo = new THREE.SphereGeometry(1.6,64,64);
+const base = geo.attributes.position.array.slice();
+
+const globe = new THREE.Points(
+    geo,
+    new THREE.PointsMaterial({color:0x00f2ff,size:0.015})
+);
+
+scene.add(globe);
+
+const pGeo = new THREE.BufferGeometry();
+const arr = new Float32Array(1500*3);
+
+for(let i=0;i<arr.length;i++){
+    arr[i]=(Math.random()-0.5)*20;
+}
+
+pGeo.setAttribute('position',new THREE.BufferAttribute(arr,3));
+
+const particles = new THREE.Points(
+    pGeo,
+    new THREE.PointsMaterial({size:0.02,color:0x00f2ff})
+);
+
+scene.add(particles);
+
+// ================= MÃO =================
+const hands = new Hands({
+    locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
+});
+
+hands.setOptions({maxNumHands:1});
+
+hands.onResults(res=>{
+    if(res.multiHandLandmarks && res.multiHandLandmarks[0]){
+        const pts = res.multiHandLandmarks[0];
+        const dist = Math.hypot(pts[0].x-pts[12].x, pts[0].y-pts[12].y);
+        targetExplosion = dist > 0.35 ? 3 : 1;
+    }
+});
+
+function iniciarHand(){
+    new Camera(document.getElementById("webcam"),{
+        onFrame: async ()=>{
+            await hands.send({image:webcam});
+        }
+    }).start();
+}
+
+// ================= ANIMAÇÃO =================
+let pulse = 1;
+
+function animate(){
+    requestAnimationFrame(animate);
+
+    pulse += 0.1;
+    explosionFactor += (targetExplosion - explosionFactor)*0.08;
+
+    const attr = globe.geometry.attributes.position;
+
+    for(let i=0;i<attr.count;i++){
+        const scale = explosionFactor + Math.sin(i+pulse)*0.05;
+
+        attr.setXYZ(
+            i,
+            base[i*3]*scale,
+            base[i*3+1]*scale,
+            base[i*3+2]*scale
+        );
+    }
+
+    attr.needsUpdate = true;
+
+    globe.rotation.y += 0.003;
+    particles.rotation.y += 0.0005;
+
+    renderer.render(scene,camera);
+}
+
+animate();
+
+// ================= START =================
+document.getElementById("start").onclick = ()=>{
+    falar("Zero X iniciado");
+
+    iniciarVoz();
+    iniciarHand();
+
+    if(player){
+        player.unMute();
+    }
+};
 </script>
 
 </body>
