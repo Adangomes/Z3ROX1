@@ -5,10 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ZEROX GOD</title>
 
-<style>  
-body { margin:0; background:#000; overflow:hidden; color:#00f2ff; font-family:Arial; }
+<style>
+body {
+    margin:0;
+    background:#000;
+    overflow:hidden;
+    font-family:Arial;
+    color:#00f2ff;
+}
 
-#hud { position:fixed; top:20px; left:20px; z-index:10; font-size:12px; }
+#hud {
+    position:fixed;
+    top:20px;
+    left:20px;
+    z-index:10;
+    font-size:12px;
+}
 
 #status {
     margin-top:10px;
@@ -58,17 +70,13 @@ let synth = window.speechSynthesis;
 let explosionFactor = 1;
 let targetExplosion = 1;
 
-let musicaTocando = false;
-let aguardandoResposta = false;
-let aguardandoContinuar = false;
-let ultimoTermo = "";
-
 // ================= VOZ =================
 function falar(texto){
     synth.cancel();
     let u = new SpeechSynthesisUtterance(texto);
     u.lang = "pt-BR";
     synth.speak(u);
+
     document.getElementById("status").innerText = texto;
 }
 
@@ -77,126 +85,55 @@ function onYouTubeIframeAPIReady(){
     player = new YT.Player('player',{
         height:'0',
         width:'0',
-        playerVars:{
-            autoplay:0,
-            controls:0
-        },
         events:{
-            onReady:e=>e.target.mute(),
-            onStateChange:onPlayerStateChange
+            onReady:e=>e.target.mute()
         }
     });
 }
 
-function onPlayerStateChange(event){
-    if(event.data === YT.PlayerState.ENDED && ultimoTermo){
-        tocar(ultimoTermo, true);
-    }
-}
+async function tocar(termo){
+    falar("Buscando " + termo);
 
-async function tocar(termo, auto=false){
-    if(!auto){
-        falar("Buscando " + termo);
-        ultimoTermo = termo;
-    }
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(termo)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
+    const data = await res.json();
 
-    try{
-        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(termo)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
-        const data = await res.json();
+    if(data.items[0]){
+        const id = data.items[0].id.videoId;
 
-        if(data.items && data.items[0]){
-            const id = data.items[0].id.videoId;
+        player.loadVideoById(id);
 
-            player.loadVideoById(id);
+        setTimeout(()=>{
+            player.unMute();
+            player.setVolume(100);
+        },500);
 
-            setTimeout(()=>{
-                player.unMute();
-                player.setVolume(100);
-            },500);
-
-            musicaTocando = true;
-
-            if(!auto){
-                falar("Tocando agora");
-            }
-        } else {
-            falar("Não encontrei essa música");
-        }
-    }catch(e){
-        falar("Erro ao buscar música");
-    }
-}
-
-// ================= VOLUME =================
-function baixarVolume(){
-    if(player && musicaTocando){
-        player.setVolume(30);
-    }
-}
-
-function normalVolume(){
-    if(player && musicaTocando){
-        player.setVolume(100);
+        falar("Tocando agora");
     }
 }
 
 // ================= IA =================
 function responder(fala){
 
-    // NORMALIZA TEXTO
-    fala = fala.replace("zero x","zerox");
-
-    if(fala.includes("zerox") || fala.includes("zeroxis")){
-        baixarVolume();
-        falar("Estou ouvindo");
-        aguardandoResposta = true;
-        return;
+    if(fala.includes("zerox")){
+        falar("Online. Pode falar.");
     }
 
-    if(aguardandoResposta){
-        aguardandoResposta = false;
-
-        if(fala.includes("hora")){
-            falar("Agora são " + new Date().toLocaleTimeString());
-        } else {
-            falar("Entendi");
-        }
-
-        if(musicaTocando){
-            setTimeout(()=>{
-                falar("Deseja continuar a música?");
-                aguardandoContinuar = true;
-            },1200);
-        }
-
-        return;
+    else if(fala.includes("hora")){
+        falar("Agora são " + new Date().toLocaleTimeString());
     }
 
-    if(aguardandoContinuar){
-        aguardandoContinuar = false;
-
-        if(fala.includes("sim")){
-            normalVolume();
-            falar("Retomando");
-        } else {
-            if(player) player.pauseVideo();
-            musicaTocando = false;
-            falar("Parado. Aguardando comando.");
-        }
-
-        return;
-    }
-
-    if(fala.includes("toca")){
+    else if(fala.includes("toca")){
         let termo = fala.replace("toca","").trim();
-        if(termo){
-            tocar(termo);
-        }
+        tocar(termo);
     }
 
     else if(fala.includes("explodir")){
         targetExplosion = 3;
         falar("Ativando energia máxima");
+    }
+
+    else{
+        falar("Comando não reconhecido");
     }
 }
 
@@ -226,6 +163,7 @@ const renderer = new THREE.WebGLRenderer({alpha:true});
 renderer.setSize(innerWidth,innerHeight);
 document.body.appendChild(renderer.domElement);
 
+// GLOBO
 const geo = new THREE.SphereGeometry(1.6,64,64);
 const base = geo.attributes.position.array.slice();
 
@@ -236,10 +174,12 @@ const globe = new THREE.Points(
 
 scene.add(globe);
 
+// PARTÍCULAS
 const pGeo = new THREE.BufferGeometry();
-const arr = new Float32Array(1500*3);
+const pCount = 1500;
+const arr = new Float32Array(pCount*3);
 
-for(let i=0;i<arr.length;i++){
+for(let i=0;i<pCount*3;i++){
     arr[i]=(Math.random()-0.5)*20;
 }
 
@@ -252,7 +192,7 @@ const particles = new THREE.Points(
 
 scene.add(particles);
 
-// ================= MÃO (FIX REAL) =================
+// ================= MÃO =================
 const hands = new Hands({
     locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
 });
@@ -262,20 +202,18 @@ hands.setOptions({maxNumHands:1});
 hands.onResults(res=>{
     if(res.multiHandLandmarks && res.multiHandLandmarks[0]){
         const pts = res.multiHandLandmarks[0];
+
         const dist = Math.hypot(pts[0].x-pts[12].x, pts[0].y-pts[12].y);
+
         targetExplosion = dist > 0.35 ? 3 : 1;
     }
 });
 
 function iniciarHand(){
-    const video = document.getElementById("webcam");
-
-    new Camera(video,{
+    new Camera(document.getElementById("webcam"),{
         onFrame: async ()=>{
-            await hands.send({image: video});
-        },
-        width: 640,
-        height: 480
+            await hands.send({image:webcam});
+        }
     }).start();
 }
 
@@ -286,6 +224,7 @@ function animate(){
     requestAnimationFrame(animate);
 
     pulse += 0.1;
+
     explosionFactor += (targetExplosion - explosionFactor)*0.08;
 
     const attr = globe.geometry.attributes.position;
