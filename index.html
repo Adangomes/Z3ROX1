@@ -1,39 +1,46 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZEROX GOD MODE</title>
-    <style>
-        body { margin: 0; background: #000; overflow: hidden; color: #00f2ff; font-family: 'Segoe UI', Arial, sans-serif; }
-        #hud { position: fixed; top: 20px; left: 20px; z-index: 10; font-size: 12px; letter-spacing: 2px; font-weight: bold; }
-        #status {
-            margin-top: 10px;
-            background: rgba(0, 242, 255, 0.1);
-            padding: 15px;
-            border-left: 4px solid #00f2ff;
-            min-width: 250px;
-            font-size: 16px;
-            text-transform: uppercase;
-        }
-        #start {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            padding: 20px 50px; background: #00f2ff; border: none;
-            font-weight: 900; cursor: pointer; border-radius: 5px; box-shadow: 0 0 20px #00f2ff;
-        }
-        #webcam { display: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZEROX GOD</title>
+
+<style>
+body { margin:0; background:#000; overflow:hidden; color:#00f2ff; font-family:Arial; }
+
+#hud { position:fixed; top:20px; left:20px; z-index:10; font-size:12px; }
+
+#status {
+    margin-top:10px;
+    background:rgba(0,242,255,0.1);
+    padding:10px;
+    border-left:3px solid #00f2ff;
+}
+
+#start {
+    position:fixed;
+    bottom:30px;
+    left:50%;
+    transform:translateX(-50%);
+    padding:20px 40px;
+    background:#00f2ff;
+    border:none;
+    font-weight:bold;
+    cursor:pointer;
+}
+</style>
 </head>
+
 <body>
 
 <div id="hud">
-    SNOOP TECH // ZEROX GOD MODE V6
-    <div id="status">SISTEMA OFFLINE</div>
+    ZEROX GOD MODE
+    <div id="status">AGUARDANDO...</div>
 </div>
 
-<button id="start">ATIVAR SISTEMA</button>
+<button id="start">ATIVAR</button>
 
-<video id="webcam" autoplay playsinline></video>
+<video id="webcam" autoplay playsinline style="display:none"></video>
 <div id="player"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
@@ -42,187 +49,253 @@
 <script src="https://www.youtube.com/iframe_api"></script>
 
 <script>
-// ================= CONFIGURAÇÃO =================
-const YOUTUBE_API_KEY = "AIzaSyA1YzpPogtFgGavsIdc7fh6X4gvmgYfO9I"; // Sua chave
+// ================= CONFIG =================
+const YOUTUBE_API_KEY = "AIzaSyA1YzpPogtFgGavsIdc7fh6X4gvmgYfO9I";
 
 let player, recognition;
 let synth = window.speechSynthesis;
-let explosionFactor = 1.0;
-let targetExplosion = 1.0;
 
-// CONTROLES DE ESTADO
+let explosionFactor = 1;
+let targetExplosion = 1;
+
+// NOVO CONTROLE
 let musicaTocando = false;
-let aguardandoComando = false;
-let aguardandoConfirmacao = false;
+let aguardandoResposta = false;
+let aguardandoContinuar = false;
 
-// ================= SISTEMA DE VOZ (BRASIL) =================
-function falar(texto) {
+// ================= VOZ =================
+function falar(texto){
     synth.cancel();
-    const utter = new SpeechSynthesisUtterance(texto);
-    const voices = synth.getVoices();
-    // Força voz brasileira masculina se disponível
-    utter.voice = voices.find(v => v.lang === 'pt-BR' && v.name.includes('Google')) || voices.find(v => v.lang === 'pt-BR');
-    utter.pitch = 0.8;
-    utter.rate = 1.0;
-    synth.speak(utter);
-    document.getElementById("status").innerText = "ZEROX: " + texto;
+    let u = new SpeechSynthesisUtterance(texto);
+    u.lang = "pt-BR";
+    synth.speak(u);
+    document.getElementById("status").innerText = texto;
 }
 
-// ================= YOUTUBE (MODO OCULTO) =================
-function onYouTubeIframeAPIReady() {
-    player = new YT.Player('player', {
-        height: '0', width: '0',
-        events: { 'onReady': (e) => e.target.mute() }
+// ================= YOUTUBE =================
+function onYouTubeIframeAPIReady(){
+    player = new YT.Player('player',{
+        height:'0',
+        width:'0',
+        events:{ onReady:e=>e.target.mute() }
     });
 }
 
-async function tocarMusica(termo) {
-    falar("Localizando " + termo);
-    try {
-        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(termo)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
-        const data = await res.json();
-        if (data.items && data.items[0]) {
-            const id = data.items[0].id.videoId;
-            player.loadVideoById(id);
-            setTimeout(() => { player.unMute(); player.setVolume(100); }, 1000);
-            musicaTocando = true;
-            falar("Tocando agora.");
-        }
-    } catch (e) { falar("Erro na busca."); }
+async function tocar(termo){
+    falar("Buscando " + termo);
+
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(termo)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
+    const data = await res.json();
+
+    if(data.items && data.items[0]){
+        const id = data.items[0].id.videoId;
+
+        player.loadVideoById(id);
+
+        setTimeout(()=>{
+            player.unMute();
+            player.setVolume(100);
+        },500);
+
+        musicaTocando = true;
+
+        falar("Tocando agora");
+    }
 }
 
-// ================= INTELIGÊNCIA ZEROX =================
-function processarFala(fala) {
-    console.log("OUVIDO:", fala);
+// ================= VOLUME =================
+function baixarVolume(){
+    if(player && musicaTocando){
+        player.setVolume(30);
+    }
+}
 
-    // 1. ATIVAÇÃO (Ouvir "Zerox" ou "Xis")
-    if (!aguardandoComando && !aguardandoConfirmacao && (fala.includes("zerox") || fala.includes("xis") || fala.includes("xerox"))) {
-        if (musicaTocando) player.setVolume(20); // BAIXA 80% DO VOLUME PARA OUVIR
-        falar("Sim, em que posso te ajudar?");
-        aguardandoComando = true;
+function normalVolume(){
+    if(player && musicaTocando){
+        player.setVolume(100);
+    }
+}
+
+// ================= IA =================
+function responder(fala){
+
+    // ATIVAÇÃO
+    if(fala.includes("zerox") || fala.includes("zeroxis")){
+        baixarVolume();
+        falar("Olá, boa tarde. Em que posso ajudar?");
+        aguardandoResposta = true;
         return;
     }
 
-    // 2. PROCESSAR COMANDO APÓS ATIVAÇÃO
-    if (aguardandoComando) {
-        aguardandoComando = false;
+    // RESPOSTA
+    if(aguardandoResposta){
+        aguardandoResposta = false;
 
-        if (fala.includes("tocar") || fala.includes("toca")) {
-            let busca = fala.replace(/tocar|toca|música/g, "").trim();
-            tocarMusica(busca);
-        } else if (fala.includes("hora")) {
-            falar("Agora são " + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}));
-            perguntarContinuar();
+        if(fala.includes("hora")){
+            falar("Agora são " + new Date().toLocaleTimeString());
         } else {
-            falar("Entendido sua solicitação.");
-            perguntarContinuar();
+            falar("Entendi sua solicitação.");
         }
+
+        if(musicaTocando){
+            setTimeout(()=>{
+                falar("Deseja continuar a música?");
+                aguardandoContinuar = true;
+            },1500);
+        }
+
         return;
     }
 
-    // 3. CONFIRMAÇÃO (CONTINUAR TOCANDO?)
-    if (aguardandoConfirmacao) {
-        aguardandoConfirmacao = false;
-        if (fala.includes("sim") || fala.includes("pode") || fala.includes("continua")) {
-            if (musicaTocando) player.setVolume(100);
-            falar("Retomando áudio.");
+    // CONTINUAR MÚSICA
+    if(aguardandoContinuar){
+        aguardandoContinuar = false;
+
+        if(fala.includes("sim")){
+            normalVolume();
+            falar("Retomando a música");
         } else {
-            if (player) player.pauseVideo();
+            if(player) player.pauseVideo();
             musicaTocando = false;
-            falar("Música pausada. Zerox em prontidão.");
+            falar("Música pausada. Aguardando comando.");
         }
+
+        return;
+    }
+
+    // COMANDOS
+    if(fala.includes("toca")){
+        let termo = fala.replace("toca","").trim();
+        tocar(termo);
+    }
+
+    else if(fala.includes("explodir")){
+        targetExplosion = 3;
+        falar("Ativando energia máxima");
     }
 }
 
-function perguntarContinuar() {
-    if (musicaTocando) {
-        setTimeout(() => {
-            falar("Deseja continuar tocando a música?");
-            aguardandoConfirmacao = true;
-        }, 2500);
-    }
-}
-
-// ================= RECONHECIMENTO DE VOZ =================
-function iniciarEscuta() {
+// ================= VOICE =================
+function iniciarVoz(){
     const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+
     recognition = new Speech();
     recognition.lang = "pt-BR";
     recognition.continuous = true;
-    recognition.onresult = (e) => {
-        const fala = e.results[e.results.length - 1][0].transcript.toLowerCase();
-        processarFala(fala);
+
+    recognition.onresult = e=>{
+        const fala = e.results[e.results.length-1][0].transcript.toLowerCase();
+        responder(fala);
     };
-    recognition.onend = () => recognition.start();
+
     recognition.start();
 }
 
-// ================= CENA 3D (GLOBO E MÃO) =================
+// ================= 3D =================
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
 
-const sphereGeo = new THREE.SphereGeometry(1.6, 64, 64);
-const basePositions = sphereGeo.attributes.position.array.slice();
-const globe = new THREE.Points(sphereGeo, new THREE.PointsMaterial({ color: 0x00f2ff, size: 0.015 }));
-scene.add(globe);
-
+const camera = new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
 camera.position.z = 5;
 
-// MÃO MEDIAPIPE
-const hands = new Hands({ locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}` });
-hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.7 });
+const renderer = new THREE.WebGLRenderer({alpha:true});
+renderer.setSize(innerWidth,innerHeight);
+document.body.appendChild(renderer.domElement);
 
-hands.onResults(res => {
-    if (res.multiHandLandmarks && res.multiHandLandmarks[0]) {
+// GLOBO
+const geo = new THREE.SphereGeometry(1.6,64,64);
+const base = geo.attributes.position.array.slice();
+
+const globe = new THREE.Points(
+    geo,
+    new THREE.PointsMaterial({color:0x00f2ff,size:0.015})
+);
+
+scene.add(globe);
+
+// PARTÍCULAS
+const pGeo = new THREE.BufferGeometry();
+const arr = new Float32Array(1500*3);
+
+for(let i=0;i<arr.length;i++){
+    arr[i]=(Math.random()-0.5)*20;
+}
+
+pGeo.setAttribute('position',new THREE.BufferAttribute(arr,3));
+
+const particles = new THREE.Points(
+    pGeo,
+    new THREE.PointsMaterial({size:0.02,color:0x00f2ff})
+);
+
+scene.add(particles);
+
+// ================= MÃO =================
+const hands = new Hands({
+    locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
+});
+
+hands.setOptions({maxNumHands:1});
+
+hands.onResults(res=>{
+    if(res.multiHandLandmarks && res.multiHandLandmarks[0]){
         const pts = res.multiHandLandmarks[0];
-        // Distância entre polegar e ponta do dedo médio para explosão
-        const dist = Math.hypot(pts[0].x - pts[12].x, pts[0].y - pts[12].y);
-        targetExplosion = dist > 0.35 ? 2.5 : 1.0;
+        const dist = Math.hypot(pts[0].x-pts[12].x, pts[0].y-pts[12].y);
+        targetExplosion = dist > 0.35 ? 3 : 1;
     }
 });
 
-function iniciarCamera() {
-    const cam = new Camera(document.getElementById("webcam"), {
-        onFrame: async () => { await hands.send({ image: document.getElementById("webcam") }); },
-        width: 1280, height: 720
-    });
-    cam.start();
+function iniciarHand(){
+    new Camera(document.getElementById("webcam"),{
+        onFrame: async ()=>{
+            await hands.send({image:webcam});
+        }
+    }).start();
 }
 
-// ================= LOOP DE ANIMAÇÃO =================
-function animate() {
+// ================= ANIMAÇÃO =================
+let pulse = 1;
+
+function animate(){
     requestAnimationFrame(animate);
-    
-    // Suavização da Explosão
-    explosionFactor += (targetExplosion - explosionFactor) * 0.1;
+
+    pulse += 0.1;
+    explosionFactor += (targetExplosion - explosionFactor)*0.08;
+
     const attr = globe.geometry.attributes.position;
-    for (let i = 0; i < attr.count; i++) {
-        attr.setXYZ(i, basePositions[i*3] * explosionFactor, basePositions[i*3+1] * explosionFactor, basePositions[i*3+2] * explosionFactor);
+
+    for(let i=0;i<attr.count;i++){
+        const scale = explosionFactor + Math.sin(i+pulse)*0.05;
+
+        attr.setXYZ(
+            i,
+            base[i*3]*scale,
+            base[i*3+1]*scale,
+            base[i*3+2]*scale
+        );
     }
+
     attr.needsUpdate = true;
 
-    globe.rotation.y += 0.002;
-    renderer.render(scene, camera);
+    globe.rotation.y += 0.003;
+    particles.rotation.y += 0.0005;
+
+    renderer.render(scene,camera);
 }
+
 animate();
 
-// ================= BOTÃO START =================
-document.getElementById("start").onclick = () => {
-    document.getElementById("start").style.display = 'none';
-    falar("Sistemas Zerox iniciados. Olá.");
-    iniciarEscuta();
-    iniciarCamera();
-    if (player) player.unMute();
-};
+// ================= START =================
+document.getElementById("start").onclick = ()=>{
+    falar("Zero X iniciado");
 
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
+    iniciarVoz();
+    iniciarHand();
+
+    if(player){
+        player.unMute();
+    }
+};
 </script>
+
 </body>
 </html>
