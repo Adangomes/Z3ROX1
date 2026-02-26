@@ -3,27 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planeta Explosivo - Snoop Tech</title>
+    <title>Snoop Tech - Interface Holográfica</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Inter', sans-serif; }
         #startBtn {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            padding: 15px 35px; background: #00f2ff; color: #000;
-            border: none; border-radius: 8px; font-weight: 800; cursor: pointer;
-            z-index: 100; box-shadow: 0 0 15px #00f2ff; transition: 0.3s;
+            padding: 18px 40px; background: transparent; color: #00f2ff;
+            border: 2px solid #00f2ff; border-radius: 4px; font-weight: bold; 
+            cursor: pointer; z-index: 100; text-transform: uppercase;
+            letter-spacing: 2px; transition: 0.3s;
         }
-        #startBtn:hover { background: #fff; box-shadow: 0 0 25px #fff; }
-        #status-ui {
+        #startBtn:hover { background: #00f2ff; color: #000; box-shadow: 0 0 30px #00f2ff; }
+        #ui-layer {
             position: fixed; top: 20px; left: 20px; color: #00f2ff;
-            font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+            font-size: 10px; letter-spacing: 2px; opacity: 0.7;
         }
-        canvas { display: block; }
     </style>
 </head>
 <body>
 
-<div id="status-ui">Sistema de Gestos: Ativo</div>
-<button id="startBtn">INICIAR EXPERIÊNCIA 3D</button>
+<div id="ui-layer">SNOOP TECH // GESTURE_CONTROL_v2.0</div>
+<button id="startBtn">CONECTAR INTERFACE</button>
 <video id="video" style="display:none;" autoplay playsinline></video>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
@@ -31,26 +31,25 @@
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
 <script>
-    // --- CONFIGURAÇÃO DA CENA ---
+    // --- CENA THREE.JS ---
     const scene = new THREE.Scene();
     const camera3D = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // --- CRIAÇÃO DO GLOBO (PARTÍCULAS INDIVIDUAIS PARA EXPLODIR) ---
-    const particleCount = 4000;
+    // --- GLOBO DE PARTÍCULAS ---
+    const particleCount = 3500;
     const geo = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
-    const originalPositions = new Float32Array(particleCount * 3);
+    const originPos = new Float32Array(particleCount * 3);
 
     for (let i = 0; i < particleCount; i++) {
-        // Posição inicial em uma esfera
+        const r = 1.4;
         const u = Math.random();
         const v = Math.random();
         const theta = 2 * Math.PI * u;
         const phi = Math.acos(2 * v - 1);
-        const r = 1.5;
 
         const x = r * Math.sin(phi) * Math.cos(theta);
         const y = r * Math.sin(phi) * Math.sin(theta);
@@ -59,24 +58,23 @@
         positions[i * 3] = x;
         positions[i * 3 + 1] = y;
         positions[i * 3 + 2] = z;
-
-        originalPositions[i * 3] = x;
-        originalPositions[i * 3 + 1] = y;
-        originalPositions[i * 3 + 2] = z;
+        originPos[i * 3] = x;
+        originPos[i * 3 + 1] = y;
+        originPos[i * 3 + 2] = z;
     }
 
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    const mat = new THREE.PointsMaterial({ color: 0x00f2ff, size: 0.02, transparent: true, opacity: 0.8 });
-    const globe = new THREE.Points(geo, mat);
+    const globe = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0x00f2ff, size: 0.018 }));
     scene.add(globe);
 
-    // --- ESQUELETO DA MÃO MAIS NÍTIDO ---
+    // --- MÃO PEQUENA E DISCRETA ---
     const handGroup = new THREE.Group();
     scene.add(handGroup);
 
     const joints = [];
-    const jointMat = new THREE.MeshBasicMaterial({ color: 0xffffff }); // Branco para destacar
-    const jointGeo = new THREE.SphereGeometry(0.06, 12, 12); // Maior e mais nítido
+    // Juntas menores (0.02) e brancas para parecer um sensor holográfico
+    const jointGeo = new THREE.SphereGeometry(0.025, 8, 8); 
+    const jointMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
     for (let i = 0; i < 21; i++) {
         const m = new THREE.Mesh(jointGeo, jointMat);
@@ -86,9 +84,9 @@
 
     camera3D.position.z = 5;
 
-    // --- LÓGICA DE INTERAÇÃO ---
-    let explosionFactor = 0; // 0 = normal, 1 = explodido
-    let targetExplosion = 0;
+    // --- LOGICA DE MOVIMENTO E EXPLOSÃO ---
+    let explosion = 1.0;
+    let targetExplosion = 1.0;
 
     const hands = new Hands({
         locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
@@ -97,68 +95,60 @@
     hands.setOptions({
         maxNumHands: 1,
         modelComplexity: 1,
-        minDetectionConfidence: 0.7, // Maior precisão
-        minTrackingConfidence: 0.7
+        minDetectionConfidence: 0.75,
+        minTrackingConfidence: 0.75
     });
 
     hands.onResults(results => {
         if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
             const pts = results.multiHandLandmarks[0];
 
-            // 1. Atualizar Mão 3D
             pts.forEach((p, i) => {
-                const x = (p.x - 0.5) * 12; // Ampliado para cobrir a tela
-                const y = -(p.y - 0.5) * 9;
-                const z = -p.z * 5;
+                // CORREÇÃO DE ESPELHAMENTO: -(p.x - 0.5) inverte o eixo X
+                // REDUÇÃO DE TAMANHO: Multiplicado por 6 e 5 em vez de 12 e 9
+                const x = -(p.x - 0.5) * 6; 
+                const y = -(p.y - 0.5) * 5;
+                const z = -p.z * 3;
                 
-                // Suavização simples para não tremer
-                joints[i].position.lerp(new THREE.Vector3(x, y, z), 0.4);
+                // Resposta mais rápida (0.8) para tirar o delay
+                joints[i].position.lerp(new THREE.Vector3(x, y, z), 0.8);
             });
 
-            // 2. Detectar se a mão está aberta (Explodir)
-            // Calculamos a distância entre o pulso (0) e a ponta do dedo médio (12)
-            const dx = pts[0].x - pts[12].x;
-            const dy = pts[0].y - pts[12].y;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-
-            if (dist > 0.4) targetExplosion = 2.5; // Explode (afasta 2.5x)
-            else targetExplosion = 1.0;            // Volta ao normal
+            // GESTO: Abre a mão = Explode | Fecha = Volta
+            const dist = Math.hypot(pts[0].x - pts[12].x, pts[0].y - pts[12].y);
+            targetExplosion = dist > 0.35 ? 2.8 : 1.0;
         }
     });
 
-    // --- ANIMAÇÃO ---
     function animate() {
         requestAnimationFrame(animate);
 
-        // Suavizar a explosão
-        explosionFactor = THREE.MathUtils.lerp(explosionFactor, targetExplosion, 0.1);
+        explosion = THREE.MathUtils.lerp(explosion, targetExplosion, 0.15);
 
-        // Atualizar partículas do globo
-        const posAttr = globe.geometry.attributes.position;
+        const attr = globe.geometry.attributes.position;
         for (let i = 0; i < particleCount; i++) {
-            posAttr.setXYZ(
-                i,
-                originalPositions[i * 3] * explosionFactor,
-                originalPositions[i * 3 + 1] * explosionFactor,
-                originalPositions[i * 3 + 2] * explosionFactor
+            attr.setXYZ(i, 
+                originPos[i*3] * explosion, 
+                originPos[i*3+1] * explosion, 
+                originPos[i*3+2] * explosion
             );
         }
-        posAttr.needsUpdate = true;
-
-        globe.rotation.y += 0.005;
+        attr.needsUpdate = true;
+        
+        globe.rotation.y += 0.003;
         renderer.render(scene, camera3D);
     }
-
     animate();
 
-    // Redimensionar
+    // Resize
     window.addEventListener('resize', () => {
         camera3D.aspect = window.innerWidth / window.innerHeight;
         camera3D.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // Iniciar
+    // Iniciar Câmera
+    const video = document.getElementById('video');
     document.getElementById("startBtn").onclick = function() {
         this.style.display = 'none';
         const cam = new Camera(video, {
