@@ -81,7 +81,10 @@ function falar(texto){
 function onYouTubeIframeAPIReady(){
     player = new YT.Player('player',{
         height:'0',
-        width:'0'
+        width:'0',
+        events:{
+            onReady:e=>e.target.mute()
+        }
     });
 }
 
