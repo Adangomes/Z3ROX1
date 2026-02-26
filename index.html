@@ -2,33 +2,18 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Hand + Planeta 3D</title>
+<title>Planeta 3D + Mão</title>
 
 <style>
-body {
-  margin: 0;
-  background: black;
-  overflow: hidden;
-}
+body { margin: 0; overflow: hidden; background: black; }
 
-/* Canvas principal */
-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-/* Botão */
 #startBtn {
   position: fixed;
   bottom: 20px;
   left: 20px;
-  padding: 12px 20px;
-  background: #00ffff;
-  color: black;
+  padding: 12px;
+  background: cyan;
   border: none;
-  border-radius: 8px;
-  font-weight: bold;
   z-index: 10;
 }
 </style>
@@ -36,68 +21,42 @@ canvas {
 
 <body>
 
-<button id="startBtn">Ativar Câmera</button>
+<button id="startBtn">Ativar</button>
 
-<video id="video" autoplay playsinline style="display:none;"></video>
-<canvas id="canvas"></canvas>
+<video id="video" style="display:none;" autoplay playsinline></video>
 
-<!-- libs -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
 <script>
+let scene = new THREE.Scene();
+let camera3D = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+let renderer = new THREE.WebGLRenderer();
+
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// 🌍 esfera de partículas
+const geometry = new THREE.SphereGeometry(1, 64, 64);
+const material = new THREE.PointsMaterial({ color: 0x00aaff, size: 0.02 });
+const sphere = new THREE.Points(geometry, material);
+scene.add(sphere);
+
+// 🪐 anel
+const ringGeo = new THREE.RingGeometry(1.5, 2, 64);
+const ringMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, side: THREE.DoubleSide });
+const ring = new THREE.Mesh(ringGeo, ringMat);
+ring.rotation.x = Math.PI / 2.5;
+scene.add(ring);
+
+camera3D.position.z = 4;
+
+// 🎥 MediaPipe
 const video = document.getElementById('video');
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-let handX = canvas.width / 2;
-let handY = canvas.height / 2;
-
-// 🌌 PLANETA (pontos)
-function drawPlanet() {
-  const centerX = handX;
-  const centerY = handY;
-
-  for (let i = 0; i < 2000; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const radius = 100;
-
-    const x = centerX + Math.cos(angle) * radius;
-    const y = centerY + Math.sin(angle) * radius;
-
-    ctx.fillStyle = "#00aaff";
-    ctx.fillRect(x, y, 2, 2);
-  }
-
-  // anel
-  for (let i = 0; i < 1500; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const radius = 160;
-
-    const x = centerX + Math.cos(angle) * radius;
-    const y = centerY + Math.sin(angle) * radius * 0.4;
-
-    ctx.fillStyle = "#00ffff";
-    ctx.fillRect(x, y, 2, 2);
-  }
-}
-
-// ⭐ estrelas
-function drawStars() {
-  for (let i = 0; i < 200; i++) {
-    ctx.fillStyle = "white";
-    ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 1, 1);
-  }
-}
-
-// 🖐️ MediaPipe
 const hands = new Hands({
-  locateFile: (file) => {
-    return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-  }
+  locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
 });
 
 hands.setOptions({
@@ -107,34 +66,36 @@ hands.setOptions({
 });
 
 hands.onResults(results => {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  drawStars();
-
   if (results.multiHandLandmarks) {
-    const p = results.multiHandLandmarks[0][8]; // ponta do dedo
+    let p = results.multiHandLandmarks[0][8];
 
-    handX = p.x * canvas.width;
-    handY = p.y * canvas.height;
+    // move planeta com dedo
+    sphere.rotation.y = p.x * Math.PI * 2;
+    sphere.rotation.x = p.y * Math.PI * 2;
+
+    ring.rotation.z += 0.01;
   }
-
-  drawPlanet();
 });
 
-// 🎥 iniciar câmera (corrigido iPhone)
-document.getElementById("startBtn").onclick = () => {
+function animate() {
+  requestAnimationFrame(animate);
 
-  const camera = new Camera(video, {
+  sphere.rotation.y += 0.002;
+  renderer.render(scene, camera3D);
+}
+
+animate();
+
+// iniciar câmera
+document.getElementById("startBtn").onclick = () => {
+  const cam = new Camera(video, {
     onFrame: async () => {
       await hands.send({ image: video });
     },
     width: 640,
     height: 480
   });
-
-  camera.start();
-
-  document.getElementById("startBtn").style.display = "none";
+  cam.start();
 };
 </script>
 
