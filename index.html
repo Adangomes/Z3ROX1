@@ -50,7 +50,7 @@ body { margin:0; background:#000; overflow:hidden; color:#00f2ff; font-family:Ar
 
 <script>
 // ================= CONFIG =================
-const YOUTUBE_API_KEY = "AIzaSyA1YzpPogtFgGavsIdc7fh6X4gvmgYfO9I";
+const YOUTUBE_API_KEY = "AIzaSyCiYqB5IZRGMPxaBXLGqehItGwr7oG81Tw";
 
 let player, recognition;
 let synth = window.speechSynthesis;
@@ -89,7 +89,6 @@ function onYouTubeIframeAPIReady(){
 }
 
 function onPlayerStateChange(event){
-    // terminou vídeo → busca outro automaticamente
     if(event.data === YT.PlayerState.ENDED && ultimoTermo){
         tocar(ultimoTermo, true);
     }
@@ -144,9 +143,12 @@ function normalVolume(){
 // ================= IA =================
 function responder(fala){
 
-    if(fala.includes("zerox")){
+    // NORMALIZA TEXTO
+    fala = fala.replace("zero x","zerox");
+
+    if(fala.includes("zerox") || fala.includes("zeroxis")){
         baixarVolume();
-        falar("Olá, boa tarde. Em que posso ajudar?");
+        falar("Estou ouvindo");
         aguardandoResposta = true;
         return;
     }
@@ -157,14 +159,14 @@ function responder(fala){
         if(fala.includes("hora")){
             falar("Agora são " + new Date().toLocaleTimeString());
         } else {
-            falar("Entendi sua solicitação.");
+            falar("Entendi");
         }
 
         if(musicaTocando){
             setTimeout(()=>{
                 falar("Deseja continuar a música?");
                 aguardandoContinuar = true;
-            },1500);
+            },1200);
         }
 
         return;
@@ -175,11 +177,11 @@ function responder(fala){
 
         if(fala.includes("sim")){
             normalVolume();
-            falar("Retomando a música");
+            falar("Retomando");
         } else {
             if(player) player.pauseVideo();
             musicaTocando = false;
-            falar("Música pausada. Aguardando comando.");
+            falar("Parado. Aguardando comando.");
         }
 
         return;
@@ -250,7 +252,7 @@ const particles = new THREE.Points(
 
 scene.add(particles);
 
-// ================= MÃO =================
+// ================= MÃO (FIX REAL) =================
 const hands = new Hands({
     locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
 });
@@ -266,10 +268,14 @@ hands.onResults(res=>{
 });
 
 function iniciarHand(){
-    new Camera(document.getElementById("webcam"),{
+    const video = document.getElementById("webcam");
+
+    new Camera(video,{
         onFrame: async ()=>{
-            await hands.send({image:webcam});
-        }
+            await hands.send({image: video});
+        },
+        width: 640,
+        height: 480
     }).start();
 }
 
