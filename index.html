@@ -1,28 +1,28 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Planeta 3D + Mão</title>
-
-<style>
-body { margin: 0; overflow: hidden; background: black; }
-
-#startBtn {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  padding: 12px;
-  background: cyan;
-  border: none;
-  z-index: 10;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planeta 3D Interativo - Snoop Lanche Tech</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        #startBtn {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            padding: 15px 30px; background: #00aaff; color: white;
+            border: none; border-radius: 50px; font-weight: bold; cursor: pointer;
+            z-index: 100; box-shadow: 0 0 20px rgba(0, 170, 255, 0.5);
+        }
+        #info {
+            position: fixed; top: 20px; width: 100%; text-align: center;
+            color: #00aaff; pointer-events: none; text-transform: uppercase; letter-spacing: 2px;
+        }
+        canvas { display: block; }
+    </style>
 </head>
-
 <body>
 
-<button id="startBtn">Ativar</button>
-
+<div id="info">Mova a mão para interagir</div>
+<button id="startBtn">ATIVAR CÂMERA E EFEITO</button>
 <video id="video" style="display:none;" autoplay playsinline></video>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
@@ -30,73 +30,114 @@ body { margin: 0; overflow: hidden; background: black; }
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
 <script>
-let scene = new THREE.Scene();
-let camera3D = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-let renderer = new THREE.WebGLRenderer();
+    // --- CONFIGURAÇÃO THREE.JS ---
+    const scene = new THREE.Scene();
+    const camera3D = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    document.body.appendChild(renderer.domElement);
 
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+    // 🌍 GLOBO DE PARTÍCULAS (Igual à imagem)
+    const geometry = new THREE.SphereGeometry(1.2, 60, 60);
+    const material = new THREE.PointsMaterial({ 
+        color: 0x00aaff, 
+        size: 0.015,
+        transparent: true,
+        opacity: 0.8
+    });
+    const sphere = new THREE.Points(geometry, material);
+    scene.add(sphere);
 
-// 🌍 esfera de partículas
-const geometry = new THREE.SphereGeometry(1, 64, 64);
-const material = new THREE.PointsMaterial({ color: 0x00aaff, size: 0.02 });
-const sphere = new THREE.Points(geometry, material);
-scene.add(sphere);
+    // 🪐 ANEL DE ENERGIA
+    const ringGeo = new THREE.RingGeometry(1.8, 1.85, 128);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI / 2;
+    scene.add(ring);
 
-// 🪐 anel
-const ringGeo = new THREE.RingGeometry(1.5, 2, 64);
-const ringMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, side: THREE.DoubleSide });
-const ring = new THREE.Mesh(ringGeo, ringMat);
-ring.rotation.x = Math.PI / 2.5;
-scene.add(ring);
+    // 🖐️ ESTRUTURA DA MÃO NO 3D
+    const handGroup = new THREE.Group();
+    scene.add(handGroup);
 
-camera3D.position.z = 4;
+    // Criamos 21 esferas para as juntas e linhas para os dedos
+    const jointPoints = [];
+    const jointMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+    const jointGeo = new THREE.SphereGeometry(0.04, 8, 8);
 
-// 🎥 MediaPipe
-const video = document.getElementById('video');
+    for (let i = 0; i < 21; i++) {
+        const joint = new THREE.Mesh(jointGeo, jointMaterial);
+        jointPoints.push(joint);
+        handGroup.add(joint);
+    }
 
-const hands = new Hands({
-  locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-});
+    camera3D.position.z = 5;
 
-hands.setOptions({
-  maxNumHands: 1,
-  minDetectionConfidence: 0.7,
-  minTrackingConfidence: 0.7
-});
+    // --- CONFIGURAÇÃO MEDIAPIPE ---
+    const video = document.getElementById('video');
+    const hands = new Hands({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
 
-hands.onResults(results => {
-  if (results.multiHandLandmarks) {
-    let p = results.multiHandLandmarks[0][8];
+    hands.setOptions({
+        maxNumHands: 1,
+        modelComplexity: 1,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
+    });
 
-    // move planeta com dedo
-    sphere.rotation.y = p.x * Math.PI * 2;
-    sphere.rotation.x = p.y * Math.PI * 2;
+    hands.onResults(results => {
+        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+            const landmarks = results.multiHandLandmarks[0];
 
-    ring.rotation.z += 0.01;
-  }
-});
+            // Atualiza posição das juntas 3D
+            landmarks.forEach((point, i) => {
+                // Converter coordenadas MediaPipe (0 a 1) para Three.js (-distancia a +distancia)
+                const x = (point.x - 0.5) * 10;
+                const y = -(point.y - 0.5) * 8;
+                const z = -point.z * 10;
 
-function animate() {
-  requestAnimationFrame(animate);
+                jointPoints[i].position.set(x, y, z);
+            });
 
-  sphere.rotation.y += 0.002;
-  renderer.render(scene, camera3D);
-}
+            // Rotacionar o planeta com base no dedo indicador (ponto 8)
+            const indexFinger = landmarks[8];
+            sphere.rotation.y += (indexFinger.x - 0.5) * 0.1;
+            sphere.rotation.x += (indexFinger.y - 0.5) * 0.1;
+        }
+    });
 
-animate();
+    // --- LOOP DE ANIMAÇÃO ---
+    function animate() {
+        requestAnimationFrame(animate);
+        
+        // Rotação constante suave
+        sphere.rotation.y += 0.005;
+        ring.rotation.z += 0.01;
 
-// iniciar câmera
-document.getElementById("startBtn").onclick = () => {
-  const cam = new Camera(video, {
-    onFrame: async () => {
-      await hands.send({ image: video });
-    },
-    width: 640,
-    height: 480
-  });
-  cam.start();
-};
+        renderer.render(scene, camera3D);
+    }
+    animate();
+
+    // Redimensionamento
+    window.addEventListener('resize', () => {
+        camera3D.aspect = window.innerWidth / window.innerHeight;
+        camera3D.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // --- INICIAR CÂMERA ---
+    document.getElementById("startBtn").onclick = function() {
+        this.style.display = 'none';
+        const camera = new Camera(video, {
+            onFrame: async () => {
+                await hands.send({ image: video });
+            },
+            width: 1280,
+            height: 720
+        });
+        camera.start();
+    };
 </script>
 
 </body>
