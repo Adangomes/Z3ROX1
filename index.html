@@ -3,32 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snoop Tech - ZeroX Interface</title>
+    <title>Snoop Tech - ZeroX v3</title>
     <style>
-        body { margin: 0; padding: 0; background: black; overflow: hidden; color: #00f2ff; font-family: 'Courier New', monospace; }
-        #ui-layer { position: fixed; top: 20px; left: 20px; font-size: 10px; letter-spacing: 2px; z-index: 10; }
+        body { margin: 0; padding: 0; background: black; overflow: hidden; color: #00f2ff; font-family: 'Segoe UI', sans-serif; }
+        #ui-layer { position: fixed; top: 20px; left: 20px; font-size: 10px; letter-spacing: 2px; z-index: 10; font-weight: bold; }
         
-        .btn-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px; z-index: 20; }
+        .btn-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; z-index: 20; }
         
         button { 
-            padding: 15px 25px; background: rgba(0, 242, 255, 0.1); color: #00f2ff; 
-            border: 1px solid #00f2ff; cursor: pointer; font-weight: bold; text-transform: uppercase;
-            transition: 0.3s;
+            padding: 15px 30px; background: rgba(0, 0, 0, 0.8); color: #00f2ff; 
+            border: 1px solid #00f2ff; cursor: pointer; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 1px; transition: 0.3s;
         }
-        button:hover { background: #00f2ff; color: black; box-shadow: 0 0 20px #00f2ff; }
+        button:hover { background: #00f2ff; color: black; box-shadow: 0 0 25px #00f2ff; }
         
-        #status-zero { position: fixed; top: 50px; left: 20px; font-size: 12px; color: white; }
-        #yt-player { position: absolute; visibility: hidden; pointer-events: none; } /* Player Invisível */
+        #status-zero { position: fixed; top: 50px; left: 20px; font-size: 14px; color: #fff; background: rgba(0,0,0,0.5); padding: 5px 10px; border-left: 3px solid #00f2ff; }
+        #yt-player { position: absolute; top: -1000px; left: -1000px; } /* Totalmente escondido */
     </style>
 </head>
 <body>
 
-<div id="ui-layer">SNOOP TECH // ZEROX_OS_v3.1</div>
-<div id="status-zero">AGUARDANDO COMANDO...</div>
+<div id="ui-layer">SNOOP TECH // ZEROX_CORE_v3.5</div>
+<div id="status-zero">SISTEMA OFFLINE</div>
 
 <div class="btn-container">
-    <button id="startBtn" onclick="initExperience()">ATIVAR INTERFACE</button>
-    <button id="voiceBtn" onclick="toggleVoice()" style="display:none;">FALAR COM ZEROX</button>
+    <button id="startBtn" onclick="initExperience()">INICIAR ZEROX</button>
+    <button id="voiceBtn" onclick="toggleVoice()" style="display:none;">COMANDO DE VOZ</button>
 </div>
 
 <video id="webcam" style="display:none;" autoplay playsinline></video>
@@ -40,56 +40,66 @@
 <script src="https://www.youtube.com/iframe_api"></script>
 
 <script>
-    // --- VARIÁVEIS DO ZEROX ---
     let recognition;
     let synth = window.speechSynthesis;
-    let player; // YouTube Player
+    let player;
+    let hands;
 
-    // --- CONFIGURAÇÃO THREE.JS (Gesto e Globo) ---
+    // --- CONFIGURAÇÃO VISUAL (3D) ---
     const scene = new THREE.Scene();
     const camera3D = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // Globo e Mão (Mantendo seu efeito nítido)
-    const particleCount = 4000;
+    // Globo
+    const particleCount = 3500;
     const geo = new THREE.BufferGeometry();
     const pos = new Float32Array(particleCount * 3);
-    const origin = new Float32Array(particleCount * 3);
     for(let i=0; i<particleCount; i++){
-        const r = 1.5; const t = 2*Math.PI*Math.random(); const p = Math.acos(2*Math.random()-1);
+        const r = 1.6; const t = 2*Math.PI*Math.random(); const p = Math.acos(2*Math.random()-1);
         pos[i*3] = r*Math.sin(p)*Math.cos(t); pos[i*3+1] = r*Math.sin(p)*Math.sin(t); pos[i*3+2] = r*Math.cos(p);
-        origin[i*3]=pos[i*3]; origin[i*3+1]=pos[i*3+1]; origin[i*3+2]=pos[i*3+2];
     }
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     const globe = new THREE.Points(geo, new THREE.PointsMaterial({color: 0x00f2ff, size: 0.015}));
     scene.add(globe);
 
+    // Mão Geométrica (Melhorada para ser rápida)
     const handGroup = new THREE.Group(); scene.add(handGroup);
     const joints = []; 
     for(let i=0; i<21; i++){
-        const m = new THREE.Mesh(new THREE.IcosahedronGeometry(0.03,0), new THREE.MeshBasicMaterial({color: 0x00f2ff}));
+        const m = new THREE.Mesh(new THREE.IcosahedronGeometry(0.025,0), new THREE.MeshBasicMaterial({color: 0xffffff}));
         joints.push(m); handGroup.add(m);
     }
     const linesGroup = new THREE.Group(); handGroup.add(linesGroup);
-    const lineMat = new THREE.LineBasicMaterial({color: 0x00aaff});
+    const lineMat = new THREE.LineBasicMaterial({color: 0x00f2ff, transparent: true, opacity: 0.6});
     const HAND_CONN = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
     camera3D.position.z = 5;
 
-    // --- FUNÇÕES DE VOZ (ZEROX) ---
+    // --- SISTEMA DE VOZ MASCULINA ---
     function falar(texto) {
+        // Cancelar falas anteriores para evitar delay
+        synth.cancel();
         const utter = new SpeechSynthesisUtterance(texto);
-        utter.pitch = 0.8; utter.rate = 1.1; // Voz mais "robô"
+        
+        // Tenta pegar uma voz masculina disponível no sistema
+        const voices = synth.getVoices();
+        utter.voice = voices.find(v => v.name.includes('Google') && v.lang.includes('pt')) || voices[0];
+        
+        utter.pitch = 0.6; // Tom mais baixo (homem)
+        utter.rate = 1.0; 
         synth.speak(utter);
         document.getElementById('status-zero').innerText = "ZEROX: " + texto;
     }
 
-    function initVoice() {
+    function initVoiceRecognition() {
         const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if(!Speech) return alert("Seu navegador não suporta voz.");
+        
         recognition = new Speech();
         recognition.lang = 'pt-BR';
-        
+        recognition.continuous = false;
+
         recognition.onresult = (event) => {
             const comando = event.results[0][0].transcript.toLowerCase();
             processarComando(comando);
@@ -97,48 +107,56 @@
     }
 
     function processarComando(cmd) {
-        if (cmd.includes("horas")) {
-            const agora = new Date();
-            falar("Agora são exatamente " + agora.getHours() + " horas e " + agora.getMinutes() + " minutos.");
+        console.log("Comando recebido:", cmd);
+        
+        if (cmd.includes("hora")) {
+            const h = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+            falar("Agora são exatamente " + h);
         } 
         else if (cmd.includes("tocar") || cmd.includes("música")) {
-            const busca = cmd.replace("tocar", "").replace("música", "").trim();
-            falar("Iniciando áudio de " + busca + ". Este áudio pode conter anúncios.");
-            // Aqui simulamos o play (num sistema real usaríamos a busca da API do YouTube)
-            // Para este exemplo, ele daria play no player oculto:
-            player.loadVideoById('dQw4w9WgXcQ'); // Exemplo ID
-            player.playVideo();
-        } 
+            const musica = cmd.replace("tocar", "").replace("música", "").trim();
+            falar("Localizando " + musica + ". O áudio iniciará em instantes. Lembre-se que este conteúdo pode ter anúncios.");
+            
+            // Simulação de busca: Carrega o primeiro hit de busca do YT
+            // Em produção, você usaria uma URL de busca ou ID específico
+            player.cuePlaylist({listType: 'search', list: musica});
+            setTimeout(() => { player.playVideo(); }, 2000);
+        }
         else {
-            falar("Não encontrei " + cmd + " no meu banco de dados, mas estou aprendendo.");
+            falar("Comando " + cmd + " não reconhecido.");
         }
     }
 
     function toggleVoice() {
-        recognition.start();
-        document.getElementById('status-zero').innerText = "ESCUTANDO...";
+        try { recognition.start(); document.getElementById('status-zero').innerText = "ESCUTANDO..."; } catch(e){}
     }
 
-    // --- INTEGRAÇÃO ---
+    // --- INICIALIZAÇÃO DO SISTEMA ---
     function onYouTubeIframeAPIReady() {
-        player = new YT.Player('yt-player', { height: '0', width: '0', videoId: '' });
+        player = new YT.Player('yt-player', {
+            height: '0', width: '0',
+            events: { 'onReady': () => console.log("Som pronto") }
+        });
     }
 
-    function initExperience() {
+    async function initExperience() {
         document.getElementById('startBtn').style.display = 'none';
         document.getElementById('voiceBtn').style.display = 'block';
         
-        initVoice();
-        falar("Olá, sou Zerox. Em que posso te ajudar hoje?");
+        initVoiceRecognition();
+        // Escrita fonética para ele não falar "Zerókis"
+        falar("Olá, sou o Zero Xis. Em que posso te ajudar hoje?");
 
-        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
-        hands.setOptions({maxNumHands: 1, minDetectionConfidence: 0.7});
+        hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+        hands.setOptions({maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.75, minTrackingConfidence: 0.75});
+        
         hands.onResults(res => {
-            while(linesGroup.children.length>0) linesGroup.remove(linesGroup.children[0]);
+            while(linesGroup.children.length > 0) linesGroup.remove(linesGroup.children[0]);
             if(res.multiHandLandmarks && res.multiHandLandmarks[0]){
                 const pts = res.multiHandLandmarks[0];
                 pts.forEach((p,i) => {
-                    joints[i].position.lerp(new THREE.Vector3(-(p.x-0.5)*7, -(p.y-0.5)*5, -p.z*4), 0.7);
+                    const x = -(p.x-0.5)*8; const y = -(p.y-0.5)*6; const z = -p.z*4;
+                    joints[i].position.set(x, y, z);
                 });
                 HAND_CONN.forEach(c => {
                     const l = new THREE.BufferGeometry().setFromPoints([joints[c[0]].position, joints[c[1]].position]);
@@ -146,6 +164,7 @@
                 });
             }
         });
+
         const cam = new Camera(document.getElementById('webcam'), {
             onFrame: async () => { await hands.send({image: document.getElementById('webcam')}); },
             width: 1280, height: 720
@@ -155,14 +174,21 @@
 
     function animate() {
         requestAnimationFrame(animate);
-        globe.rotation.y += 0.002;
+        globe.rotation.y += 0.003;
         renderer.render(scene, camera3D);
     }
     animate();
+
+    window.addEventListener('resize', () => {
+        camera3D.aspect = window.innerWidth / window.innerHeight;
+        camera3D.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
 </script>
 
 </body>
 </html>
+
 
 
 
