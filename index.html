@@ -144,9 +144,13 @@ function responder(fala){
     }
 
     else if(fala.includes("toca")){
-        let termo = fala.replace("toca","").trim();
-        tocar(termo);
-    }
+    let termo = fala
+        .replace(/zero\s?x/gi,"")
+        .replace(/toca/gi,"")
+        .trim();
+
+    tocar(termo);
+}
 }
 
 // ================= VOICE =================
