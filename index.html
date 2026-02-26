@@ -110,47 +110,30 @@ async function tocar(termo){
 // ================= IA =================
 function responder(fala){
 
-    // ATIVADOR
-    if(fala.includes("zero x") || fala.includes("zerox")){
-        if(player){
-            ultimoVolume = player.getVolume();
-            player.setVolume(10);
-        }
-        falar("Pode falar");
-        return;
+    // limpa o comando de ativação da frase
+    fala = fala.replace(/zero\s?x/gi,"").trim();
+
+    if(fala.includes("zerox")){
+        falar("Online. Pode falar.");
     }
 
-    // CONFIRMAÇÃO
-    if(aguardandoConfirmacao){
-        if(fala.includes("sim")){
-            player.setVolume(ultimoVolume);
-            falar("Continuando");
-        }else{
-            player.stopVideo();
-            falar("Música parada");
-        }
-        aguardandoConfirmacao = false;
-        return;
-    }
-
-    // COMANDOS
-    if(fala.includes("hora")){
+    else if(fala.includes("hora")){
         falar("Agora são " + new Date().toLocaleTimeString());
-
-        if(player && player.getPlayerState() === 1){
-            aguardandoConfirmacao = true;
-            falar("Deseja continuar a música?");
-        }
     }
 
     else if(fala.includes("toca")){
-    let termo = fala
-        .replace(/zero\s?x/gi,"")
-        .replace(/toca/gi,"")
-        .trim();
+        let termo = fala.replace(/toca/gi,"").trim();
+        tocar(termo);
+    }
 
-    tocar(termo);
-}
+    else if(fala.includes("explodir")){
+        targetExplosion = 3;
+        falar("Ativando energia máxima");
+    }
+
+    else{
+        falar("Comando não reconhecido");
+    }
 }
 
 // ================= VOICE =================
