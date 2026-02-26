@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ZEROX</title>
+<title>ZEROX FULL</title>
 
 <style>
 body {
@@ -19,9 +19,7 @@ body {
     top: 20px;
     left: 20px;
     font-size: 11px;
-    letter-spacing: 2px;
     z-index: 10;
-    font-weight: bold;
 }
 
 #status-zero {
@@ -33,7 +31,6 @@ body {
     background: rgba(0,242,255,0.1);
     padding: 10px;
     border-left: 4px solid #00f2ff;
-    min-width: 280px;
 }
 
 #startBtn {
@@ -45,39 +42,82 @@ body {
     background: #00f2ff;
     color: #000;
     border: none;
-    font-weight: 900;
+    font-weight: bold;
     cursor: pointer;
 }
+
+#webcam { display:none; }
 </style>
 </head>
 
 <body>
 
-<div id="ui-layer">ZEROX_V2</div>
+<div id="ui-layer">ZEROX_AI</div>
 <div id="status-zero">AGUARDANDO...</div>
 <button id="startBtn">ATIVAR</button>
 
-<video id="webcam" autoplay playsinline style="display:none"></video>
+<video id="webcam" autoplay playsinline></video>
 <div id="player"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script src="https://www.youtube.com/iframe_api"></script>
 
 <script>
 const YOUTUBE_API_KEY = "AIzaSyA1YzpPogtFgGavsIdc7fh6X4gvmgYfO9I";
 
-let player;
-let recognition;
-let synth = window.speechSynthesis;
+let player, recognition, synth = window.speechSynthesis;
+let explosionFactor = 1.0, targetExplosion = 1.0;
+
+// ================= 3D =================
+const scene = new THREE.Scene();
+const camera3D = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ alpha:true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// GLOBO
+const geo = new THREE.SphereGeometry(1.6, 64, 64);
+const original = geo.attributes.position.array.slice();
+
+const globe = new THREE.Points(
+    geo,
+    new THREE.PointsMaterial({color:0x00f2ff, size:0.015})
+);
+
+scene.add(globe);
+
+// MÃO
+const handGroup = new THREE.Group();
+scene.add(handGroup);
+
+const joints = [];
+for(let i=0;i<21;i++){
+    const m = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(0.03),
+        new THREE.MeshBasicMaterial({color:0xffffff})
+    );
+    joints.push(m);
+    handGroup.add(m);
+}
+
+const linesGroup = new THREE.Group();
+handGroup.add(linesGroup);
+
+const HAND_CONN = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],
+[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],
+[13,17],[17,18],[18,19],[19,20],[0,17]];
+
+camera3D.position.z = 5;
 
 // ================= VOZ =================
 function falar(texto){
     synth.cancel();
-
     const utter = new SpeechSynthesisUtterance(texto);
     utter.lang = "pt-BR";
-    utter.rate = 1;
-
     synth.speak(utter);
+
     document.getElementById("status-zero").innerText = "ZEROX: " + texto;
 }
 
@@ -86,45 +126,30 @@ function onYouTubeIframeAPIReady(){
     player = new YT.Player('player',{
         height:'0',
         width:'0',
-        playerVars:{
-            autoplay:1,
-            controls:0
-        },
         events:{
-            onReady:(e)=>{
-                e.target.mute(); // inicia mudo
-            }
+            onReady:(e)=> e.target.mute()
         }
     });
 }
 
 async function buscarNoYouTube(termo){
-    if(!termo) return;
-
     falar("Buscando " + termo);
 
-    try{
-        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(termo)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
-        const data = await res.json();
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(termo)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
+    const data = await res.json();
 
-        if(data.items && data.items.length > 0){
-            const id = data.items[0].id.videoId;
+    if(data.items && data.items[0]){
+        const id = data.items[0].id.videoId;
 
-            player.loadVideoById(id);
+        player.loadVideoById(id);
 
-            setTimeout(()=>{
-                player.unMute();
-                player.setVolume(100);
-                player.playVideo();
-            },500);
+        setTimeout(()=>{
+            player.unMute();
+            player.setVolume(100);
+            player.playVideo();
+        },500);
 
-            falar("Tocando agora");
-        } else {
-            falar("Não encontrei essa música");
-        }
-
-    }catch(e){
-        falar("Erro ao buscar música");
+        falar("Tocando agora");
     }
 }
 
@@ -139,20 +164,14 @@ function initVoice(){
     recognition.onresult = (event)=>{
         const fala = event.results[event.results.length-1][0].transcript.toLowerCase();
 
-        console.log("Você disse:", fala);
-
         // ATIVAÇÃO
-        if(fala.includes("zerox") || fala.includes("zero x") || fala.includes("xerox")){
+        if(fala.includes("zerox") || fala.includes("zero x")){
             falar("Olá, boa tarde! Em que posso ajudar?");
         }
 
-        // TOCAR MUSICA
-        if(fala.includes("toca") || fala.includes("tocar")){
-            let termo = fala
-                .replace("toca","")
-                .replace("tocar","")
-                .trim();
-
+        // MUSICA
+        if(fala.includes("toca")){
+            let termo = fala.replace("toca","").trim();
             buscarNoYouTube(termo);
         }
     };
@@ -160,22 +179,89 @@ function initVoice(){
     recognition.start();
 }
 
+// ================= MEDIAPIPE =================
+function initHand(){
+    const hands = new Hands({
+        locateFile: (f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
+    });
+
+    hands.setOptions({maxNumHands:1});
+
+    hands.onResults(res=>{
+        while(linesGroup.children.length>0){
+            linesGroup.remove(linesGroup.children[0]);
+        }
+
+        if(res.multiHandLandmarks && res.multiHandLandmarks[0]){
+            const pts = res.multiHandLandmarks[0];
+
+            pts.forEach((p,i)=>{
+                joints[i].position.set(-(p.x-0.5)*8, -(p.y-0.5)*6, -p.z*4);
+            });
+
+            HAND_CONN.forEach(c=>{
+                const g = new THREE.BufferGeometry().setFromPoints([
+                    joints[c[0]].position,
+                    joints[c[1]].position
+                ]);
+
+                linesGroup.add(new THREE.Line(g,new THREE.LineBasicMaterial({color:0x00f2ff})));
+            });
+
+            const dist = Math.hypot(pts[0].x-pts[12].x, pts[0].y-pts[12].y);
+            targetExplosion = dist > 0.35 ? 2.5 : 1.0;
+        }
+    });
+
+    new Camera(document.getElementById("webcam"),{
+        onFrame: async ()=>{
+            await hands.send({image:document.getElementById("webcam")});
+        }
+    }).start();
+}
+
 // ================= START =================
 function iniciar(){
     document.getElementById("startBtn").style.display = "none";
 
-    // libera audio (importante pro navegador)
+    falar("Sistema iniciado");
+    initVoice();
+    initHand();
+
     if(player){
         player.unMute();
         player.setVolume(100);
     }
-
-    falar("Sistema iniciado");
-    initVoice();
 }
 
 document.getElementById("startBtn").onclick = iniciar;
 
+// ================= ANIMAÇÃO =================
+function animate(){
+    requestAnimationFrame(animate);
+
+    explosionFactor += (targetExplosion - explosionFactor)*0.1;
+
+    const attr = globe.geometry.attributes.position;
+
+    for(let i=0;i<attr.count;i++){
+        attr.setXYZ(
+            i,
+            original[i*3]*explosionFactor,
+            original[i*3+1]*explosionFactor,
+            original[i*3+2]*explosionFactor
+        );
+    }
+
+    attr.needsUpdate = true;
+
+    globe.rotation.y += 0.002;
+
+    renderer.render(scene,camera3D);
+}
+
+animate();
 </script>
+
 </body>
 </html>
