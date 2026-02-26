@@ -53,7 +53,7 @@ function onYouTubeIframeAPIReady(){
 
 async function tocar(termo){
     falar("Buscando " + termo);
-    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(termo)}&type=video&maxResults=1&key=${}`);
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(termo)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
     const data = await res.json();
 
     if(data.items && data.items[0]){
