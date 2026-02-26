@@ -7,8 +7,8 @@
 <style>
 body { margin:0; background:#000; overflow:hidden; font-family:Arial; color:#00f2ff; }
 #hud { position:fixed; top:20px; left:20px; z-index:10; font-size:12px; }
-#status { display: none; }
-#start { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); padding:20px 40px; background:#00f2ff; border:none; font-weight:bold; cursor:pointer; z-index:100; }
+#status { display: none; } /* Oculto como você pediu */
+#start { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); padding:20px 40px; background:#00f2ff; border:none; font-weight:bold; cursor:pointer; z-index:1000; }
 </style>
 </head>
 <body>
@@ -25,7 +25,6 @@ body { margin:0; background:#000; overflow:hidden; font-family:Arial; color:#00f
 <script src="https://www.youtube.com/iframe_api"></script>
 
 <script>
-// ================= CONFIG =================
 const YOUTUBE_API_KEY = "AIzaSyCiYqB5IZRGMPxaBXLGqehItGwr7oG81Tw";
 
 let player, recognition;
@@ -49,11 +48,12 @@ function onYouTubeIframeAPIReady(){
 }
 
 async function tocar(termo){
-    // Se o termo vier vazio por erro de voz, ele não faz nada
-    if(!termo) return;
+    // LIMPEZA: Tira o nome do bot do termo de busca
+    let busca = termo.replace(/zerox|zero x|xis/gi, "").trim();
+    if(!busca) return;
 
-    falar("Buscando " + termo);
-    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(termo)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
+    falar("Buscando " + busca);
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(busca)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
     const data = await res.json();
 
     if(data.items && data.items[0]){
@@ -63,46 +63,35 @@ async function tocar(termo){
             player.unMute();
             player.setVolume(100);
         },500);
-        falar("Tocando agora.");
+        falar("Tocando agora");
     }
 }
 
-// ================= IA AJUSTADA (DICA DE OURO) =================
 function responder(fala){
-    console.log("Ouvi:", fala);
+    console.log("Comando:", fala);
 
-    // Se ele ouvir "Zero X" ou "Xis"
     if(fala.includes("zerox") || fala.includes("zero x") || fala.includes("xis")){
-        
-        // ABAIXA O VOLUME PARA OUVIR O COMANDO
-        if(player) player.setVolume(15);
+        if(player) player.setVolume(15); // Baixa o som pra ouvir
 
-        // COMANDO DESLIGAR
         if(fala.includes("desligar") || fala.includes("parar") || fala.includes("pausa")){
             if(player) player.pauseVideo();
-            falar("Desligado.");
+            falar("Parando música.");
         } 
-        // COMANDO LIGAR
         else if(fala.includes("ligar") || fala.includes("voltar") || fala.includes("continuar")){
             if(player) player.playVideo();
-            falar("Sim? Em que posso ajudar?");
+            falar("Sim? Como posso ajudar?");
             setTimeout(() => { if(player) player.setVolume(100); }, 3000);
         }
-        // COMANDO TOCA (AQUI ESTÁ O TRUQUE)
         else if(fala.includes("toca")){
-            // Divide a frase no "toca", pega a segunda parte e remove o nome do bot se ele aparecer
-            let partes = fala.split("toca");
-            if(partes[1]){
-                let termo = partes[1].replace(/zerox|zero x|xis/gi, "").trim();
-                tocar(termo);
-            }
+            let termo = fala.split("toca")[1];
+            tocar(termo);
         }
         else if(fala.includes("hora")){
-            falar("Agora são " + new Date().toLocaleTimeString());
+            falar("São " + new Date().toLocaleTimeString());
             setTimeout(() => { if(player) player.setVolume(100); }, 3000);
         }
         else {
-            falar("Estou ouvindo.");
+            falar("Sim?");
             setTimeout(() => { if(player) player.setVolume(100); }, 4000);
         }
     }
@@ -113,30 +102,27 @@ function iniciarVoz(){
     recognition = new Speech();
     recognition.lang = "pt-BR";
     recognition.continuous = true;
-    recognition.interimResults = false; // Garante que ele só processe a frase final
-    
     recognition.onresult = e=>{
         const fala = e.results[e.results.length-1][0].transcript.toLowerCase();
         responder(fala);
     };
-
-    recognition.onend = () => {
-        try { recognition.start(); } catch(e) {}
-    };
+    recognition.onend = () => recognition.start();
     recognition.start();
 }
 
-// ================= 3D (O SEU ORIGINAL) =================
+// ================= 3D E MÃO (O QUE FUNCIONA) =================
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
 camera.position.z = 5;
 const renderer = new THREE.WebGLRenderer({alpha:true});
 renderer.setSize(innerWidth,innerHeight);
 document.body.appendChild(renderer.domElement);
+
 const geo = new THREE.SphereGeometry(1.6,64,64);
 const base = geo.attributes.position.array.slice();
 const globe = new THREE.Points(geo, new THREE.PointsMaterial({color:0x00f2ff,size:0.015}));
 scene.add(globe);
+
 const pGeo = new THREE.BufferGeometry();
 const arr = new Float32Array(1500*3);
 for(let i=0;i<arr.length;i++){ arr[i]=(Math.random()-0.5)*20; }
@@ -149,21 +135,24 @@ hands.setOptions({maxNumHands:1});
 hands.onResults(res=>{
     if(res.multiHandLandmarks && res.multiHandLandmarks[0]){
         const pts = res.multiHandLandmarks[0];
+        // Distância entre polegar (4) e indicador (8) ou apenas o pulso pro meio da mão
         const dist = Math.hypot(pts[0].x-pts[12].x, pts[0].y-pts[12].y);
         targetExplosion = dist > 0.35 ? 3 : 1;
     }
 });
+
 function iniciarHand(){
-    new Camera(document.getElementById("webcam"),{
+    const cam = new Camera(document.getElementById("webcam"),{
         onFrame: async ()=>{ await hands.send({image:webcam}); }
-    }).start();
+    });
+    cam.start();
 }
 
 function animate(){
     requestAnimationFrame(animate);
     explosionFactor += (targetExplosion - explosionFactor)*0.08;
     const attr = globe.geometry.attributes.position;
-    for(let i=0;i<attr.count;i++){
+    for(let i=0; i<attr.count; i++){
         const scale = explosionFactor + Math.sin(i+(Date.now()*0.005))*0.05;
         attr.setXYZ(i, base[i*3]*scale, base[i*3+1]*scale, base[i*3+2]*scale);
     }
@@ -174,12 +163,18 @@ function animate(){
 }
 animate();
 
+// ================= START SEQUENCIAL =================
 document.getElementById("start").onclick = ()=>{
     document.getElementById("start").style.display = "none";
-    falar("Zero Xis iniciado.");
-    iniciarVoz();
-    iniciarHand();
-    if(player) player.unMute();
+    falar("Iniciando Zero Xis.");
+    
+    iniciarVoz(); // Liga a voz primeiro
+    
+    // Espera 1 segundo pra ligar a câmera/mão pra não travar o áudio
+    setTimeout(() => {
+        iniciarHand();
+        if(player) player.unMute();
+    }, 1000);
 };
 </script>
 </body>
