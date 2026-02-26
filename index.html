@@ -67,8 +67,9 @@ const YOUTUBE_API_KEY = "AIzaSyCiYqB5IZRGMPxaBXLGqehItGwr7oG81Tw";
 let player, recognition;
 let synth = window.speechSynthesis;
 
-let explosionFactor = 1;
-let targetExplosion = 1;
+let ativo = false;
+let ultimoVolume = 100;
+let aguardandoResposta = false;
 
 // ================= VOZ =================
 function falar(texto){
@@ -77,6 +78,7 @@ function falar(texto){
     u.lang = "pt-BR";
     synth.speak(u);
 
+    // mantém mínimo visual
     document.getElementById("status").innerText = texto;
 }
 
@@ -89,6 +91,16 @@ function onYouTubeIframeAPIReady(){
             onReady:e=>e.target.mute()
         }
     });
+}
+
+function setVolumeNivel(nivel){
+    if(!player) return;
+
+    let vol = Math.max(1, Math.min(9, nivel));
+    let real = (vol / 9) * 100;
+
+    player.setVolume(real);
+    ultimoVolume = real;
 }
 
 async function tocar(termo){
@@ -104,7 +116,7 @@ async function tocar(termo){
 
         setTimeout(()=>{
             player.unMute();
-            player.setVolume(100);
+            setVolumeNivel(5); // começa médio
         },500);
 
         falar("Tocando agora");
@@ -114,11 +126,31 @@ async function tocar(termo){
 // ================= IA =================
 function responder(fala){
 
-    if(fala.includes("zerox")){
-        falar("Online. Pode falar.");
+    // ATIVA MODO COMANDO (0xX / zerox)
+    if(fala.includes("zerox") || fala.includes("0xx")){
+        if(player){
+            ultimoVolume = player.getVolume();
+            player.setVolume(5); // baixa pra quase zero
+        }
+
+        aguardandoResposta = true;
+        falar("Pode falar");
+        return;
     }
 
-    else if(fala.includes("hora")){
+    // RESPOSTA SIM
+    if(aguardandoResposta && fala.includes("sim")){
+        if(player){
+            player.setVolume(ultimoVolume);
+        }
+
+        aguardandoResposta = false;
+        falar("Continuando");
+        return;
+    }
+
+    // COMANDOS
+    if(fala.includes("hora")){
         falar("Agora são " + new Date().toLocaleTimeString());
     }
 
@@ -127,13 +159,17 @@ function responder(fala){
         tocar(termo);
     }
 
-    else if(fala.includes("explodir")){
-        targetExplosion = 3;
-        falar("Ativando energia máxima");
+    else if(fala.includes("volume")){
+        let num = parseInt(fala.replace(/\D/g,''));
+        if(num){
+            setVolumeNivel(num);
+            falar("Volume ajustado");
+        }
     }
 
     else{
-        falar("Comando não reconhecido");
+        // não polui mais tanto
+        console.log("Não reconhecido:", fala);
     }
 }
 
@@ -151,6 +187,12 @@ function iniciarVoz(){
     };
 
     recognition.start();
+}
+
+function pararVoz(){
+    if(recognition){
+        recognition.stop();
+    }
 }
 
 // ================= 3D =================
@@ -202,9 +244,7 @@ hands.setOptions({maxNumHands:1});
 hands.onResults(res=>{
     if(res.multiHandLandmarks && res.multiHandLandmarks[0]){
         const pts = res.multiHandLandmarks[0];
-
         const dist = Math.hypot(pts[0].x-pts[12].x, pts[0].y-pts[12].y);
-
         targetExplosion = dist > 0.35 ? 3 : 1;
     }
 });
@@ -218,6 +258,8 @@ function iniciarHand(){
 }
 
 // ================= ANIMAÇÃO =================
+let explosionFactor = 1;
+let targetExplosion = 1;
 let pulse = 1;
 
 function animate(){
@@ -250,15 +292,19 @@ function animate(){
 
 animate();
 
-// ================= START =================
+// ================= START / STOP =================
 document.getElementById("start").onclick = ()=>{
-    falar("Zero X iniciado");
+    ativo = !ativo;
 
-    iniciarVoz();
-    iniciarHand();
-
-    if(player){
-        player.unMute();
+    if(ativo){
+        falar("Zero X iniciado");
+        iniciarVoz();
+        iniciarHand();
+        document.getElementById("start").innerText = "DESATIVAR";
+    }else{
+        pararVoz();
+        falar("Desativado");
+        document.getElementById("start").innerText = "ATIVAR";
     }
 };
 </script>
