@@ -49,7 +49,6 @@ body {
 </div>
 
 <button id="start">ATIVAR</button>
-
 <div id="player"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
@@ -63,8 +62,8 @@ let player, recognition;
 let synth = window.speechSynthesis;
 
 let ativo = false;
+let aguardandoConfirmacao = false;
 let ultimoVolume = 100;
-let aguardandoResposta = false;
 
 // ================= VOZ =================
 function falar(texto){
@@ -88,16 +87,6 @@ function onYouTubeIframeAPIReady(){
     });
 }
 
-function setVolumeNivel(nivel){
-    if(!player) return;
-
-    let vol = Math.max(1, Math.min(9, nivel));
-    let real = (vol / 9) * 100;
-
-    player.setVolume(real);
-    ultimoVolume = real;
-}
-
 async function tocar(termo){
     falar("Buscando " + termo);
 
@@ -111,7 +100,7 @@ async function tocar(termo){
 
         setTimeout(()=>{
             player.unMute();
-            setVolumeNivel(5);
+            player.setVolume(100);
         },500);
 
         falar("Tocando agora");
@@ -121,42 +110,42 @@ async function tocar(termo){
 // ================= IA =================
 function responder(fala){
 
-    if(fala.includes("zerox") || fala.includes("0xx")){
+    // ATIVADOR
+    if(fala.includes("zero x") || fala.includes("zerox")){
         if(player){
             ultimoVolume = player.getVolume();
-            player.setVolume(5);
+            player.setVolume(10);
         }
-
-        aguardandoResposta = true;
         falar("Pode falar");
         return;
     }
 
-    if(aguardandoResposta && fala.includes("sim")){
-        if(player){
+    // CONFIRMAÇÃO
+    if(aguardandoConfirmacao){
+        if(fala.includes("sim")){
             player.setVolume(ultimoVolume);
+            falar("Continuando");
+        }else{
+            player.stopVideo();
+            falar("Música parada");
         }
-
-        aguardandoResposta = false;
-        falar("Continuando");
+        aguardandoConfirmacao = false;
         return;
     }
 
+    // COMANDOS
     if(fala.includes("hora")){
         falar("Agora são " + new Date().toLocaleTimeString());
+
+        if(player && player.getPlayerState() === 1){
+            aguardandoConfirmacao = true;
+            falar("Deseja continuar a música?");
+        }
     }
 
     else if(fala.includes("toca")){
         let termo = fala.replace("toca","").trim();
         tocar(termo);
-    }
-
-    else if(fala.includes("volume")){
-        let num = parseInt(fala.replace(/\D/g,''));
-        if(num){
-            setVolumeNivel(num);
-            falar("Volume ajustado");
-        }
     }
 }
 
@@ -177,9 +166,7 @@ function iniciarVoz(){
 }
 
 function pararVoz(){
-    if(recognition){
-        recognition.stop();
-    }
+    if(recognition) recognition.stop();
 }
 
 // ================= 3D =================
@@ -205,10 +192,9 @@ scene.add(globe);
 
 // PARTÍCULAS
 const pGeo = new THREE.BufferGeometry();
-const pCount = 1500;
-const arr = new Float32Array(pCount*3);
+const arr = new Float32Array(1500*3);
 
-for(let i=0;i<pCount*3;i++){
+for(let i=0;i<arr.length;i++){
     arr[i]=(Math.random()-0.5)*20;
 }
 
@@ -230,7 +216,6 @@ function animate(){
 
     pulse += 0.1;
 
-    // 🔥 EXPLODE SE ESTIVER TOCANDO
     let tocando = player && player.getPlayerState && player.getPlayerState() === 1;
     let target = tocando ? 3 : 1;
 
@@ -269,6 +254,7 @@ document.getElementById("start").onclick = ()=>{
         document.getElementById("start").innerText = "DESATIVAR";
     }else{
         pararVoz();
+        if(player) player.stopVideo();
         falar("Desativado");
         document.getElementById("start").innerText = "ATIVAR";
     }
