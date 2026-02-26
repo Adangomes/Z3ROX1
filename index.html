@@ -3,29 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ZEROX GOD</title>
+<title>ZEROX GOD MODE</title>
 <style>
-body { margin:0; background:#000; overflow:hidden; font-family:Arial; color:#00f2ff; }
-/* HUD CENTRALIZADO */
-#hud { 
-    position:fixed; 
-    top:20px; 
-    left:50%; 
-    transform:translateX(-50%); 
-    z-index:10; 
-    font-size:20px; 
-    text-align:center;
-    text-shadow: 0 0 10px #00f2ff;
-    width: 100%;
-}
-#status { display: none; }
-#start { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); padding:20px 40px; background:#00f2ff; border:none; font-weight:bold; cursor:pointer; border-radius:10px; box-shadow: 0 0 15px #00f2ff; }
+    body { margin:0; background:#000; overflow:hidden; font-family: 'Segoe UI', Arial, sans-serif; color:#00f2ff; }
+    
+    /* HUD CENTRALIZADO E ESTILIZADO */
+    #hud { 
+        position:fixed; 
+        top:30px; 
+        left:50%; 
+        transform:translateX(-50%); 
+        z-index:10; 
+        font-size:24px; 
+        text-align:center;
+        text-transform: uppercase;
+        letter-spacing: 4px;
+        text-shadow: 0 0 15px #00f2ff;
+        width: 100%;
+        font-weight: bold;
+    }
+
+    #status { 
+        font-size: 14px; 
+        margin-top: 10px; 
+        color: rgba(0, 242, 255, 0.7);
+        text-transform: none;
+        letter-spacing: 1px;
+    }
+
+    #start { 
+        position:fixed; 
+        bottom:40px; 
+        left:50%; 
+        transform:translateX(-50%); 
+        padding:20px 50px; 
+        background: transparent; 
+        color: #00f2ff;
+        border: 2px solid #00f2ff;
+        font-weight:bold; 
+        cursor:pointer; 
+        border-radius:50px; 
+        box-shadow: 0 0 20px #00f2ff;
+        font-size: 18px;
+        transition: 0.3s;
+    }
+    #start:hover { background: #00f2ff; color: #000; }
 </style>
 </head>
 <body>
 
-<div id="hud"> ZEROX V_1<div id="status">AGUARDANDO...</div> </div>
-<button id="start">ATIVAR</button>
+<div id="hud"> 
+    ZEROX GOD MODE 
+    <div id="status">SISTEMA OFFLINE - AGUARDANDO ATIVAÇÃO</div> 
+</div>
+
+<button id="start">INICIALIZAR ZERO-X</button>
 
 <video id="webcam" autoplay playsinline style="display:none"></video>
 <div id="player"></div>
@@ -36,8 +68,7 @@ body { margin:0; background:#000; overflow:hidden; font-family:Arial; color:#00f
 <script src="https://www.youtube.com/iframe_api"></script>
 
 <script>
-// ================= CONFIG =================
-// COLE SUA CHAVE DENTRO DAS ASPAS ABAIXO
+// ================= CONFIGURAÇÃO =================
 const YOUTUBE_API_KEY = "AIzaSyApmJHahtrbmxS-hsVApE37qmHBVP67Du8"; 
 
 let player, recognition;
@@ -49,18 +80,20 @@ function falar(texto){
     synth.cancel();
     let u = new SpeechSynthesisUtterance(texto);
     u.lang = "pt-BR";
+    u.rate = 1.1; // Velocidade da voz
     synth.speak(u);
-    document.getElementById("status").innerText = texto;
+    document.getElementById("status").innerText = "ZERO-X: " + texto;
+    document.getElementById("status").style.display = "block";
 }
 
-// ================= YOUTUBE =================
+// ================= MOTOR YOUTUBE =================
 function onYouTubeIframeAPIReady(){
     player = new YT.Player('player',{
         height:'0', width:'0',
         events:{ 
-            onReady:e=>e.target.mute(),
-            onStateChange:e=>{
-                if(e.data === 1) targetExplosion = 2; // Pulsa leve ao tocar
+            onReady: e => e.target.mute(),
+            onStateChange: e => {
+                if(e.data === 1) targetExplosion = 1.8; // Pulsa leve ao tocar
                 else targetExplosion = 1;
             }
         }
@@ -68,13 +101,11 @@ function onYouTubeIframeAPIReady(){
 }
 
 async function tocar(termoOriginal){
-    // LIMPEZA: Remove "zerox" da busca para não bugar
     let termo = termoOriginal.replace(/zero\s?x|zerox|xis/gi,"").trim();
     if(!termo) return;
 
-    falar("Buscando " + termo);
+    falar("Buscando " + termo + " no YouTube.");
 
-    // CORRIGIDO: Agora usa a variável YOUTUBE_API_KEY corretamente
     const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(termo)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
     const data = await res.json();
 
@@ -86,34 +117,66 @@ async function tocar(termoOriginal){
             player.setVolume(100);
             player.playVideo();
         },500);
-        falar("Tocando agora");
+        falar("Tocando agora.");
+    } else {
+        falar("Não encontrei resultados para " + termo);
     }
 }
 
-// ================= IA =================
+// ================= CÉREBRO DE RESPOSTAS E CORES =================
 function responder(fala){
-    console.log("Ouvi:", fala);
-    if(fala.includes("zerox") || fala.includes("zero x") || fala.includes("xis")){
-        if(player) player.setVolume(20); // Abaixa o som pra te ouvir
+    console.log("Comando:", fala);
+    
+    // Abaixa volume para ouvir melhor
+    if(player) player.setVolume(20);
 
-        if(fala.includes("toca")){
-            let termo = fala.split("toca")[1].trim();
-            tocar(termo);
-        } else if(fala.includes("hora")){
-            falar("Agora são " + new Date().toLocaleTimeString());
-        } else {
-            falar("Sim?");
-        }
+    // 1. MUDANÇA DE COR
+    if(fala.includes("cor") || fala.includes("ficar")){
+        if(fala.includes("vermelho")) { globe.material.color.setHex(0xff0000); falar("Alterando para vermelho."); }
+        else if(fala.includes("verde")) { globe.material.color.setHex(0x00ff00); falar("Alterando para verde."); }
+        else if(fala.includes("amarelo")) { globe.material.color.setHex(0xffff00); falar("Alterando para amarelo."); }
+        else if(fala.includes("azul")) { globe.material.color.setHex(0x00f2ff); falar("Restaurando azul padrão."); }
+        else if(fala.includes("branco")) { globe.material.color.setHex(0xffffff); falar("Alterando para branco."); }
+        else if(fala.includes("roxo")) { globe.material.color.setHex(0x8a2be2); falar("Alterando para roxo."); }
+        
+        setTimeout(() => player.setVolume(100), 2000);
+        return;
     }
+
+    // 2. COMANDO DE BUSCA/MÚSICA
+    if(fala.includes("toca")){
+        let musica = fala.split("toca")[1].trim();
+        tocar(musica);
+    } 
+    // 3. COMANDOS DE INTERAÇÃO/RESPOSTA
+    else if(fala.includes("quem é você") || fala.includes("o que é você")){
+        falar("Eu sou o ZERO-X, seu sistema de inteligência artificial em modo Deus.");
+    }
+    else if(fala.includes("hora")){
+        falar("Agora são " + new Date().toLocaleTimeString());
+    }
+    else if(fala.includes("quem te criou") || fala.includes("quem é seu dono")){
+        falar("Eu fui desenvolvido para servir ao mestre deste sistema.");
+    }
+    else if(fala.includes("parar") || fala.includes("desligar") || fala.includes("pausa")){
+        player.pauseVideo();
+        falar("Música interrompida.");
+    }
+    else if(fala.includes("zerox") || fala.includes("zero x") || fala.includes("xis")){
+        falar("Sim? Estou às suas ordens.");
+    }
+
+    // Volta o volume depois de falar
+    setTimeout(() => { if(player) player.setVolume(100); }, 4000);
 }
 
-// ================= VOICE =================
+// ================= SISTEMA DE VOZ =================
 function iniciarVoz(){
     const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new Speech();
     recognition.lang = "pt-BR";
     recognition.continuous = true;
-    recognition.onresult = e=>{
+    recognition.onresult = e => {
         const fala = e.results[e.results.length-1][0].transcript.toLowerCase();
         responder(fala);
     };
@@ -121,7 +184,7 @@ function iniciarVoz(){
     recognition.start();
 }
 
-// ================= 3D =================
+// ================= GLOBO 3D =================
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
 camera.position.z = 5;
@@ -148,28 +211,28 @@ hands.setOptions({maxNumHands:1, modelComplexity: 1});
 hands.onResults(res=>{
     if(res.multiHandLandmarks && res.multiHandLandmarks[0]){
         const pts = res.multiHandLandmarks[0];
-        // Distância entre o pulso (0) e a ponta do dedo médio (12)
+        // Distância entre polegar e dedo médio para detectar palma aberta
         const dist = Math.hypot(pts[0].x-pts[12].x, pts[0].y-pts[12].y);
-        
-        if(dist > 0.4) targetExplosion = 4; // Abre a mão = Explosão
-        else targetExplosion = 1;
+        if(dist > 0.45) targetExplosion = 4.5; // Explosão máxima
+        else targetExplosion = 1.2;
+    } else {
+        targetExplosion = 1;
     }
 });
 
 function iniciarHand(){
-    const videoElement = document.getElementById("webcam");
-    const camControl = new Camera(videoElement, {
-        onFrame: async () => { await hands.send({image: videoElement}); },
+    const cam = new Camera(document.getElementById("webcam"),{
+        onFrame: async ()=>{ await hands.send({image:webcam}); },
         width: 640, height: 480
     });
-    camControl.start();
+    cam.start();
 }
 
 // ================= ANIMAÇÃO =================
 let pulse = 1;
 function animate(){
     requestAnimationFrame(animate);
-    pulse += 0.1;
+    pulse += 0.05;
     explosionFactor += (targetExplosion - explosionFactor)*0.08;
     const attr = globe.geometry.attributes.position;
     for(let i=0;i<attr.count;i++){
@@ -186,7 +249,7 @@ animate();
 // ================= START =================
 document.getElementById("start").onclick = ()=>{
     document.getElementById("start").style.display = "none";
-    falar("Zero Xis iniciado");
+    falar("Zero Xis ativado. Aguardando comandos.");
     iniciarVoz();
     iniciarHand();
     if(player) player.unMute();
