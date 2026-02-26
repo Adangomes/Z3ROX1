@@ -3,26 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planeta 3D Interativo - Snoop Lanche Tech</title>
+    <title>Planeta Explosivo - Snoop Tech</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         #startBtn {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            padding: 15px 30px; background: #00aaff; color: white;
-            border: none; border-radius: 50px; font-weight: bold; cursor: pointer;
-            z-index: 100; box-shadow: 0 0 20px rgba(0, 170, 255, 0.5);
+            padding: 15px 35px; background: #00f2ff; color: #000;
+            border: none; border-radius: 8px; font-weight: 800; cursor: pointer;
+            z-index: 100; box-shadow: 0 0 15px #00f2ff; transition: 0.3s;
         }
-        #info {
-            position: fixed; top: 20px; width: 100%; text-align: center;
-            color: #00aaff; pointer-events: none; text-transform: uppercase; letter-spacing: 2px;
+        #startBtn:hover { background: #fff; box-shadow: 0 0 25px #fff; }
+        #status-ui {
+            position: fixed; top: 20px; left: 20px; color: #00f2ff;
+            font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
         }
         canvas { display: block; }
     </style>
 </head>
 <body>
 
-<div id="info">Mova a mão para interagir</div>
-<button id="startBtn">ATIVAR CÂMERA E EFEITO</button>
+<div id="status-ui">Sistema de Gestos: Ativo</div>
+<button id="startBtn">INICIAR EXPERIÊNCIA 3D</button>
 <video id="video" style="display:none;" autoplay playsinline></video>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
@@ -30,51 +31,65 @@
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
 <script>
-    // --- CONFIGURAÇÃO THREE.JS ---
+    // --- CONFIGURAÇÃO DA CENA ---
     const scene = new THREE.Scene();
     const camera3D = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
     document.body.appendChild(renderer.domElement);
 
-    // 🌍 GLOBO DE PARTÍCULAS (Igual à imagem)
-    const geometry = new THREE.SphereGeometry(1.2, 60, 60);
-    const material = new THREE.PointsMaterial({ 
-        color: 0x00aaff, 
-        size: 0.015,
-        transparent: true,
-        opacity: 0.8
-    });
-    const sphere = new THREE.Points(geometry, material);
-    scene.add(sphere);
+    // --- CRIAÇÃO DO GLOBO (PARTÍCULAS INDIVIDUAIS PARA EXPLODIR) ---
+    const particleCount = 4000;
+    const geo = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    const originalPositions = new Float32Array(particleCount * 3);
 
-    // 🪐 ANEL DE ENERGIA
-    const ringGeo = new THREE.RingGeometry(1.8, 1.85, 128);
-    const ringMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
-    const ring = new THREE.Mesh(ringGeo, ringMat);
-    ring.rotation.x = Math.PI / 2;
-    scene.add(ring);
+    for (let i = 0; i < particleCount; i++) {
+        // Posição inicial em uma esfera
+        const u = Math.random();
+        const v = Math.random();
+        const theta = 2 * Math.PI * u;
+        const phi = Math.acos(2 * v - 1);
+        const r = 1.5;
 
-    // 🖐️ ESTRUTURA DA MÃO NO 3D
+        const x = r * Math.sin(phi) * Math.cos(theta);
+        const y = r * Math.sin(phi) * Math.sin(theta);
+        const z = r * Math.cos(phi);
+
+        positions[i * 3] = x;
+        positions[i * 3 + 1] = y;
+        positions[i * 3 + 2] = z;
+
+        originalPositions[i * 3] = x;
+        originalPositions[i * 3 + 1] = y;
+        originalPositions[i * 3 + 2] = z;
+    }
+
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const mat = new THREE.PointsMaterial({ color: 0x00f2ff, size: 0.02, transparent: true, opacity: 0.8 });
+    const globe = new THREE.Points(geo, mat);
+    scene.add(globe);
+
+    // --- ESQUELETO DA MÃO MAIS NÍTIDO ---
     const handGroup = new THREE.Group();
     scene.add(handGroup);
 
-    // Criamos 21 esferas para as juntas e linhas para os dedos
-    const jointPoints = [];
-    const jointMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff });
-    const jointGeo = new THREE.SphereGeometry(0.04, 8, 8);
+    const joints = [];
+    const jointMat = new THREE.MeshBasicMaterial({ color: 0xffffff }); // Branco para destacar
+    const jointGeo = new THREE.SphereGeometry(0.06, 12, 12); // Maior e mais nítido
 
     for (let i = 0; i < 21; i++) {
-        const joint = new THREE.Mesh(jointGeo, jointMaterial);
-        jointPoints.push(joint);
-        handGroup.add(joint);
+        const m = new THREE.Mesh(jointGeo, jointMat);
+        joints.push(m);
+        handGroup.add(m);
     }
 
     camera3D.position.z = 5;
 
-    // --- CONFIGURAÇÃO MEDIAPIPE ---
-    const video = document.getElementById('video');
+    // --- LÓGICA DE INTERAÇÃO ---
+    let explosionFactor = 0; // 0 = normal, 1 = explodido
+    let targetExplosion = 0;
+
     const hands = new Hands({
         locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
     });
@@ -82,61 +97,75 @@
     hands.setOptions({
         maxNumHands: 1,
         modelComplexity: 1,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5
+        minDetectionConfidence: 0.7, // Maior precisão
+        minTrackingConfidence: 0.7
     });
 
     hands.onResults(results => {
         if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-            const landmarks = results.multiHandLandmarks[0];
+            const pts = results.multiHandLandmarks[0];
 
-            // Atualiza posição das juntas 3D
-            landmarks.forEach((point, i) => {
-                // Converter coordenadas MediaPipe (0 a 1) para Three.js (-distancia a +distancia)
-                const x = (point.x - 0.5) * 10;
-                const y = -(point.y - 0.5) * 8;
-                const z = -point.z * 10;
-
-                jointPoints[i].position.set(x, y, z);
+            // 1. Atualizar Mão 3D
+            pts.forEach((p, i) => {
+                const x = (p.x - 0.5) * 12; // Ampliado para cobrir a tela
+                const y = -(p.y - 0.5) * 9;
+                const z = -p.z * 5;
+                
+                // Suavização simples para não tremer
+                joints[i].position.lerp(new THREE.Vector3(x, y, z), 0.4);
             });
 
-            // Rotacionar o planeta com base no dedo indicador (ponto 8)
-            const indexFinger = landmarks[8];
-            sphere.rotation.y += (indexFinger.x - 0.5) * 0.1;
-            sphere.rotation.x += (indexFinger.y - 0.5) * 0.1;
+            // 2. Detectar se a mão está aberta (Explodir)
+            // Calculamos a distância entre o pulso (0) e a ponta do dedo médio (12)
+            const dx = pts[0].x - pts[12].x;
+            const dy = pts[0].y - pts[12].y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+
+            if (dist > 0.4) targetExplosion = 2.5; // Explode (afasta 2.5x)
+            else targetExplosion = 1.0;            // Volta ao normal
         }
     });
 
-    // --- LOOP DE ANIMAÇÃO ---
+    // --- ANIMAÇÃO ---
     function animate() {
         requestAnimationFrame(animate);
-        
-        // Rotação constante suave
-        sphere.rotation.y += 0.005;
-        ring.rotation.z += 0.01;
 
+        // Suavizar a explosão
+        explosionFactor = THREE.MathUtils.lerp(explosionFactor, targetExplosion, 0.1);
+
+        // Atualizar partículas do globo
+        const posAttr = globe.geometry.attributes.position;
+        for (let i = 0; i < particleCount; i++) {
+            posAttr.setXYZ(
+                i,
+                originalPositions[i * 3] * explosionFactor,
+                originalPositions[i * 3 + 1] * explosionFactor,
+                originalPositions[i * 3 + 2] * explosionFactor
+            );
+        }
+        posAttr.needsUpdate = true;
+
+        globe.rotation.y += 0.005;
         renderer.render(scene, camera3D);
     }
+
     animate();
 
-    // Redimensionamento
+    // Redimensionar
     window.addEventListener('resize', () => {
         camera3D.aspect = window.innerWidth / window.innerHeight;
         camera3D.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // --- INICIAR CÂMERA ---
+    // Iniciar
     document.getElementById("startBtn").onclick = function() {
         this.style.display = 'none';
-        const camera = new Camera(video, {
-            onFrame: async () => {
-                await hands.send({ image: video });
-            },
-            width: 1280,
-            height: 720
+        const cam = new Camera(video, {
+            onFrame: async () => { await hands.send({ image: video }); },
+            width: 1280, height: 720
         });
-        camera.start();
+        cam.start();
     };
 </script>
 
