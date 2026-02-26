@@ -6,21 +6,9 @@
 <title>ZEROX GOD</title>
 
 <style>
-body {
-    margin:0;
-    background:#000;
-    overflow:hidden;
-    font-family:Arial;
-    color:#00f2ff;
-}
+body { margin:0; background:#000; overflow:hidden; color:#00f2ff; font-family:Arial; }
 
-#hud {
-    position:fixed;
-    top:20px;
-    left:20px;
-    z-index:10;
-    font-size:12px;
-}
+#hud { position:fixed; top:20px; left:20px; z-index:10; font-size:12px; }
 
 #status {
     margin-top:10px;
@@ -62,7 +50,7 @@ body {
 
 <script>
 // ================= CONFIG =================
-const YOUTUBE_API_KEY = "AIzaSyA1YzpPogtFgGavsIdc7fh6X4gvmgYfO9I";
+const YOUTUBE_API_KEY = "SUA_API_AQUI";
 
 let player, recognition;
 let synth = window.speechSynthesis;
@@ -70,13 +58,17 @@ let synth = window.speechSynthesis;
 let explosionFactor = 1;
 let targetExplosion = 1;
 
+// NOVO CONTROLE
+let musicaTocando = false;
+let aguardandoResposta = false;
+let aguardandoContinuar = false;
+
 // ================= VOZ =================
 function falar(texto){
     synth.cancel();
     let u = new SpeechSynthesisUtterance(texto);
     u.lang = "pt-BR";
     synth.speak(u);
-
     document.getElementById("status").innerText = texto;
 }
 
@@ -85,9 +77,7 @@ function onYouTubeIframeAPIReady(){
     player = new YT.Player('player',{
         height:'0',
         width:'0',
-        events:{
-            onReady:e=>e.target.mute()
-        }
+        events:{ onReady:e=>e.target.mute() }
     });
 }
 
@@ -97,7 +87,7 @@ async function tocar(termo){
     const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(termo)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
     const data = await res.json();
 
-    if(data.items[0]){
+    if(data.items && data.items[0]){
         const id = data.items[0].id.videoId;
 
         player.loadVideoById(id);
@@ -107,22 +97,74 @@ async function tocar(termo){
             player.setVolume(100);
         },500);
 
+        musicaTocando = true;
+
         falar("Tocando agora");
+    }
+}
+
+// ================= VOLUME =================
+function baixarVolume(){
+    if(player && musicaTocando){
+        player.setVolume(30);
+    }
+}
+
+function normalVolume(){
+    if(player && musicaTocando){
+        player.setVolume(100);
     }
 }
 
 // ================= IA =================
 function responder(fala){
 
-    if(fala.includes("zerox")){
-        falar("Online. Pode falar.");
+    // ATIVAÇÃO
+    if(fala.includes("zerox") || fala.includes("zeroxis")){
+        baixarVolume();
+        falar("Olá, boa tarde. Em que posso ajudar?");
+        aguardandoResposta = true;
+        return;
     }
 
-    else if(fala.includes("hora")){
-        falar("Agora são " + new Date().toLocaleTimeString());
+    // RESPOSTA
+    if(aguardandoResposta){
+        aguardandoResposta = false;
+
+        if(fala.includes("hora")){
+            falar("Agora são " + new Date().toLocaleTimeString());
+        } else {
+            falar("Entendi sua solicitação.");
+        }
+
+        if(musicaTocando){
+            setTimeout(()=>{
+                falar("Deseja continuar a música?");
+                aguardandoContinuar = true;
+            },1500);
+        }
+
+        return;
     }
 
-    else if(fala.includes("toca")){
+    // CONTINUAR MÚSICA
+    if(aguardandoContinuar){
+        aguardandoContinuar = false;
+
+        if(fala.includes("sim")){
+            normalVolume();
+            falar("Retomando a música");
+        } else {
+            if(player) player.pauseVideo();
+            musicaTocando = false;
+            falar("Música pausada. Aguardando comando.");
+        }
+
+        return;
+    }
+
+    // COMANDOS
+    if(fala.includes("toca")){
         let termo = fala.replace("toca","").trim();
         tocar(termo);
     }
@@ -130,10 +172,6 @@ function responder(fala){
     else if(fala.includes("explodir")){
         targetExplosion = 3;
         falar("Ativando energia máxima");
-    }
-
-    else{
-        falar("Comando não reconhecido");
     }
 }
 
@@ -176,10 +214,9 @@ scene.add(globe);
 
 // PARTÍCULAS
 const pGeo = new THREE.BufferGeometry();
-const pCount = 1500;
-const arr = new Float32Array(pCount*3);
+const arr = new Float32Array(1500*3);
 
-for(let i=0;i<pCount*3;i++){
+for(let i=0;i<arr.length;i++){
     arr[i]=(Math.random()-0.5)*20;
 }
 
@@ -202,9 +239,7 @@ hands.setOptions({maxNumHands:1});
 hands.onResults(res=>{
     if(res.multiHandLandmarks && res.multiHandLandmarks[0]){
         const pts = res.multiHandLandmarks[0];
-
         const dist = Math.hypot(pts[0].x-pts[12].x, pts[0].y-pts[12].y);
-
         targetExplosion = dist > 0.35 ? 3 : 1;
     }
 });
@@ -224,7 +259,6 @@ function animate(){
     requestAnimationFrame(animate);
 
     pulse += 0.1;
-
     explosionFactor += (targetExplosion - explosionFactor)*0.08;
 
     const attr = globe.geometry.attributes.position;
