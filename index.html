@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -17,8 +19,12 @@
 body{
     overflow:hidden;
     background:#000;
-    font-family:'Segoe UI',sans-serif;
+    font-family:Arial,sans-serif;
     color:#00f2ff;
+}
+
+canvas{
+    display:block;
 }
 
 /* HUD */
@@ -31,18 +37,17 @@ body{
     text-align:center;
     z-index:10;
     width:100%;
-    pointer-events:none;
 }
 
 #title{
-    font-size:28px;
-    letter-spacing:6px;
+    font-size:30px;
     font-weight:bold;
+    letter-spacing:6px;
     text-shadow:0 0 20px #00f2ff;
 }
 
 #status{
-    margin-top:12px;
+    margin-top:10px;
     font-size:15px;
     color:rgba(0,242,255,.8);
 }
@@ -50,34 +55,51 @@ body{
 /* BOTÃO */
 
 #start{
+
     position:fixed;
+
     bottom:40px;
+
     left:50%;
+
     transform:translateX(-50%);
+
     padding:18px 45px;
+
     border-radius:50px;
+
     border:2px solid #00f2ff;
+
     background:transparent;
+
     color:#00f2ff;
-    font-weight:bold;
+
     font-size:15px;
+
+    font-weight:bold;
+
     letter-spacing:2px;
+
     cursor:pointer;
+
     box-shadow:0 0 25px #00f2ff;
+
     transition:.3s;
+
     z-index:20;
+
 }
 
 #start:hover{
-    background:#00f2ff;
-    color:#000;
-}
 
-canvas{
-    display:block;
+    background:#00f2ff;
+
+    color:#000;
+
 }
 
 </style>
+
 </head>
 
 <body>
@@ -85,7 +107,7 @@ canvas{
 <div id="hud">
 
     <div id="title">
-        ZERO-X V4
+        ZERO-X V5
     </div>
 
     <div id="status">
@@ -95,7 +117,7 @@ canvas{
 </div>
 
 <button id="start">
-    INICIALIZAR ZERO-X DO ANDERSON
+    INICIAR ZERO-X
 </button>
 
 <div id="player"></div>
@@ -113,6 +135,7 @@ const status =
 document.getElementById("status");
 
 let recognition;
+
 let synth =
 window.speechSynthesis;
 
@@ -123,6 +146,7 @@ let player;
 let compromissos = [];
 
 let explosionFactor = 1;
+
 let targetExplosion = 1;
 
 // ======================================================
@@ -171,21 +195,27 @@ function falar(texto){
     falando = true;
 
     if(synth.speaking){
+
         synth.cancel();
+
     }
 
-    let u =
+    let voz =
     new SpeechSynthesisUtterance(texto);
 
-    u.lang = "pt-BR";
-    u.rate = 1;
-    u.pitch = 0.9;
+    voz.lang = "pt-BR";
 
-    u.onend = ()=>{
+    voz.rate = 1;
+
+    voz.pitch = 0.9;
+
+    voz.onend = ()=>{
+
         falando = false;
+
     };
 
-    synth.speak(u);
+    synth.speak(voz);
 
     status.innerText =
     "ZERO-X: " + texto;
@@ -236,18 +266,17 @@ function onYouTubeIframeAPIReady(){
 // TOCAR MÚSICA
 // ======================================================
 
-async function tocarMusica(nome){
+function tocarMusica(nome){
 
     try{
 
-        falar("Pesquisando " + nome);
+        falar(
+        "Tocando " + nome
+        );
 
-        const pesquisa =
-        encodeURIComponent(nome);
-
-        player.loadVideoById({
-            videoId:"dQw4w9WgXcQ"
-        });
+        player.loadVideoById(
+        "dQw4w9WgXcQ"
+        );
 
         setTimeout(()=>{
 
@@ -255,23 +284,26 @@ async function tocarMusica(nome){
 
         },1000);
 
-        falar("Tocando agora.");
-
     }catch{
 
-        falar("Erro ao tocar música.");
+        falar(
+        "Erro ao tocar música."
+        );
 
     }
 
 }
 
 // ======================================================
-// CÉREBRO
+// IA
 // ======================================================
 
 function responder(fala){
 
-    console.log("Você falou:", fala);
+    console.log(
+    "Você disse:",
+    fala
+    );
 
     fala = fala.toLowerCase();
 
@@ -304,6 +336,7 @@ function responder(fala){
         );
 
         return;
+
     }
 
     // ==================================================
@@ -325,10 +358,11 @@ function responder(fala){
         );
 
         return;
+
     }
 
     // ==================================================
-    // TOCAR MÚSICA
+    // TOCAR
     // ==================================================
 
     if(
@@ -349,6 +383,7 @@ function responder(fala){
             );
 
             return;
+
         }
 
         tocarMusica(musica);
@@ -358,7 +393,7 @@ function responder(fala){
     }
 
     // ==================================================
-    // PARAR MÚSICA
+    // PARAR
     // ==================================================
 
     if(
@@ -552,7 +587,7 @@ function iniciarVoz(){
 
     recognition.lang = "pt-BR";
 
-    recognition.continuous = true;
+    recognition.continuous = false;
 
     recognition.interimResults = false;
 
@@ -561,7 +596,7 @@ function iniciarVoz(){
     recognition.onstart = ()=>{
 
         console.log(
-        "Reconhecimento iniciado"
+        "Microfone iniciado"
         );
 
         status.innerText =
@@ -574,14 +609,12 @@ function iniciarVoz(){
         if(falando) return;
 
         const fala =
-        e.results[
-            e.results.length - 1
-        ][0]
+        e.results[0][0]
         .transcript
         .toLowerCase();
 
         console.log(
-        "Você disse:",
+        "Você falou:",
         fala
         );
 
@@ -602,19 +635,26 @@ function iniciarVoz(){
         status.innerText =
         "Erro: " + e.error;
 
+        if(
+            e.error === "not-allowed"
+        ){
+
+            alert(
+            "Permita o microfone no navegador."
+            );
+
+        }
+
     };
 
     recognition.onend = ()=>{
 
         console.log(
-        "Reiniciando reconhecimento..."
+        "Reconhecimento encerrado"
         );
 
-        setTimeout(()=>{
-
-            recognition.start();
-
-        },500);
+        status.innerText =
+        "Toque na tela e fale";
 
     };
 
@@ -632,7 +672,7 @@ new THREE.Scene();
 const camera =
 new THREE.PerspectiveCamera(
 75,
-innerWidth/innerHeight,
+innerWidth / innerHeight,
 0.1,
 1000
 );
@@ -670,11 +710,17 @@ geo.attributes.position.array.slice();
 
 const globe =
 new THREE.Points(
+
     geo,
+
     new THREE.PointsMaterial({
+
         color:0x00f2ff,
+
         size:0.02
+
     })
+
 );
 
 scene.add(globe);
@@ -692,25 +738,34 @@ new Float32Array(1000 * 3);
 for(let i=0;i<arr.length;i++){
 
     arr[i] =
-    (Math.random()-0.5)*30;
+    (Math.random() - 0.5) * 30;
 
 }
 
 pGeo.setAttribute(
+
 'position',
+
 new THREE.BufferAttribute(
     arr,
     3
 )
+
 );
 
 const particles =
 new THREE.Points(
+
     pGeo,
+
     new THREE.PointsMaterial({
+
         color:0x00f2ff,
+
         size:0.02
+
     })
+
 );
 
 scene.add(particles);
@@ -737,7 +792,7 @@ function animate(){
         dataArray
         );
 
-        let sum = 0;
+        let soma = 0;
 
         for(
             let i=0;
@@ -745,15 +800,15 @@ function animate(){
             i++
         ){
 
-            sum += dataArray[i];
+            soma += dataArray[i];
 
         }
 
-        let average =
-        sum / dataArray.length;
+        let media =
+        soma / dataArray.length;
 
         micForce =
-        1 + average / 80;
+        1 + media / 80;
 
     }
 
@@ -825,14 +880,19 @@ document.getElementById("start")
 
         await iniciarMic();
 
-        iniciarVoz();
+        setTimeout(()=>{
 
-        falar(
-        "Zero X ativado."
-        );
+            iniciarVoz();
 
-        status.innerText =
-        "Sistema online";
+        },1000);
+
+        setTimeout(()=>{
+
+            falar(
+            "Zero X ativado."
+            );
+
+        },1500);
 
     }catch(err){
 
@@ -845,6 +905,34 @@ document.getElementById("start")
     }
 
 };
+
+// ======================================================
+// CLIQUE NA TELA PARA ESCUTAR
+// ======================================================
+
+document.body.addEventListener(
+"click",
+()=>{
+
+    if(
+        recognition &&
+        !falando
+    ){
+
+        try{
+
+            recognition.start();
+
+        }catch(err){
+
+            console.log(err);
+
+        }
+
+    }
+
+}
+);
 
 // ======================================================
 // RESIZE
@@ -867,5 +955,6 @@ window.addEventListener(
 });
 
 </script>
+
 </body>
 </html>
