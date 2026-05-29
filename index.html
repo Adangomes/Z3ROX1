@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ZEROX GOD MODE</title>
+<title>ZERO-X GOD MODE</title>
 <style>
 body{
     margin:0;
@@ -12,6 +12,7 @@ body{
     font-family:'Segoe UI',sans-serif;
     color:#00f2ff;
 }
+/* HUD */
 #hud{
     position:fixed;
     top:30px;
@@ -30,6 +31,7 @@ body{
     font-size:14px;
     color:rgba(0,242,255,.7);
 }
+/* BOTÃO */
 #start{
     position:fixed;
     bottom:40px;
@@ -57,8 +59,11 @@ canvas{
 </head>
 <body>
 <div id="hud">
-    ZERO-X V_3
-    <div id="status"></div>
+    ZERO-X V_4
+    
+    <div id="status">
+        Sistema aguardando inicialização...
+    </div>
 </div>
 <button id="start">
     INICIALIZAR ZERO-X
@@ -67,7 +72,9 @@ canvas{
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
-// ================= CONFIG =================
+// =====================================================
+// CONFIG
+// =====================================================
 const YOUTUBE_API_KEY =
 "AIzaSyApmJHahtrbmxS-hsVApE37qmHBVP67Du8";
 let player;
@@ -76,7 +83,15 @@ let synth = window.speechSynthesis;
 let falando = false;
 let explosionFactor = 1;
 let targetExplosion = 1;
-// ================= MICROFONE =================
+const status =
+document.getElementById("status");
+// =====================================================
+// MEMÓRIA
+// =====================================================
+let compromissos = [];
+// =====================================================
+// MICROFONE
+// =====================================================
 let audioContext;
 let analyser;
 let microphone;
@@ -86,41 +101,53 @@ async function iniciarMic(){
     await navigator.mediaDevices.getUserMedia({
         audio:true
     });
-    audioContext = new AudioContext();
-    analyser = audioContext.createAnalyser();
+    audioContext =
+    new AudioContext();
+    analyser =
+    audioContext.createAnalyser();
     analyser.fftSize = 256;
     const bufferLength =
     analyser.frequencyBinCount;
-    dataArray = new Uint8Array(bufferLength);
+    dataArray =
+    new Uint8Array(bufferLength);
     microphone =
     audioContext.createMediaStreamSource(stream);
     microphone.connect(analyser);
 }
-// ================= VOZ IA =================
+// =====================================================
+// FALAR
+// =====================================================
 function falar(texto){
     falando = true;
-    synth.cancel();
+    if(synth.speaking){
+        synth.cancel();
+    }
     let u =
     new SpeechSynthesisUtterance(texto);
     u.lang = "pt-BR";
     u.rate = 1.1;
+    u.pitch = 0.9;
     u.onend = ()=>{
         falando = false;
     };
     synth.speak(u);
-    document.getElementById("status")
-    .innerText = "ZERO-X: " + texto;
+    status.innerText =
+    "ZERO-X: " + texto;
 }
-// ================= YOUTUBE =================
+// =====================================================
+// YOUTUBE
+// =====================================================
 function onYouTubeIframeAPIReady(){
     player = new YT.Player('player',{
         height:'0',
         width:'0',
         events:{
-            onReady:e=>e.target.mute(),
+            onReady:e=>{
+                e.target.mute();
+            },
             onStateChange:e=>{
                 if(e.data === 1){
-                    targetExplosion = 1.8;
+                    targetExplosion = 2;
                 }else{
                     targetExplosion = 1;
                 }
@@ -128,117 +155,263 @@ function onYouTubeIframeAPIReady(){
         }
     });
 }
+// =====================================================
+// TOCAR MÚSICA
+// =====================================================
 async function tocar(termoOriginal){
     let termo = termoOriginal
     .replace(/zero\s?x|zerox|xis/gi,"")
     .trim();
-    if(!termo) return;
+    if(!termo){
+        falar("Diga o nome da música.");
+        return;
+    }
     falar("Buscando " + termo);
-    const res = await fetch(
-    `https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(termo)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
-    const data = await res.json();
-    if(data.items && data.items[0]){
-        const id =
-        data.items[0].id.videoId;
-        player.loadVideoById(id);
-        setTimeout(()=>{
-            player.unMute();
-            player.playVideo();
-        },500);
-        falar("Tocando agora.");
-    }else{
-        falar("Não encontrei resultados.");
+    try{
+        const res = await fetch(
+        `https://www.googleapis.com/youtube/v3/search?part=id&q=${encodeURIComponent(termo)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
+        const data = await res.json();
+        if(data.items && data.items[0]){
+            const id =
+            data.items[0].id.videoId;
+            player.loadVideoById(id);
+            setTimeout(()=>{
+                player.unMute();
+                player.setVolume(100);
+                player.playVideo();
+            },500);
+            falar("Tocando agora.");
+        }else{
+            falar(
+            "Não encontrei resultados."
+            );
+        }
+    }catch{
+        falar(
+        "Erro ao buscar música."
+        );
     }
 }
-// ================= RESPOSTAS =================
+// =====================================================
+// CÉREBRO
+// =====================================================
 function responder(fala){
-    console.log("Comando:",fala);
-    // CORES
-    if(fala.includes("vermelho")){
-        globe.material.color.setHex(0xff0000);
-        falar("Alterando para vermelho.");
+    console.log("Você disse:",fala);
+    fala = fala.toLowerCase();
+    fala = fala
+    .replace(/zero\s?x|zerox|xis/gi,"")
+    .trim();
+    // =========================================
+    // HORAS
+    // =========================================
+    if(
+        fala.includes("hora") ||
+        fala.includes("horas") ||
+        fala.includes("que horas") ||
+        fala.includes("qual a hora")
+    ){
+        const agora =
+        new Date().toLocaleTimeString(
+            "pt-BR",
+            {
+                hour:"2-digit",
+                minute:"2-digit"
+            }
+        );
+        falar(
+        "Agora são " + agora
+        );
+        return;
     }
-    else if(fala.includes("verde")){
-        globe.material.color.setHex(0x00ff00);
-        falar("Alterando para verde.");
+    // =========================================
+    // DATA
+    // =========================================
+    if(
+        fala.includes("data") ||
+        fala.includes("dia de hoje")
+    ){
+        const hoje =
+        new Date().toLocaleDateString(
+            "pt-BR"
+        );
+        falar(
+        "Hoje é " + hoje
+        );
+        return;
     }
-    else if(fala.includes("azul")){
-        globe.material.color.setHex(0x00f2ff);
-        falar("Restaurando azul.");
-    }
-    else if(fala.includes("roxo")){
-        globe.material.color.setHex(0x8a2be2);
-        falar("Alterando para roxo.");
-    }
-    else if(fala.includes("branco")){
-        globe.material.color.setHex(0xffffff);
-        falar("Alterando para branco.");
-    }
-    // MÚSICA
-    else if(fala.includes("toca")){
-        let musica =
-        fala.split("toca")[1].trim();
+    // =========================================
+    // TOCAR MÚSICA
+    // =========================================
+    if(
+        fala.includes("toca") ||
+        fala.includes("coloca") ||
+        fala.includes("reproduz")
+    ){
+        let musica = fala
+        .replace("toca","")
+        .replace("coloca","")
+        .replace("reproduz","")
+        .trim();
         tocar(musica);
+        return;
     }
-    // COMANDOS
-    else if(
-        fala.includes("quem é você")
+    // =========================================
+    // PAUSAR MÚSICA
+    // =========================================
+    if(
+        fala.includes("parar") ||
+        fala.includes("pausa") ||
+        fala.includes("desligar música")
+    ){
+        if(player){
+            player.pauseVideo();
+        }
+        falar(
+        "Música pausada."
+        );
+        return;
+    }
+    // =========================================
+    // CORES
+    // =========================================
+    if(fala.includes("vermelho")){
+        globe.material.color.setHex(
+        0xff0000
+        );
+        falar(
+        "Modo vermelho ativado."
+        );
+        return;
+    }
+    if(fala.includes("verde")){
+        globe.material.color.setHex(
+        0x00ff00
+        );
+        falar(
+        "Modo verde ativado."
+        );
+        return;
+    }
+    if(fala.includes("azul")){
+        globe.material.color.setHex(
+        0x00f2ff
+        );
+        falar(
+        "Modo azul ativado."
+        );
+        return;
+    }
+    if(fala.includes("roxo")){
+        globe.material.color.setHex(
+        0x8a2be2
+        );
+        falar(
+        "Modo roxo ativado."
+        );
+        return;
+    }
+    // =========================================
+    // AGENDAR
+    // =========================================
+    if(
+        fala.includes("agendar") ||
+        fala.includes("novo compromisso")
+    ){
+        let compromisso =
+        fala
+        .replace("agendar","")
+        .replace("novo compromisso","")
+        .trim();
+        if(compromisso){
+            compromissos.push(compromisso);
+            falar(
+            "Compromisso salvo."
+            );
+        }else{
+            falar(
+            "Diga o compromisso."
+            );
+        }
+        return;
+    }
+    // =========================================
+    // LISTAR COMPROMISSOS
+    // =========================================
+    if(
+        fala.includes("meus compromissos") ||
+        fala.includes("listar compromissos")
+    ){
+        if(compromissos.length === 0){
+            falar(
+            "Você não possui compromissos."
+            );
+        }else{
+            falar(
+            compromissos.join(", ")
+            );
+        }
+        return;
+    }
+    // =========================================
+    // QUEM É VOCÊ
+    // =========================================
+    if(
+        fala.includes("quem é você") ||
+        fala.includes("o que é você")
     ){
         falar(
-        "Eu sou o ZERO-X."
+        "Eu sou o sistema ZERO X."
         );
+        return;
     }
-    else if(
-        fala.includes("hora")
-    ){
-        falar(
-        "Agora são " +
-        new Date().toLocaleTimeString()
-        );
-    }
-    else if(
-        fala.includes("parar")
-    ){
-        player.pauseVideo();
-        falar(
-        "Música interrompida."
-        );
-    }
-    else if(
-        fala.includes("zero x") ||
-        fala.includes("zerox")
-    ){
-        falar(
-        "Sim. Estou ouvindo."
-        );
-    }
+    // =========================================
+    // RESPOSTA PADRÃO
+    // =========================================
+    falar(
+    "Comando não reconhecido."
+    );
 }
-// ================= RECONHECIMENTO =================
+// =====================================================
+// RECONHECIMENTO DE VOZ
+// =====================================================
 function iniciarVoz(){
     const Speech =
     window.SpeechRecognition ||
     window.webkitSpeechRecognition;
-    recognition = new Speech();
+    recognition =
+    new Speech();
     recognition.lang = "pt-BR";
-    recognition.continuous = true;
-    recognition.interimResults = false;
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
     recognition.onresult = e=>{
         if(falando) return;
-        const fala =
+        const resultado =
         e.results[
-            e.results.length-1
-        ][0]
+            e.results.length - 1
+        ];
+        if(!resultado.isFinal) return;
+        const fala =
+        resultado[0]
         .transcript
         .toLowerCase();
         responder(fala);
     };
+    recognition.onerror = e=>{
+        console.log(e.error);
+    };
     recognition.onend = ()=>{
-        recognition.start();
+        setTimeout(()=>{
+            recognition.start();
+        },300);
     };
     recognition.start();
 }
-// ================= THREE JS =================
-const scene = new THREE.Scene();
+// =====================================================
+// THREE JS
+// =====================================================
+const scene =
+new THREE.Scene();
 const camera =
 new THREE.PerspectiveCamera(
 75,
@@ -260,7 +433,9 @@ innerHeight
 document.body.appendChild(
 renderer.domElement
 );
-// ================= GLOBO =================
+// =====================================================
+// GLOBO
+// =====================================================
 const geo =
 new THREE.SphereGeometry(
 1.6,
@@ -278,7 +453,9 @@ new THREE.Points(
     })
 );
 scene.add(globe);
-// ================= PARTÍCULAS =================
+// =====================================================
+// PARTÍCULAS
+// =====================================================
 const pGeo =
 new THREE.BufferGeometry();
 const arr =
@@ -288,8 +465,11 @@ for(let i=0;i<arr.length;i++){
     (Math.random()-0.5)*20;
 }
 pGeo.setAttribute(
-'position',
-new THREE.BufferAttribute(arr,3)
+    'position',
+    new THREE.BufferAttribute(
+        arr,
+        3
+    )
 );
 const particles =
 new THREE.Points(
@@ -300,19 +480,26 @@ new THREE.Points(
     })
 );
 scene.add(particles);
-// ================= ANIMAÇÃO =================
+// =====================================================
+// ANIMAÇÃO
+// =====================================================
 let pulse = 1;
 function animate(){
-    requestAnimationFrame(animate);
+    requestAnimationFrame(
+    animate
+    );
     pulse += 0.05;
-    // MICROFONE
     let micForce = 1;
     if(analyser){
         analyser.getByteFrequencyData(
-            dataArray
+        dataArray
         );
         let sum = 0;
-        for(let i=0;i<dataArray.length;i++){
+        for(
+            let i=0;
+            i<dataArray.length;
+            i++
+        ){
             sum += dataArray[i];
         }
         let average =
@@ -324,12 +511,19 @@ function animate(){
     (targetExplosion - explosionFactor)
     * 0.08;
     const attr =
-    globe.geometry.attributes.position;
-    for(let i=0;i<attr.count;i+=2){
+    globe.geometry
+    .attributes.position;
+    for(
+        let i=0;
+        i<attr.count;
+        i+=2
+    ){
         const scale =
         (explosionFactor * micForce)
         +
-        Math.sin(i+pulse)*0.05;
+        Math.sin(
+            i+pulse
+        ) * 0.05;
         attr.setXYZ(
             i,
             base[i*3]*scale,
@@ -339,13 +533,19 @@ function animate(){
     }
     attr.needsUpdate = true;
     globe.material.size =
-    0.015 + (micForce * 0.01);
+    0.015 +
+    (micForce * 0.01);
     globe.rotation.y += 0.003;
     particles.rotation.y += 0.0005;
-    renderer.render(scene,camera);
+    renderer.render(
+        scene,
+        camera
+    );
 }
 animate();
-// ================= START =================
+// =====================================================
+// START
+// =====================================================
 document.getElementById("start")
 .onclick = async ()=>{
     document.getElementById("start")
@@ -359,7 +559,9 @@ document.getElementById("start")
         player.unMute();
     }
 };
-// ================= RESIZE =================
+// =====================================================
+// RESIZE
+// =====================================================
 window.addEventListener(
 'resize',
 ()=>{
@@ -367,8 +569,8 @@ window.addEventListener(
     innerWidth/innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(
-    innerWidth,
-    innerHeight
+        innerWidth,
+        innerHeight
     );
 });
 </script>
