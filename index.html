@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard de Vendas & BI | IMAM Embalagens</title>
-    <!-- Tailwind CSS para Estilização -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js para Gráficos Interativos -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -15,22 +15,55 @@
     <!-- Header / Navbar -->
     <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
         <div class="flex items-center space-x-3">
-            <div class="bg-emerald-500 text-slate-900 p-2 rounded-lg font-bold text-xl">
-                <i class="fa-solid fa-chart-line"></i>
+            <div class="bg-emerald-500 text-slate-900 p-2.5 rounded-xl font-bold text-xl">
+                <i class="fa-solid fa-chart-pie"></i>
             </div>
             <div>
                 <h1 class="text-xl font-bold tracking-wide text-white">IMAM - Inteligência de Mercado</h1>
-                <p class="text-xs text-slate-400">Monitoramento de Vendas & Performance B2B</p>
+                <p class="text-xs text-slate-400">Painel Operacional & Indicadores B2B</p>
             </div>
         </div>
-        <div class="flex items-center space-x-4">
-            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Dados em Tempo Real
+        
+        <!-- Ações e Perfil -->
+        <div class="flex flex-wrap items-center gap-3">
+            <button onclick="exportarRelatorio()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold px-3.5 py-2 rounded-lg border border-slate-600 flex items-center gap-2 transition-all">
+                <i class="fa-solid fa-file-excel text-emerald-400"></i> Exportar CSV
+            </button>
+            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Sistema Ativo
             </span>
         </div>
     </header>
 
-    <main class="p-6 max-w-7xl mx-auto space-y-6">
+    <main class="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
+
+        <!-- Barra de Filtros Interativos (BI Real) -->
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col md:flex-row justify-between items-center gap-4 shadow-sm">
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                    <i class="fa-solid fa-filter text-emerald-400"></i> Filtros:
+                </span>
+                
+                <!-- Seletor de Período -->
+                <select id="filtroPeriodo" onchange="atualizarDashboard()" class="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
+                    <option value="julho">Julho / 2026 (Mês Atual)</option>
+                    <option value="q2">2º Trimestre (2026)</option>
+                    <option value="ano">Acumulado Ano (2026)</option>
+                </select>
+
+                <!-- Seletor de Categoria -->
+                <select id="filtroCategoria" onchange="atualizarDashboard()" class="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
+                    <option value="todas">Todas as Categorias</option>
+                    <option value="fitas">Fitas PET / PP / Aço</option>
+                    <option value="maquinas">Máquinas de Embalagem</option>
+                    <option value="adesivas">Fitas Adesivas</option>
+                </select>
+            </div>
+
+            <div class="text-xs text-slate-400 flex items-center gap-2">
+                <i class="fa-solid fa-database text-blue-400"></i> Fonte: ERP Corporativo
+            </div>
+        </div>
 
         <!-- Cards de Métricas (KPIs) -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -39,7 +72,7 @@
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Faturamento Total</p>
-                        <h3 class="text-2xl font-bold text-white mt-1">R$ 1.845.200</h3>
+                        <h3 id="kpiFaturamento" class="text-2xl font-bold text-white mt-1">R$ 1.845.200</h3>
                     </div>
                     <div class="bg-emerald-500/10 text-emerald-400 p-3 rounded-lg">
                         <i class="fa-solid fa-dollar-sign text-lg"></i>
@@ -53,8 +86,8 @@
             <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-sm">
                 <div class="flex justify-between items-start">
                     <div>
-                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Volume Fitas Arquear</p>
-                        <h3 class="text-2xl font-bold text-white mt-1">124,5 Ton</h3>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Volume de Arquear</p>
+                        <h3 id="kpiVolume" class="text-2xl font-bold text-white mt-1">124,5 Ton</h3>
                     </div>
                     <div class="bg-blue-500/10 text-blue-400 p-3 rounded-lg">
                         <i class="fa-solid fa-boxes-stacked text-lg"></i>
@@ -69,14 +102,14 @@
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Máquinas Entregues</p>
-                        <h3 class="text-2xl font-bold text-white mt-1">38 Unidades</h3>
+                        <h3 id="kpiMaquinas" class="text-2xl font-bold text-white mt-1">38 Unidades</h3>
                     </div>
                     <div class="bg-purple-500/10 text-purple-400 p-3 rounded-lg">
                         <i class="fa-solid fa-gears text-lg"></i>
                     </div>
                 </div>
                 <p class="text-xs text-emerald-400 mt-3 flex items-center gap-1 font-medium">
-                    <i class="fa-solid fa-arrow-trend-up"></i> +12% <span class="text-slate-400 font-normal">Sistemas de Embalagem</span>
+                    <i class="fa-solid fa-arrow-trend-up"></i> +12% <span class="text-slate-400 font-normal">Equipamentos</span>
                 </p>
             </div>
 
@@ -84,7 +117,7 @@
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Ticket Médio B2B</p>
-                        <h3 class="text-2xl font-bold text-white mt-1">R$ 24.600</h3>
+                        <h3 id="kpiTicket" class="text-2xl font-bold text-white mt-1">R$ 24.600</h3>
                     </div>
                     <div class="bg-amber-500/10 text-amber-400 p-3 rounded-lg">
                         <i class="fa-solid fa-receipt text-lg"></i>
@@ -100,11 +133,11 @@
         <!-- Seção de Gráficos Principais -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <!-- Gráfico de Evolução de Vendas (2 Colunas) -->
+            <!-- Gráfico de Linha -->
             <div class="lg:col-span-2 bg-slate-800 border border-slate-700 p-5 rounded-xl">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-base font-semibold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-chart-area text-emerald-400"></i> Evolução de Faturamento Mensal (2026)
+                        <i class="fa-solid fa-chart-area text-emerald-400"></i> Evolução de Faturamento Mensal
                     </h2>
                     <span class="text-xs text-slate-400 bg-slate-700/50 px-2.5 py-1 rounded">Valores em R$</span>
                 </div>
@@ -113,11 +146,11 @@
                 </div>
             </div>
 
-            <!-- Gráfico de Rosca (1 Coluna) -->
+            <!-- Gráfico de Rosca -->
             <div class="bg-slate-800 border border-slate-700 p-5 rounded-xl">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-base font-semibold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-chart-pie text-blue-400"></i> Vendas por Categoria
+                        <i class="fa-solid fa-chart-pie text-blue-400"></i> Mix por Categoria
                     </h2>
                 </div>
                 <div class="relative h-72 flex items-center justify-center">
@@ -130,7 +163,7 @@
         <!-- Gráfico por Região e Tabela -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <!-- Gráfico de Barras por Estado -->
+            <!-- Gráfico por Região -->
             <div class="bg-slate-800 border border-slate-700 p-5 rounded-xl">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-base font-semibold text-white flex items-center gap-2">
@@ -142,7 +175,7 @@
                 </div>
             </div>
 
-            <!-- Tabela de Pedidos Recentes Industriais -->
+            <!-- Tabela de Pedidos Recentes -->
             <div class="lg:col-span-2 bg-slate-800 border border-slate-700 p-5 rounded-xl flex flex-col justify-between">
                 <div>
                     <div class="flex justify-between items-center mb-4">
@@ -158,40 +191,13 @@
                                 <tr>
                                     <th class="p-3">Cliente / Indústria</th>
                                     <th class="p-3">Produto Principal</th>
-                                    <th class="p-3">Qtd / Vol</th>
+                                    <th class="p-3">Volume</th>
                                     <th class="p-3">Valor Total</th>
                                     <th class="p-3 text-center">Status</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-700/50">
-                                <tr class="hover:bg-slate-700/30 transition-colors">
-                                    <td class="p-3 font-medium text-white">Metalúrgica Sul S.A.</td>
-                                    <td class="p-3">Fita de Arquear PET 19mm</td>
-                                    <td class="p-3">15 Toneladas</td>
-                                    <td class="p-3 font-semibold text-emerald-400">R$ 142.000</td>
-                                    <td class="p-3 text-center"><span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-xs">Faturado</span></td>
-                                </tr>
-                                <tr class="hover:bg-slate-700/30 transition-colors">
-                                    <td class="p-3 font-medium text-white">Papelaria e Embalagens SC</td>
-                                    <td class="p-3">Fitas Adesivas Personalizadas</td>
-                                    <td class="p-3">2.500 Rolo(s)</td>
-                                    <td class="p-3 font-semibold text-emerald-400">R$ 38.500</td>
-                                    <td class="p-3 text-center"><span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-xs">Faturado</span></td>
-                                </tr>
-                                <tr class="hover:bg-slate-700/30 transition-colors">
-                                    <td class="p-3 font-medium text-white">Madeireira Vale do Itajaí</td>
-                                    <td class="p-3">Máquina Arquear Automática</td>
-                                    <td class="p-3">2 Unidades</td>
-                                    <td class="p-3 font-semibold text-emerald-400">R$ 89.000</td>
-                                    <td class="p-3 text-center"><span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded text-xs">Em Produção</span></td>
-                                </tr>
-                                <tr class="hover:bg-slate-700/30 transition-colors">
-                                    <td class="p-3 font-medium text-white">Agroindústria Paranaense</td>
-                                    <td class="p-3">Fita PP Virgem 12mm</td>
-                                    <td class="p-3">8 Toneladas</td>
-                                    <td class="p-3 font-semibold text-emerald-400">R$ 76.200</td>
-                                    <td class="p-3 text-center"><span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded text-xs">Em Transporte</span></td>
-                                </tr>
+                            <tbody id="tabelaPedidos" class="divide-y divide-slate-700/50">
+                                <!-- Preenchido via JavaScript -->
                             </tbody>
                         </table>
                     </div>
@@ -202,15 +208,12 @@
 
     </main>
 
-    <!-- Script de Inicialização dos Gráficos com Chart.js -->
     <script>
-        // Configuração de Estilo Global do Chart.js
         Chart.defaults.color = '#94a3b8';
         Chart.defaults.font.family = 'sans-serif';
 
-        // 1. Gráfico de Evolução Mensal (Linha)
-        const ctxEvolucao = document.getElementById('chartEvolucao').getContext('2d');
-        new Chart(ctxEvolucao, {
+        // Dados Iniciais do Gráfico
+        const evolucaoChart = new Chart(document.getElementById('chartEvolucao').getContext('2d'), {
             type: 'line',
             data: {
                 labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul'],
@@ -224,62 +227,71 @@
                     tension: 0.3
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { grid: { color: '#334155' } },
-                    x: { grid: { display: false } }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#334155' } }, x: { grid: { display: false } } } }
         });
 
-        // 2. Gráfico de Categorias (Rosca)
-        const ctxCategorias = document.getElementById('chartCategorias').getContext('2d');
-        new Chart(ctxCategorias, {
+        new Chart(document.getElementById('chartCategorias').getContext('2d'), {
             type: 'doughnut',
             data: {
-                labels: ['Fitas PET/PP', 'Fitas Adesivas', 'Máquinas de Embalagem', 'Insumos / Peças'],
-                datasets: [{
-                    data: [45, 25, 20, 10],
-                    backgroundColor: ['#10b981', '#3b82f6', '#a855f7', '#f59e0b'],
-                    borderWidth: 0
-                }]
+                labels: ['Fitas PET/PP', 'Fitas Adesivas', 'Máquinas', 'Peças'],
+                datasets: [{ data: [45, 25, 20, 10], backgroundColor: ['#10b981', '#3b82f6', '#a855f7', '#f59e0b'], borderWidth: 0 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } }
-                },
-                cutout: '70%'
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } } }, cutout: '70%' }
         });
 
-        // 3. Gráfico de Vendas por Estado (Barras)
-        const ctxRegioes = document.getElementById('chartRegioes').getContext('2d');
-        new Chart(ctxRegioes, {
+        new Chart(document.getElementById('chartRegioes').getContext('2d'), {
             type: 'bar',
             data: {
                 labels: ['SC', 'RS', 'PR', 'SP', 'MG'],
-                datasets: [{
-                    label: 'Vendas (em R$ mil)',
-                    data: [650, 420, 380, 290, 105],
-                    backgroundColor: '#3b82f6',
-                    borderRadius: 6
-                }]
+                datasets: [{ label: 'Vendas (R$ mil)', data: [650, 420, 380, 290, 105], backgroundColor: '#3b82f6', borderRadius: 6 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { grid: { color: '#334155' } },
-                    x: { grid: { display: false } }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#334155' } }, x: { grid: { display: false } } } }
         });
+
+        // Lista de Pedidos
+        const pedidos = [
+            { cliente: "Metalúrgica Sul S.A.", produto: "Fita PET 19mm", vol: "15 Toneladas", valor: "R$ 142.000", status: "Faturado", badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
+            { cliente: "Papelaria e Embalagens SC", produto: "Fita Adesiva Personalizada", vol: "2.500 Rolos", valor: "R$ 38.500", status: "Faturado", badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
+            { cliente: "Madeireira Vale do Itajaí", produto: "Máquina Automática Arquear", vol: "2 Unidades", valor: "R$ 89.000", status: "Em Produção", badge: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
+            { cliente: "Agroindústria Paranaense", produto: "Fita PP Virgem 12mm", vol: "8 Toneladas", valor: "R$ 76.200", status: "Em Transporte", badge: "bg-blue-500/10 text-blue-400 border-blue-500/20" }
+        ];
+
+        function renderTabela() {
+            const tbody = document.getElementById('tabelaPedidos');
+            tbody.innerHTML = pedidos.map(p => `
+                <tr class="hover:bg-slate-700/30 transition-colors">
+                    <td class="p-3 font-medium text-white">${p.cliente}</td>
+                    <td class="p-3">${p.produto}</td>
+                    <td class="p-3">${p.vol}</td>
+                    <td class="p-3 font-semibold text-emerald-400">${p.valor}</td>
+                    <td class="p-3 text-center"><span class="border px-2 py-0.5 rounded text-xs ${p.badge}">${p.status}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function atualizarDashboard() {
+            const periodo = document.getElementById('filtroPeriodo').value;
+            if (periodo === 'q2') {
+                document.getElementById('kpiFaturamento').innerText = 'R$ 4.830.000';
+                evolucaoChart.data.datasets[0].data = [1500000, 1620000, 1710000];
+                evolucaoChart.data.labels = ['Abr', 'Mai', 'Jun'];
+            } else if (periodo === 'ano') {
+                document.getElementById('kpiFaturamento').innerText = 'R$ 10.505.200';
+                evolucaoChart.data.datasets[0].data = [1200000, 1350000, 1280000, 1500000, 1620000, 1710000, 1845200];
+                evolucaoChart.data.labels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul'];
+            } else {
+                document.getElementById('kpiFaturamento').innerText = 'R$ 1.845.200';
+                evolucaoChart.data.datasets[0].data = [1200000, 1350000, 1280000, 1500000, 1620000, 1710000, 1845200];
+                evolucaoChart.data.labels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul'];
+            }
+            evolucaoChart.update();
+        }
+
+        function exportarRelatorio() {
+            alert("Relatório CSV compilado com sucesso! Iniciando download...");
+        }
+
+        renderTabela();
     </script>
 </body>
 </html>
