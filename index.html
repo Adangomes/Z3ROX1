@@ -1,602 +1,285 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ZERO-X GOD MODE</title>
-<style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-body{
-    overflow:hidden;
-    background:#000;
-    font-family:Arial,sans-serif;
-    color:#00f2ff;
-}
-canvas{
-    display:block;
-}
-/* HUD */
-#hud{
-    position:fixed;
-    top:30px;
-    left:50%;
-    transform:translateX(-50%);
-    text-align:center;
-    z-index:10;
-    width:100%;
-}
-#title{
-    font-size:30px;
-    font-weight:bold;
-    letter-spacing:6px;
-    text-shadow:0 0 20px #00f2ff;
-}
-#status{
-    margin-top:10px;
-    font-size:15px;
-    color:rgba(0,242,255,.8);
-}
-/* BOTÃO START */
-#start{
-    position:fixed;
-    bottom:40px;
-    left:50%;
-    transform:translateX(-50%);
-    padding:18px 45px;
-    border-radius:50px;
-    border:2px solid #00f2ff;
-    background:transparent;
-    color:#00f2ff;
-    font-size:15px;
-    font-weight:bold;
-    letter-spacing:2px;
-    cursor:pointer;
-    box-shadow:0 0 25px #00f2ff;
-    transition:.3s;
-    z-index:20;
-}
-#start:hover{
-    background:#00f2ff;
-    color:#000;
-}
-/* BOTÃO FALAR */
-#talk{
-    position:fixed;
-    bottom:110px;
-    left:50%;
-    transform:translateX(-50%);
-    padding:16px 35px;
-    border-radius:50px;
-    border:none;
-    background:#00f2ff;
-    color:#000;
-    font-size:15px;
-    font-weight:bold;
-    cursor:pointer;
-    box-shadow:0 0 20px #00f2ff;
-    z-index:20;
-    display:none;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Vendas & BI | IMAM Embalagens</title>
+    <!-- Tailwind CSS para Estilização -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js para Gráficos Interativos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
-<div id="hud">
-    <div id="title">
-        ZERO-X V6
-    </div>
-    <div id="status">
-        Sistema aguardando inicialização...
-    </div>
-</div>
-<button id="talk">
-🎤 FALAR
-</button>
-<button id="start">
-INICIAR ZERO-X
-</button>
-<div id="player"></div>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<script src="https://www.youtube.com/iframe_api"></script>
-<script>
-// ======================================================
-// CONFIG
-// ======================================================
-const status =
-document.getElementById("status");
-let recognition;
-let synth =
-window.speechSynthesis;
-let falando = false;
-let player;
-let compromissos = [];
-let explosionFactor = 1;
-let targetExplosion = 1;
-// ======================================================
-// MICROFONE
-// ======================================================
-let audioContext;
-let analyser;
-let microphone;
-let dataArray;
-async function iniciarMic(){
-    const stream =
-    await navigator.mediaDevices.getUserMedia({
-        audio:true
-    });
-    audioContext =
-    new AudioContext();
-    analyser =
-    audioContext.createAnalyser();
-    analyser.fftSize = 256;
-    const bufferLength =
-    analyser.frequencyBinCount;
-    dataArray =
-    new Uint8Array(bufferLength);
-    microphone =
-    audioContext.createMediaStreamSource(stream);
-    microphone.connect(analyser);
-}
-// ======================================================
-// FALAR
-// ======================================================
-function falar(texto){
-    falando = true;
-    if(synth.speaking){
-        synth.cancel();
-    }
-    let voz =
-    new SpeechSynthesisUtterance(texto);
-    voz.lang = "pt-BR";
-    voz.rate = 1;
-    voz.pitch = 0.9;
-    voz.onend = ()=>{
-        falando = false;
-    };
-    synth.speak(voz);
-    status.innerText =
-    "ZERO-X: " + texto;
-}
-// ======================================================
-// YOUTUBE
-// ======================================================
-function onYouTubeIframeAPIReady(){
-    player =
-    new YT.Player('player',{
-        height:'0',
-        width:'0',
-        events:{
-            onReady:e=>{
-                e.target.setVolume(100);
+<body class="bg-slate-900 text-slate-100 font-sans antialiased min-h-screen">
+
+    <!-- Header / Navbar -->
+    <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center space-x-3">
+            <div class="bg-emerald-500 text-slate-900 p-2 rounded-lg font-bold text-xl">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-wide text-white">IMAM - Inteligência de Mercado</h1>
+                <p class="text-xs text-slate-400">Monitoramento de Vendas & Performance B2B</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Dados em Tempo Real
+            </span>
+        </div>
+    </header>
+
+    <main class="p-6 max-w-7xl mx-auto space-y-6">
+
+        <!-- Cards de Métricas (KPIs) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-sm">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Faturamento Total</p>
+                        <h3 class="text-2xl font-bold text-white mt-1">R$ 1.845.200</h3>
+                    </div>
+                    <div class="bg-emerald-500/10 text-emerald-400 p-3 rounded-lg">
+                        <i class="fa-solid fa-dollar-sign text-lg"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-emerald-400 mt-3 flex items-center gap-1 font-medium">
+                    <i class="fa-solid fa-arrow-trend-up"></i> +14.2% <span class="text-slate-400 font-normal">vs mês anterior</span>
+                </p>
+            </div>
+
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-sm">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Volume Fitas Arquear</p>
+                        <h3 class="text-2xl font-bold text-white mt-1">124,5 Ton</h3>
+                    </div>
+                    <div class="bg-blue-500/10 text-blue-400 p-3 rounded-lg">
+                        <i class="fa-solid fa-boxes-stacked text-lg"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-emerald-400 mt-3 flex items-center gap-1 font-medium">
+                    <i class="fa-solid fa-arrow-trend-up"></i> +8.5% <span class="text-slate-400 font-normal">Meta atingida</span>
+                </p>
+            </div>
+
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-sm">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Máquinas Entregues</p>
+                        <h3 class="text-2xl font-bold text-white mt-1">38 Unidades</h3>
+                    </div>
+                    <div class="bg-purple-500/10 text-purple-400 p-3 rounded-lg">
+                        <i class="fa-solid fa-gears text-lg"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-emerald-400 mt-3 flex items-center gap-1 font-medium">
+                    <i class="fa-solid fa-arrow-trend-up"></i> +12% <span class="text-slate-400 font-normal">Sistemas de Embalagem</span>
+                </p>
+            </div>
+
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-sm">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Ticket Médio B2B</p>
+                        <h3 class="text-2xl font-bold text-white mt-1">R$ 24.600</h3>
+                    </div>
+                    <div class="bg-amber-500/10 text-amber-400 p-3 rounded-lg">
+                        <i class="fa-solid fa-receipt text-lg"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-400 mt-3 flex items-center gap-1">
+                    <i class="fa-solid fa-minus"></i> Estável em relação à média
+                </p>
+            </div>
+
+        </div>
+
+        <!-- Seção de Gráficos Principais -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Gráfico de Evolução de Vendas (2 Colunas) -->
+            <div class="lg:col-span-2 bg-slate-800 border border-slate-700 p-5 rounded-xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-base font-semibold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-area text-emerald-400"></i> Evolução de Faturamento Mensal (2026)
+                    </h2>
+                    <span class="text-xs text-slate-400 bg-slate-700/50 px-2.5 py-1 rounded">Valores em R$</span>
+                </div>
+                <div class="relative h-72">
+                    <canvas id="chartEvolucao"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico de Rosca (1 Coluna) -->
+            <div class="bg-slate-800 border border-slate-700 p-5 rounded-xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-base font-semibold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-blue-400"></i> Vendas por Categoria
+                    </h2>
+                </div>
+                <div class="relative h-72 flex items-center justify-center">
+                    <canvas id="chartCategorias"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Gráfico por Região e Tabela -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Gráfico de Barras por Estado -->
+            <div class="bg-slate-800 border border-slate-700 p-5 rounded-xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-base font-semibold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-map-location-dot text-amber-400"></i> Vendas por Estado
+                    </h2>
+                </div>
+                <div class="relative h-64">
+                    <canvas id="chartRegioes"></canvas>
+                </div>
+            </div>
+
+            <!-- Tabela de Pedidos Recentes Industriais -->
+            <div class="lg:col-span-2 bg-slate-800 border border-slate-700 p-5 rounded-xl flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-base font-semibold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-purple-400"></i> Últimos Pedidos Industriais
+                        </h2>
+                        <span class="text-xs text-slate-400">Atualizado recentemente</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-slate-300">
+                            <thead class="bg-slate-700/50 text-xs uppercase text-slate-400">
+                                <tr>
+                                    <th class="p-3">Cliente / Indústria</th>
+                                    <th class="p-3">Produto Principal</th>
+                                    <th class="p-3">Qtd / Vol</th>
+                                    <th class="p-3">Valor Total</th>
+                                    <th class="p-3 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-700/50">
+                                <tr class="hover:bg-slate-700/30 transition-colors">
+                                    <td class="p-3 font-medium text-white">Metalúrgica Sul S.A.</td>
+                                    <td class="p-3">Fita de Arquear PET 19mm</td>
+                                    <td class="p-3">15 Toneladas</td>
+                                    <td class="p-3 font-semibold text-emerald-400">R$ 142.000</td>
+                                    <td class="p-3 text-center"><span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-xs">Faturado</span></td>
+                                </tr>
+                                <tr class="hover:bg-slate-700/30 transition-colors">
+                                    <td class="p-3 font-medium text-white">Papelaria e Embalagens SC</td>
+                                    <td class="p-3">Fitas Adesivas Personalizadas</td>
+                                    <td class="p-3">2.500 Rolo(s)</td>
+                                    <td class="p-3 font-semibold text-emerald-400">R$ 38.500</td>
+                                    <td class="p-3 text-center"><span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-xs">Faturado</span></td>
+                                </tr>
+                                <tr class="hover:bg-slate-700/30 transition-colors">
+                                    <td class="p-3 font-medium text-white">Madeireira Vale do Itajaí</td>
+                                    <td class="p-3">Máquina Arquear Automática</td>
+                                    <td class="p-3">2 Unidades</td>
+                                    <td class="p-3 font-semibold text-emerald-400">R$ 89.000</td>
+                                    <td class="p-3 text-center"><span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded text-xs">Em Produção</span></td>
+                                </tr>
+                                <tr class="hover:bg-slate-700/30 transition-colors">
+                                    <td class="p-3 font-medium text-white">Agroindústria Paranaense</td>
+                                    <td class="p-3">Fita PP Virgem 12mm</td>
+                                    <td class="p-3">8 Toneladas</td>
+                                    <td class="p-3 font-semibold text-emerald-400">R$ 76.200</td>
+                                    <td class="p-3 text-center"><span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded text-xs">Em Transporte</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Script de Inicialização dos Gráficos com Chart.js -->
+    <script>
+        // Configuração de Estilo Global do Chart.js
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = 'sans-serif';
+
+        // 1. Gráfico de Evolução Mensal (Linha)
+        const ctxEvolucao = document.getElementById('chartEvolucao').getContext('2d');
+        new Chart(ctxEvolucao, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul'],
+                datasets: [{
+                    label: 'Faturamento R$',
+                    data: [1200000, 1350000, 1280000, 1500000, 1620000, 1710000, 1845200],
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.3
+                }]
             },
-            onStateChange:e=>{
-                if(e.data === 1){
-                    targetExplosion = 2;
-                }else{
-                    targetExplosion = 1;
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: '#334155' } },
+                    x: { grid: { display: false } }
                 }
             }
-        }
-    });
-}
-// ======================================================
-// TOCAR MÚSICA
-// ======================================================
-function tocarMusica(nome){
-    try{
-        falar(
-        "Tocando " + nome
-        );
-        player.loadVideoById(
-        "dQw4w9WgXcQ"
-        );
-        setTimeout(()=>{
-            player.playVideo();
-        },1000);
-    }catch{
-        falar(
-        "Erro ao tocar música."
-        );
-    }
-}
-// ======================================================
-// IA
-// ======================================================
-function responder(fala){
-    console.log(
-    "Você disse:",
-    fala
-    );
-    fala = fala.toLowerCase();
-    fala = fala
-    .replace(
-    /zero\s?x|zerox|zero xis|xis/gi,
-    ""
-    )
-    .trim();
-    // HORAS
-    if(
-        fala.includes("hora")
-    ){
-        const agora =
-        new Date().toLocaleTimeString(
-            "pt-BR",
-            {
-                hour:"2-digit",
-                minute:"2-digit"
+        });
+
+        // 2. Gráfico de Categorias (Rosca)
+        const ctxCategorias = document.getElementById('chartCategorias').getContext('2d');
+        new Chart(ctxCategorias, {
+            type: 'doughnut',
+            data: {
+                labels: ['Fitas PET/PP', 'Fitas Adesivas', 'Máquinas de Embalagem', 'Insumos / Peças'],
+                datasets: [{
+                    data: [45, 25, 20, 10],
+                    backgroundColor: ['#10b981', '#3b82f6', '#a855f7', '#f59e0b'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } }
+                },
+                cutout: '70%'
             }
-        );
-        falar(
-        "Agora são " + agora
-        );
-        return;
-    }
-    // DATA
-    if(
-        fala.includes("data") ||
-        fala.includes("dia")
-    ){
-        const hoje =
-        new Date().toLocaleDateString(
-            "pt-BR"
-        );
-        falar(
-        "Hoje é " + hoje
-        );
-        return;
-    }
-    // TOCAR MÚSICA
-    if(
-        fala.includes("toca") ||
-        fala.includes("coloca")
-    ){
-        let musica =
-        fala
-        .replace("toca","")
-        .replace("coloca","")
-        .trim();
-        if(!musica){
-            falar(
-            "Diga o nome da música."
-            );
-            return;
-        }
-        tocarMusica(musica);
-        return;
-    }
-    // PARAR MÚSICA
-    if(
-        fala.includes("parar") ||
-        fala.includes("pausa")
-    ){
-        if(player){
-            player.pauseVideo();
-        }
-        falar(
-        "Música pausada."
-        );
-        return;
-    }
-    // CORES
-    if(fala.includes("vermelho")){
-        globe.material.color.setHex(
-        0xff0000
-        );
-        falar(
-        "Modo vermelho ativado."
-        );
-        return;
-    }
-    if(fala.includes("verde")){
-        globe.material.color.setHex(
-        0x00ff00
-        );
-        falar(
-        "Modo verde ativado."
-        );
-        return;
-    }
-    if(fala.includes("roxo")){
-        globe.material.color.setHex(
-        0x8a2be2
-        );
-        falar(
-        "Modo roxo ativado."
-        );
-        return;
-    }
-    if(fala.includes("azul")){
-        globe.material.color.setHex(
-        0x00f2ff
-        );
-        falar(
-        "Modo azul ativado."
-        );
-        return;
-    }
-    // AGENDAR
-    if(
-        fala.includes("agendar")
-    ){
-        let compromisso =
-        fala
-        .replace("agendar","")
-        .trim();
-        if(compromisso){
-            compromissos.push(
-            compromisso
-            );
-            falar(
-            "Compromisso salvo."
-            );
-        }else{
-            falar(
-            "Diga o compromisso."
-            );
-        }
-        return;
-    }
-    // LISTAR
-    if(
-        fala.includes("meus compromissos")
-    ){
-        if(compromissos.length === 0){
-            falar(
-            "Você não possui compromissos."
-            );
-        }else{
-            falar(
-            compromissos.join(", ")
-            );
-        }
-        return;
-    }
-    // IDENTIDADE
-    if(
-        fala.includes("quem é você")
-    ){
-        falar(
-        "Eu sou o sistema Zero X."
-        );
-        return;
-    }
-    // PADRÃO
-    falar(
-    "Comando não reconhecido."
-    );
-}
-// ======================================================
-// RECONHECIMENTO DE VOZ
-// ======================================================
-function iniciarVoz(){
-    const SpeechRecognition =
-    window.SpeechRecognition ||
-    window.webkitSpeechRecognition;
-    if(!SpeechRecognition){
-        alert(
-        "Seu navegador não suporta reconhecimento de voz."
-        );
-        return;
-    }
-    recognition =
-    new SpeechRecognition();
-    recognition.lang = "pt-BR";
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-    recognition.onstart = ()=>{
-        status.innerText =
-        "Escutando...";
-    };
-    recognition.onresult = (e)=>{
-        if(falando) return;
-        const fala =
-        e.results[0][0]
-        .transcript
-        .toLowerCase();
-        status.innerText =
-        "Você: " + fala;
-        responder(fala);
-    };
-    recognition.onerror = (e)=>{
-        console.log(e.error);
-        status.innerText =
-        "Erro: " + e.error;
-    };
-    recognition.onend = ()=>{
-        status.innerText =
-        "Clique no botão FALAR";
-    };
-}
-// ======================================================
-// THREE JS
-// ======================================================
-const scene =
-new THREE.Scene();
-const camera =
-new THREE.PerspectiveCamera(
-75,
-innerWidth / innerHeight,
-0.1,
-1000
-);
-camera.position.z = 5;
-const renderer =
-new THREE.WebGLRenderer({
-    alpha:true,
-    antialias:true
-});
-renderer.setSize(
-innerWidth,
-innerHeight
-);
-document.body.appendChild(
-renderer.domElement
-);
-// ======================================================
-// GLOBO
-// ======================================================
-const geo =
-new THREE.SphereGeometry(
-1.6,
-32,
-32
-);
-const base =
-geo.attributes.position.array.slice();
-const globe =
-new THREE.Points(
-    geo,
-    new THREE.PointsMaterial({
-        color:0x00f2ff,
-        size:0.02
-    })
-);
-scene.add(globe);
-// ======================================================
-// PARTÍCULAS
-// ======================================================
-const pGeo =
-new THREE.BufferGeometry();
-const arr =
-new Float32Array(1000 * 3);
-for(let i=0;i<arr.length;i++){
-    arr[i] =
-    (Math.random() - 0.5) * 30;
-}
-pGeo.setAttribute(
-'position',
-new THREE.BufferAttribute(
-    arr,
-    3
-)
-);
-const particles =
-new THREE.Points(
-    pGeo,
-    new THREE.PointsMaterial({
-        color:0x00f2ff,
-        size:0.02
-    })
-);
-scene.add(particles);
-// ======================================================
-// ANIMAÇÃO
-// ======================================================
-let pulse = 0;
-function animate(){
-    requestAnimationFrame(
-    animate
-    );
-    pulse += 0.05;
-    let micForce = 1;
-    if(analyser){
-        analyser.getByteFrequencyData(
-        dataArray
-        );
-        let soma = 0;
-        for(
-            let i=0;
-            i<dataArray.length;
-            i++
-        ){
-            soma += dataArray[i];
-        }
-        let media =
-        soma / dataArray.length;
-        micForce =
-        1 + media / 80;
-    }
-    explosionFactor +=
-    (
-        targetExplosion -
-        explosionFactor
-    ) * 0.08;
-    const attr =
-    globe.geometry.attributes.position;
-    for(
-        let i=0;
-        i<attr.count;
-        i++
-    ){
-        const scale =
-        (
-            explosionFactor *
-            micForce
-        ) +
-        Math.sin(
-            i + pulse
-        ) * 0.03;
-        attr.setXYZ(
-            i,
-            base[i*3] * scale,
-            base[i*3+1] * scale,
-            base[i*3+2] * scale
-        );
-    }
-    attr.needsUpdate = true;
-    globe.rotation.y += 0.003;
-    particles.rotation.y += 0.0005;
-    renderer.render(
-        scene,
-        camera
-    );
-}
-animate();
-// ======================================================
-// START
-// ======================================================
-document.getElementById("start")
-.onclick = async ()=>{
-    try{
-        document.getElementById(
-        "start"
-        ).style.display = "none";
-        document.getElementById(
-        "talk"
-        ).style.display = "block";
-        await iniciarMic();
-        iniciarVoz();
-        setTimeout(()=>{
-            falar(
-            "Zero X ativado."
-            );
-        },1000);
-    }catch(err){
-        console.log(err);
-        alert(
-        "Permita o uso do microfone."
-        );
-    }
-};
-// ======================================================
-// BOTÃO FALAR
-// ======================================================
-document.getElementById("talk")
-.onclick = ()=>{
-    try{
-        recognition.start();
-    }catch(err){
-        console.log(err);
-    }
-};
-// ======================================================
-// RESIZE
-// ======================================================
-window.addEventListener(
-'resize',
-()=>{
-    camera.aspect =
-    innerWidth / innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(
-        innerWidth,
-        innerHeight
-    );
-});
-</script>
+        });
+
+        // 3. Gráfico de Vendas por Estado (Barras)
+        const ctxRegioes = document.getElementById('chartRegioes').getContext('2d');
+        new Chart(ctxRegioes, {
+            type: 'bar',
+            data: {
+                labels: ['SC', 'RS', 'PR', 'SP', 'MG'],
+                datasets: [{
+                    label: 'Vendas (em R$ mil)',
+                    data: [650, 420, 380, 290, 105],
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: '#334155' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
