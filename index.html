@@ -3,54 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Power BI Report - IMAM Inteligência Comercial</title>
+    <title>Power BI Live Stream - IMAM Inteligência Comercial</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Estética idêntica ao Microsoft Power BI Desktop (Tema Moderno / Outspace Cinza Claro) */
-        body { background-color: #f3f3f3; color: #252423; font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif; }
-        .pbi-card { background: #ffffff; border: 1px solid #e1dfdd; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .pbi-card:hover { border-color: #b3b0af; }
-        /* Estilo de Segmentador de Dados (Slicer) clássico do Power BI */
-        .pbi-slicer { background: #ffffff; border: 1px solid #8a8886; }
+        body { background-color: #121212; color: #e1dfdd; font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif; overflow-x: hidden; }
+        .pbi-card { background: #1f1f1f; border: 1px solid #333333; box-shadow: 0 4px 20px rgba(0,0,0,0.5); position: relative; }
+        .pbi-card:hover { border-color: #0078d4; }
+        .pbi-slicer { background: #2d2d2d; border: 1px solid #555555; color: #fff; }
+        
+        /* Efeito de brilho holográfico / Cyberpunk sutil estilo a foto de referência */
+        .cyber-glow {
+            box-shadow: 0 0 25px rgba(0, 120, 212, 0.2);
+            border: 1px solid rgba(0, 120, 212, 0.4);
+        }
+        
+        /* Animação de pulso para dados em tempo real */
+        @keyframes livePulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.03); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .live-update {
+            animation: livePulse 0.8s ease-in-out;
+        }
     </style>
 </head>
-<body class="min-h-screen pb-8 flex flex-col justify-between">
+<body class="min-h-screen pb-8 flex flex-col justify-between cyber-glow">
 
-    <!-- Barra Superior / Faixa de Opções (Ribbon do Power BI) -->
-    <header class="bg-[#f8f8f8] border-b border-[#e1dfdd] px-4 py-2 flex flex-col md:flex-row justify-between items-center gap-3 select-none">
+    <!-- Barra Superior / Faixa do Power BI Service (Modo Dark Executivo) -->
+    <header class="bg-[#1f1f1f] border-b border-[#333333] px-4 py-2.5 flex flex-col md:flex-row justify-between items-center gap-3 select-none">
         <div class="flex items-center space-x-3 w-full md:w-auto">
-            <div class="bg-[#f2c811] text-[#252423] px-2.5 py-1 rounded font-black text-sm tracking-widest flex items-center gap-1.5 shadow-sm">
-                <i class="fa-solid fa-chart-column"></i> PBI
+            <div class="bg-[#f2c811] text-[#121212] px-2.5 py-1 rounded font-black text-sm tracking-widest flex items-center gap-1.5 shadow-md">
+                <i class="fa-solid fa-bolt"></i> STREAM
             </div>
             <div>
-                <h1 class="text-sm font-semibold text-[#252423] tracking-tight">Relatório de Desempenho Comercial &bull; Indústria</h1>
-                <p class="text-[11px] text-[#605e5c]">Atualizado há 3 minutos &bull; Modelo Semântico DirectQuery</p>
+                <h1 class="text-sm font-semibold text-white tracking-tight flex items-center gap-2">
+                    Painel IoT & Indústria 4.0 &bull; <span class="text-emerald-400 text-xs font-normal flex items-center gap-1"><i class="fa-solid fa-satellite-dish animate-pulse"></i> Ao Vivo (Streaming)</span>
+                </h1>
+                <p class="text-[11px] text-[#969696]">Atualização de telemetria em tempo real a cada 2 segundos</p>
             </div>
         </div>
         
         <div class="flex items-center gap-2 w-full md:w-auto justify-end">
-            <button onclick="exportarRelatorio()" class="bg-white hover:bg-[#f3f3f3] text-[#323130] text-xs font-medium px-3 py-1.5 rounded border border-[#8a8886] flex items-center gap-1.5 transition-all shadow-sm">
-                <i class="fa-solid fa-file-excel text-[#107c41]"></i> Analisar no Excel
+            <button onclick="exportarRelatorio()" class="bg-[#2d2d2d] hover:bg-[#3d3d3d] text-white text-xs font-medium px-3 py-1.5 rounded border border-[#555555] flex items-center gap-1.5 transition-all shadow-sm">
+                <i class="fa-solid fa-file-excel text-[#107c41]"></i> Exportar Stream CSV
             </button>
-            <span class="bg-[#107c41]/10 text-[#107c41] border border-[#107c41]/30 px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-[#107c41]"></span> Gateway Online
+            <span class="bg-[#107c41]/20 text-emerald-400 border border-[#107c41]/40 px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Push Dataset Ativo
             </span>
         </div>
     </header>
 
-    <!-- Filtros Globais (Segmentadores de Dados / Slicers Estilo Power BI) -->
+    <!-- Filtros Globais (Segmentadores Estilo Power BI) -->
     <div class="px-4 md:px-6 mt-4 max-w-[1600px] w-full mx-auto">
         <div class="pbi-card rounded p-3 flex flex-wrap items-center gap-4 text-xs">
-            <span class="font-semibold text-[#323130] flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
-                <i class="fa-solid fa-filter text-[#0078d4]"></i> Filtros de Página:
+            <span class="font-semibold text-slate-300 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                <i class="fa-solid fa-filter text-cyan-400"></i> Segmentador Ativo:
             </span>
             
             <div class="flex items-center gap-2">
-                <label class="text-[#605e5c] font-medium">Empresa B2B:</label>
-                <select id="filtroEmpresa" onchange="atualizarDashboard()" class="pbi-slicer text-[#323130] text-xs rounded px-2.5 py-1.5 outline-none font-medium cursor-pointer">
-                    <option value="todas">Visão Consolidada (Todas)</option>
+                <label class="text-slate-400 font-medium">Planta Industrial:</label>
+                <select id="filtroEmpresa" onchange="atualizarDashboard()" class="pbi-slicer text-xs rounded px-2.5 py-1.5 outline-none font-medium cursor-pointer">
+                    <option value="todas">Visão Consolidada (Todas as Plantas)</option>
                     <option value="metalurgica">Metalúrgica Sul S.A.</option>
                     <option value="papelaria">Papelaria e Embalagens SC</option>
                     <option value="madeireira">Madeireira Vale do Itajaí</option>
@@ -59,12 +75,8 @@
             </div>
 
             <div class="flex items-center gap-2">
-                <label class="text-[#605e5c] font-medium">Safra / Período:</label>
-                <select id="filtroPeriodo" onchange="atualizarDashboard()" class="pbi-slicer text-[#323130] text-xs rounded px-2.5 py-1.5 outline-none font-medium cursor-pointer">
-                    <option value="julho">Julho / 2026</option>
-                    <option value="q2">2º Trimestre (2026)</option>
-                    <option value="ano">Acumulado Ano (YTD)</option>
-                </select>
+                <label class="text-slate-400 font-medium">Frequência:</label>
+                <span class="bg-blue-500/10 text-blue-400 border border-blue-500/30 px-2 py-1 rounded text-[11px] font-bold">2000ms Real-Time</span>
             </div>
         </div>
     </div>
@@ -72,74 +84,77 @@
     <!-- Canvas Principal do Relatório -->
     <main class="p-4 md:p-6 max-w-[1600px] w-full mx-auto space-y-4 flex-grow">
 
-        <!-- Linha de Cartões (KPI Cards do Power BI) -->
+        <!-- Linha de Cartões (KPI Cards com Efeito Dinâmico) -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             
-            <div class="pbi-card rounded p-4 flex flex-col justify-between relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-1 h-full bg-[#0078d4]"></div>
+            <div class="pbi-card rounded p-4 flex flex-col justify-between overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-cyan-400"></div>
                 <div>
-                    <p class="text-xs font-semibold text-[#605e5c]">Faturamento Líquido (DAX)</p>
-                    <h3 id="kpiFaturamento" class="text-2xl font-bold text-[#323130] mt-1">R$ 1.845.200</h3>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Faturamento Real-Time</p>
+                    <h3 id="kpiFaturamento" class="text-2xl font-bold text-white mt-1 transition-all">R$ 1.845.200</h3>
                 </div>
-                <div id="badgeFaturamento" class="text-[11px] text-[#107c41] mt-3 flex items-center gap-1 font-semibold">
-                    <i class="fa-solid fa-arrow-up"></i> +14.2% <span class="text-[#605e5c] font-normal">vs. mês ant.</span>
+                <div id="badgeFaturamento" class="text-[11px] text-emerald-400 mt-3 flex items-center gap-1 font-semibold">
+                    <i class="fa-solid fa-arrow-trend-up"></i> +14.2% <span class="text-slate-400 font-normal">flutuando...</span>
                 </div>
             </div>
 
-            <div class="pbi-card rounded p-4 flex flex-col justify-between relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-1 h-full bg-[#107c41]"></div>
+            <div class="pbi-card rounded p-4 flex flex-col justify-between overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-emerald-400"></div>
                 <div>
-                    <p class="text-xs font-semibold text-[#605e5c]">Volume Fitas Arquear</p>
-                    <h3 id="kpiVolume" class="text-2xl font-bold text-[#323130] mt-1">124,5 Ton</h3>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Volume Fitas Arquear</p>
+                    <h3 id="kpiVolume" class="text-2xl font-bold text-white mt-1 transition-all">124,5 Ton</h3>
                 </div>
-                <div class="text-[11px] text-[#107c41] mt-3 flex items-center gap-1 font-semibold">
-                    <i class="fa-solid fa-arrow-up"></i> +8.5% <span class="text-[#605e5c] font-normal">Meta atingida</span>
+                <div class="text-[11px] text-emerald-400 mt-3 flex items-center gap-1 font-semibold">
+                    <i class="fa-solid fa-wave-square"></i> Telemetria Ativa
                 </div>
             </div>
 
-            <div class="pbi-card rounded p-4 flex flex-col justify-between relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-1 h-full bg-[#5c2d91]"></div>
+            <div class="pbi-card rounded p-4 flex flex-col justify-between overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-purple-500"></div>
                 <div>
-                    <p class="text-xs font-semibold text-[#605e5c]">Máquinas Industriais</p>
-                    <h3 id="kpiMaquinas" class="text-2xl font-bold text-[#323130] mt-1">38 Unidades</h3>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Máquinas em Operação</p>
+                    <h3 id="kpiMaquinas" class="text-2xl font-bold text-white mt-1 transition-all">38 Unidades</h3>
                 </div>
-                <div class="text-[11px] text-[#107c41] mt-3 flex items-center gap-1 font-semibold">
-                    <i class="fa-solid fa-arrow-up"></i> +12.0% <span class="text-[#605e5c] font-normal">Equipamentos</span>
+                <div class="text-[11px] text-purple-400 mt-3 flex items-center gap-1 font-semibold">
+                    <i class="fa-solid fa-microchip"></i> 100% Online
                 </div>
             </div>
 
-            <div class="pbi-card rounded p-4 flex flex-col justify-between relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-1 h-full bg-[#d83b01]"></div>
+            <div class="pbi-card rounded p-4 flex flex-col justify-between overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
                 <div>
-                    <p class="text-xs font-semibold text-[#605e5c]">Ticket Médio Ponderado</p>
-                    <h3 id="kpiTicket" class="text-2xl font-bold text-[#323130] mt-1">R$ 24.600</h3>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Ticket Médio Dinâmico</p>
+                    <h3 id="kpiTicket" class="text-2xl font-bold text-white mt-1 transition-all">R$ 24.600</h3>
                 </div>
-                <div class="text-[11px] text-[#605e5c] mt-3 flex items-center gap-1 font-normal">
-                    <i class="fa-solid fa-equals"></i> Sem variação relevante
+                <div class="text-[11px] text-slate-400 mt-3 flex items-center gap-1 font-normal">
+                    <i class="fa-solid fa-sync fa-spin"></i> Atualizando oscilação
                 </div>
             </div>
 
         </div>
 
-        <!-- Seção de Gráficos (Visuais Principais) -->
+        <!-- Seção de Gráficos (Movimentação Contínua em Tempo Real) -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
             
-            <!-- Gráfico de Linhas (Evolução Temporal) -->
+            <!-- Gráfico de Linhas com Movimento Contínuo -->
             <div class="lg:col-span-2 pbi-card rounded p-4 flex flex-col justify-between">
-                <div class="flex justify-between items-center mb-2 pb-2 border-b border-[#f3f3f3]">
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-[#323130]">Evolução de Faturamento Acumulado (R$)</h2>
-                    <i class="fa-solid fa-ellipsis-vertical text-[#605e5c] cursor-pointer"></i>
+                <div class="flex justify-between items-center mb-2 pb-2 border-b border-[#333333]">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line"></i> Oscilação de Faturamento em Tempo Real (Live Stream)
+                    </h2>
+                    <span class="text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded font-mono animate-pulse">LIVE DATA</span>
                 </div>
                 <div class="relative h-64">
                     <canvas id="chartEvolucao"></canvas>
                 </div>
             </div>
 
-            <!-- Gráfico de Rosca (Divisão por Categoria de Produto) -->
+            <!-- Gráfico de Rosca (Mix de Categorias com Pequenas Variações) -->
             <div class="pbi-card rounded p-4 flex flex-col justify-between">
-                <div class="flex justify-between items-center mb-2 pb-2 border-b border-[#f3f3f3]">
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-[#323130]">Composição por Categoria</h2>
-                    <i class="fa-solid fa-ellipsis-vertical text-[#605e5c] cursor-pointer"></i>
+                <div class="flex justify-between items-center mb-2 pb-2 border-b border-[#333333]">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie"></i> Participação de Mercado
+                    </h2>
                 </div>
                 <div class="relative h-64 flex items-center justify-center">
                     <canvas id="chartCategorias"></canvas>
@@ -148,26 +163,28 @@
 
         </div>
 
-        <!-- Tabela Detalhada (Matriz / Tabela do Power BI) -->
+        <!-- Tabela Dinâmica com Transações Entrando ao Vivo -->
         <div class="pbi-card rounded p-4">
-            <div class="flex justify-between items-center mb-3 pb-2 border-b border-[#f3f3f3]">
-                <h2 class="text-xs font-bold uppercase tracking-wider text-[#323130]">Detalhamento de Transações e Pedidos Faturados</h2>
-                <span class="text-[11px] text-[#605e5c]">Contexto de Linha Ativo</span>
+            <div class="flex justify-between items-center mb-3 pb-2 border-b border-[#333333]">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+                    <i class="fa-solid fa-list-ol"></i> Feed de Transações Industriais Recentes (Streaming)
+                </h2>
+                <span class="text-[11px] text-slate-400 flex items-center gap-1"><i class="fa-solid fa-circle text-emerald-400 text-[8px]"></i> Capturando pacotes TCP</span>
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs text-[#323130]">
-                    <thead class="bg-[#f3f3f3] text-[#605e5c] uppercase text-[10px] font-bold border-b border-[#e1dfdd]">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-[#2d2d2d] text-slate-400 uppercase text-[10px] font-bold border-b border-[#444444]">
                         <tr>
                             <th class="p-2.5">Cliente / Indústria</th>
                             <th class="p-2.5">Linha de Produto</th>
                             <th class="p-2.5">Volume Medido</th>
                             <th class="p-2.5">Valor Faturado</th>
-                            <th class="p-2.5 text-center">Status do Pedido</th>
+                            <th class="p-2.5 text-center">Status do Sinal</th>
                         </tr>
                     </thead>
-                    <tbody id="tabelaPedidos" class="divide-y divide-[#e1dfdd]">
-                        <!-- Renderizado dinamicamente via JS -->
+                    <tbody id="tabelaPedidos" class="divide-y divide-[#333333]">
+                        <!-- Renderizado via JS -->
                     </tbody>
                 </table>
             </div>
@@ -176,29 +193,37 @@
     </main>
 
     <!-- Rodapé Estilo Power BI Service -->
-    <footer class="bg-white border-t border-[#e1dfdd] px-6 py-2 text-center text-[11px] text-[#605e5c] flex justify-between items-center max-w-[1600px] w-full mx-auto rounded-b">
-        <span>Página 1 de 1 &bull; Modo de Exibição Otimizado para Apresentação Executiva</span>
-        <span class="font-medium text-[#0078d4]">Microsoft Power BI Embedded Demo</span>
+    <footer class="bg-[#1f1f1f] border-t border-[#333333] px-6 py-2 text-center text-[11px] text-slate-400 flex justify-between items-center max-w-[1600px] w-full mx-auto rounded-b">
+        <span>Engine: Power BI DirectQuery + WebSockets Simulator &bull; Status: Conectado</span>
+        <span class="font-medium text-cyan-400">Demonstração Interativa Avançada</span>
     </footer>
 
     <script>
-        // Configurações Globais do Chart.js orientadas à identidade visual corporativa da Microsoft
-        Chart.defaults.color = '#605e5c';
+        // Configurações Globais do Chart.js para Tema Escuro de Alta Performance
+        Chart.defaults.color = '#969696';
         Chart.defaults.font.family = "'Segoe UI', sans-serif";
+
+        // Dados base para simulação de movimento contínuo estilo Dashboard Cyber/Python
+        let baseFaturamentoValor = 1845200;
+        let baseVolumeValor = 124.5;
+        let baseMaquinasValor = 38;
+        let baseTicketValor = 24600;
 
         const ctxEvolucao = document.getElementById('chartEvolucao').getContext('2d');
         let chartEvolucao = new Chart(ctxEvolucao, {
             type: 'line',
             data: {
-                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul'],
+                labels: ['10:00', '10:05', '10:10', '10:15', '10:20', '10:25', '10:30 (Agora)'],
                 datasets: [{
-                    label: 'Faturamento',
+                    label: 'Faturamento R$',
                     data: [1200000, 1350000, 1280000, 1500000, 1620000, 1710000, 1845200],
-                    borderColor: '#0078d4',
-                    backgroundColor: 'rgba(0, 120, 212, 0.08)',
+                    borderColor: '#00ffff',
+                    backgroundColor: 'rgba(0, 255, 255, 0.1)',
                     borderWidth: 2.5,
                     fill: true,
-                    tension: 0.2
+                    tension: 0.4,
+                    pointBackgroundColor: '#00ffff',
+                    pointRadius: 3
                 }]
             },
             options: { 
@@ -206,19 +231,19 @@
                 maintainAspectRatio: false, 
                 plugins: { legend: { display: false } }, 
                 scales: { 
-                    y: { grid: { color: '#edebe9' } }, 
+                    y: { grid: { color: '#2a2a2a' } }, 
                     x: { grid: { display: false } } 
                 } 
             }
         });
 
-        new Chart(document.getElementById('chartCategorias').getContext('2d'), {
+        const chartCategorias = new Chart(document.getElementById('chartCategorias').getContext('2d'), {
             type: 'doughnut',
             data: {
                 labels: ['Fitas PET/PP', 'Fitas Adesivas', 'Máquinas', 'Peças'],
                 datasets: [{ 
                     data: [45, 25, 20, 10], 
-                    backgroundColor: ['#0078d4', '#107c41', '#5c2d91', '#d83b01'], 
+                    backgroundColor: ['#00ffff', '#107c41', '#a855f7', '#f59e0b'], 
                     borderWidth: 0 
                 }]
             },
@@ -233,64 +258,54 @@
         const dadosEmpresas = {
             todas: {
                 faturamento: "R$ 1.845.200",
-                badgeFat: '<i class="fa-solid fa-arrow-up"></i> +14.2% <span class="text-[#605e5c] font-normal">vs. mês ant.</span>',
                 volume: "124,5 Ton",
                 maquinas: "38 Unidades",
                 ticket: "R$ 24.600",
-                evolucao: [1200000, 1350000, 1280000, 1500000, 1620000, 1710000, 1845200],
                 pedidos: [
-                    { cliente: "Metalúrgica Sul S.A.", produto: "Fita PET 19mm", vol: "15 Toneladas", valor: "R$ 142.000", status: "Faturado", badge: "bg-[#107c41]/10 text-[#107c41] border-[#107c41]/30" },
-                    { cliente: "Papelaria e Embalagens SC", produto: "Fita Adesiva Personalizada", vol: "2.500 Rolos", valor: "R$ 38.500", status: "Faturado", badge: "bg-[#107c41]/10 text-[#107c41] border-[#107c41]/30" },
-                    { cliente: "Madeireira Vale do Itajaí", produto: "Máquina Automática Arquear", vol: "2 Unidades", valor: "R$ 89.000", status: "Em Produção", badge: "bg-[#f2c811]/20 text-[#8a6d00] border-[#f2c811]" },
-                    { cliente: "Agroindústria Paranaense", produto: "Fita PP Virgem 12mm", vol: "8 Toneladas", valor: "R$ 76.200", status: "Em Transporte", badge: "bg-[#0078d4]/10 text-[#0078d4] border-[#0078d4]/30" }
+                    { cliente: "Metalúrgica Sul S.A.", produto: "Fita PET 19mm", vol: "15 Toneladas", valor: "R$ 142.000", status: "Sincronizado", badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" },
+                    { cliente: "Papelaria e Embalagens SC", produto: "Fita Adesiva Personalizada", vol: "2.500 Rolos", valor: "R$ 38.500", status: "Processando", badge: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30" },
+                    { cliente: "Madeireira Vale do Itajaí", produto: "Máquina Automática Arquear", vol: "2 Unidades", valor: "R$ 89.000", status: "Transmitindo", badge: "bg-amber-500/10 text-amber-400 border-amber-500/30" },
+                    { cliente: "Agroindústria Paranaense", produto: "Fita PP Virgem 12mm", vol: "8 Toneladas", valor: "R$ 76.200", status: "Sincronizado", badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" }
                 ]
             },
             metalurgica: {
                 faturamento: "R$ 420.000",
-                badgeFat: '<i class="fa-solid fa-arrow-up"></i> +24.5% <span class="text-[#605e5c] font-normal">Aceleração forte</span>',
                 volume: "45 Ton",
                 maquinas: "12 Unidades",
                 ticket: "R$ 60.000",
-                evolucao: [180000, 210000, 240000, 290000, 330000, 380000, 420000],
                 pedidos: [
-                    { cliente: "Metalúrgica Sul S.A.", produto: "Fita PET 19mm Verde", vol: "25 Toneladas", valor: "R$ 280.000", status: "Faturado", badge: "bg-[#107c41]/10 text-[#107c41] border-[#107c41]/30" },
-                    { cliente: "Metalúrgica Sul S.A.", produto: "Selo de Aço 19mm", vol: "5.000 Unid", valor: "R$ 140.000", status: "Entregue", badge: "bg-[#107c41]/10 text-[#107c41] border-[#107c41]/30" }
+                    { cliente: "Metalúrgica Sul S.A.", produto: "Fita PET 19mm Verde", vol: "25 Toneladas", valor: "R$ 280.000", status: "Sincronizado", badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" },
+                    { cliente: "Metalúrgica Sul S.A.", produto: "Selo de Aço 19mm", vol: "5.000 Unid", valor: "R$ 140.000", status: "Transmitindo", badge: "bg-amber-500/10 text-amber-400 border-amber-500/30" }
                 ]
             },
             papelaria: {
                 faturamento: "R$ 185.000",
-                badgeFat: '<i class="fa-solid fa-arrow-up"></i> +8.2% <span class="text-[#605e5c] font-normal">Demanda estável</span>',
                 volume: "18 Ton",
                 maquinas: "4 Unidades",
                 ticket: "R$ 22.000",
-                evolucao: [130000, 140000, 145000, 155000, 165000, 172000, 185000],
                 pedidos: [
-                    { cliente: "Papelaria e Embalagens SC", produto: "Fita Adesiva Personalizada", vol: "10.000 Rolos", valor: "R$ 125.000", status: "Em Produção", badge: "bg-[#0078d4]/10 text-[#0078d4] border-[#0078d4]/30" },
-                    { cliente: "Papelaria e Embalagens SC", produto: "Fita Gomada c/ Reforço", vol: "3.000 Rolos", valor: "R$ 60.000", status: "Faturado", badge: "bg-[#107c41]/10 text-[#107c41] border-[#107c41]/30" }
+                    { cliente: "Papelaria e Embalagens SC", produto: "Fita Adesiva Personalizada", vol: "10.000 Rolos", valor: "R$ 125.000", status: "Processando", badge: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30" },
+                    { cliente: "Papelaria e Embalagens SC", produto: "Fita Gomada c/ Reforço", vol: "3.000 Rolos", valor: "R$ 60.000", status: "Sincronizado", badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" }
                 ]
             },
             madeireira: {
                 faturamento: "R$ 140.000",
-                badgeFat: '<i class="fa-solid fa-equals"></i> 0.0% <span class="text-[#605e5c] font-normal">Dentro da média</span>',
                 volume: "12 Ton",
                 maquinas: "8 Unidades",
                 ticket: "R$ 35.000",
-                evolucao: [140000, 138000, 142000, 139000, 141000, 140000, 140000],
                 pedidos: [
-                    { cliente: "Madeireira Vale do Itajaí", produto: "Manutenção Prévia Máquinas", vol: "Serviço", valor: "R$ 51.000", status: "Concluído", badge: "bg-[#f2c811]/20 text-[#8a6d00] border-[#f2c811]" },
-                    { cliente: "Madeireira Vale do Itajaí", produto: "Fita de Aço Polida", vol: "12 Toneladas", valor: "R$ 89.000", status: "Faturado", badge: "bg-[#107c41]/10 text-[#107c41] border-[#107c41]/30" }
+                    { cliente: "Madeireira Vale do Itajaí", produto: "Manutenção Prévia Máquinas", vol: "Serviço", valor: "R$ 51.000", status: "Sincronizado", badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" },
+                    { cliente: "Madeireira Vale do Itajaí", produto: "Fita de Aço Polida", vol: "12 Toneladas", valor: "R$ 89.000", status: "Transmitindo", badge: "bg-amber-500/10 text-amber-400 border-amber-500/30" }
                 ]
             },
             agro: {
                 faturamento: "R$ 92.000",
-                badgeFat: '<i class="fa-solid fa-arrow-down"></i> -18.4% <span class="text-[#605e5c] font-normal">Sazonalidade</span>',
                 volume: "8 Ton",
                 maquinas: "2 Unidades",
                 ticket: "R$ 18.400",
-                evolucao: [180000, 165000, 150000, 130000, 115000, 100000, 92000],
                 pedidos: [
-                    { cliente: "Agroindústria Paranaense", produto: "Fita PP Virgem 12mm", vol: "8 Toneladas", valor: "R$ 76.200", status: "Em Transporte", badge: "bg-[#0078d4]/10 text-[#0078d4] border-[#0078d4]/30" },
-                    { cliente: "Agroindústria Paranaense", produto: "Peças de Reposição", vol: "Diversos", valor: "R$ 15.800", status: "Pendente", badge: "bg-[#d83b01]/10 text-[#d83b01] border-[#d83b01]/30" }
+                    { cliente: "Agroindústria Paranaense", produto: "Fita PP Virgem 12mm", vol: "8 Toneladas", valor: "R$ 76.200", status: "Processando", badge: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30" },
+                    { cliente: "Agroindústria Paranaense", produto: "Peças de Reposição", vol: "Diversos", valor: "R$ 15.800", status: "Sincronizado", badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" }
                 ]
             }
         };
@@ -300,28 +315,51 @@
             const dados = dadosEmpresas[empresaChave] || dadosEmpresas.todas;
 
             document.getElementById('kpiFaturamento').innerText = dados.faturamento;
-            document.getElementById('badgeFaturamento').innerHTML = dados.badgeFat;
             document.getElementById('kpiVolume').innerText = dados.volume;
             document.getElementById('kpiMaquinas').innerText = dados.maquinas;
             document.getElementById('kpiTicket').innerText = dados.ticket;
 
-            chartEvolucao.data.datasets[0].data = dados.evolucao;
-            chartEvolucao.update();
-
             const tbody = document.getElementById('tabelaPedidos');
             tbody.innerHTML = dados.pedidos.map(p => `
-                <tr class="hover:bg-[#f3f3f3] transition-colors">
-                    <td class="p-2.5 font-medium text-[#323130]">${p.cliente}</td>
+                <tr class="hover:bg-[#252525] transition-colors">
+                    <td class="p-2.5 font-medium text-white">${p.cliente}</td>
                     <td class="p-2.5">${p.produto}</td>
                     <td class="p-2.5">${p.vol}</td>
-                    <td class="p-2.5 font-semibold text-[#107c41]">${p.valor}</td>
+                    <td class="p-2.5 font-semibold text-emerald-400">${p.valor}</td>
                     <td class="p-2.5 text-center"><span class="border px-2 py-0.5 rounded text-[11px] font-medium ${p.badge}">${p.status}</span></td>
                 </tr>
             `).join('');
         }
 
+        // MOTOR DE SIMULAÇÃO EM TEMPO REAL (FAZ OS DADOS SE MEXEREM SOZINHOS NA TELA)
+        setInterval(() => {
+            // Gera flutuações randômicas realistas em cima do valor base
+            const variacaoFat = Math.floor(Math.random() * 8000) - 3000;
+            baseFaturamentoValor += variacaoFat;
+            
+            const variacaoTon = (Math.random() * 0.4 - 0.18).toFixed(1);
+            baseVolumeValor = +(parseFloat(baseVolumeValor) + parseFloat(variacaoTon)).toFixed(1);
+
+            // Atualiza o texto dos KPIs na tela com efeito visual de piscar/atualizar
+            const elFat = document.getElementById('kpiFaturamento');
+            elFat.innerText = `R$ ${baseFaturamentoValor.toLocaleString('pt-BR')}`;
+            elFat.classList.add('live-update', 'text-cyan-300');
+            setTimeout(() => elFat.classList.remove('live-update', 'text-cyan-300'), 600);
+
+            const elVol = document.getElementById('kpiVolume');
+            elVol.innerText = `${baseVolumeValor} Ton`;
+            elVol.classList.add('live-update', 'text-emerald-300');
+            setTimeout(() => elVol.classList.remove('live-update', 'text-emerald-300'), 600);
+
+            // Atualiza o último ponto do gráfico de linha dinamicamente em tempo real
+            let dadosAtuais = chartEvolucao.data.datasets[0].data;
+            dadosAtuais[dadosAtuais.length - 1] = baseFaturamentoValor;
+            chartEvolucao.update('none'); // Atualização fluida sem resetar animação pesada
+
+        }, 2000); // A cada 2 segundos os números oscilam vivos na tela igual sistemas de BI de alta performance!
+
         function exportarRelatorio() {
-            alert("Exportando dados do modelo semântico para o Microsoft Excel...");
+            alert("Exportando stream de dados ativos para CSV / Power BI Service...");
         }
 
         atualizarDashboard();
