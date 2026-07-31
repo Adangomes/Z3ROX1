@@ -3,286 +3,293 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Root Cause Analysis & IoT Operations Dashboard</title>
+    <title>Enterprise Root Cause Analysis & Operations BI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #0b132b; color: #e2e8f0; font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif; overflow-x: hidden; }
-        .pbi-card { background: #1c2541; border: 1px solid #3a506b; box-shadow: 0 4px 20px rgba(0,0,0,0.4); position: relative; }
-        .pbi-card:hover { border-color: #48cae4; }
-        .pbi-slicer { background: #0b132b; border: 1px solid #48cae4; color: #fff; }
+        body { background-color: #090e17; color: #cbd5e1; font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif; overflow-x: hidden; }
+        .pbi-card { background: #131b2e; border: 1px solid #1e293b; box-shadow: 0 4px 20px rgba(0,0,0,0.6); position: relative; transition: border-color 0.2s ease; }
+        .pbi-card:hover { border-color: #0ea5e9; }
         
-        .cyber-glow {
-            box-shadow: 0 0 30px rgba(72, 202, 228, 0.15);
-            border: 1px solid rgba(72, 202, 228, 0.3);
-        }
+        /* Simulação de Barra de Status do Power BI Service (Canvas / Tooltip de Seleção) */
+        .selected-slicer { border-left: 3px solid #0ea5e9; background: #172038; }
         
         @keyframes livePulse {
             0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.02); }
+            50% { opacity: 0.6; transform: scale(1.01); }
             100% { opacity: 1; transform: scale(1); }
         }
-        .live-update { animation: livePulse 0.6s ease-in-out; }
+        .live-update { animation: livePulse 0.5s ease-in-out; }
 
-        /* Custom Scrollbar para tabelas corporativas densas */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #0b132b; }
-        ::-webkit-scrollbar-thumb { background: #3a506b; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #48cae4; }
+        /* Scrollbars customizadas para tabelas analíticas pesadas */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #090e17; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: #0ea5e9; }
     </style>
 </head>
-<body class="min-h-screen pb-10 flex flex-col justify-between cyber-glow">
+<body class="min-h-screen pb-8 flex flex-col justify-between">
 
-    <!-- Top Ribbon / Barra de Executivo Power BI -->
-    <header class="bg-[#1c2541] border-b border-[#3a506b] px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3 select-none">
+    <!-- Top Ribbon / Barra de Executivo Power BI Service (Modo Dark Power BI Embedded) -->
+    <header class="bg-[#131b2e] border-b border-[#1e293b] px-4 py-2.5 flex flex-col md:flex-row justify-between items-center gap-3 select-none">
         <div class="flex items-center space-x-3 w-full md:w-auto">
-            <div class="bg-[#48cae4] text-[#0b132b] px-3 py-1 rounded font-black text-xs tracking-widest flex items-center gap-1.5 shadow-md">
-                <i class="fa-solid fa-shield-halved"></i> GEMBA
+            <div class="bg-[#0ea5e9] text-[#090e17] px-2.5 py-1 rounded font-black text-xs tracking-widest flex items-center gap-1.5 shadow-md">
+                <i class="fa-solid fa-chart-pie"></i> POWER BI
             </div>
             <div>
-                <h1 class="text-sm font-bold text-white tracking-wide uppercase flex items-center gap-2">
-                    Root Cause Analysis Dashboard &bull; <span class="text-[#48cae4] text-xs font-normal lowercase">drive accuracy. eliminate recurrence.</span>
+                <h1 class="text-xs font-bold text-white tracking-wide uppercase flex items-center gap-2">
+                    Root Cause Analysis (RCA) &bull; <span class="text-[#0ea5e9] font-normal lowercase">gemba concepts enterprise model</span>
                 </h1>
-                <p class="text-[11px] text-slate-400">Telemetria Industrial Integrada &bull; Atualização Contínua em Tempo Real</p>
+                <p class="text-[10px] text-slate-400">Modelo Semântico Atualizado via Gateway On-Premises &bull; 30/07/2026</p>
             </div>
         </div>
         
-        <div class="flex items-center gap-3 w-full md:w-auto justify-end">
-            <div class="bg-[#0b132b] border border-[#3a506b] px-3 py-1.5 rounded flex items-center gap-2 text-xs">
-                <span class="text-slate-400">Safra:</span>
-                <select id="filtroAno" onchange="atualizarDashboard()" class="bg-transparent text-white font-semibold outline-none cursor-pointer">
-                    <option value="2026">Dec 2026 (Atual)</option>
-                    <option value="2025">Dec 2025</option>
+        <div class="flex items-center gap-2.5 w-full md:w-auto justify-end">
+            <!-- Segmentador (Slicer) Emulado na Barra -->
+            <div class="bg-[#090e17] border border-[#1e293b] px-2.5 py-1 rounded flex items-center gap-2 text-xs">
+                <span class="text-slate-400 text-[11px]">Planta:</span>
+                <select id="filtroPlanta" onchange="mudarPlanta()" class="bg-transparent text-white font-semibold outline-none cursor-pointer text-xs">
+                    <option value="consolidado">Visão Consolidada (Global)</option>
+                    <option value="fabricaA">Planta A - Robótica & Solda</option>
+                    <option value="fabricaB">Planta B - Prensas Hidráulicas</option>
+                    <option value="fabricaC">Planta C - Usinagem CNC</option>
                 </select>
             </div>
-            <button onclick="exportarRelatorio()" class="bg-[#3a506b] hover:bg-[#48cae4] hover:text-[#0b132b] text-white text-xs font-semibold px-3.5 py-1.5 rounded transition-all flex items-center gap-1.5 shadow-sm">
-                <i class="fa-solid fa-file-excel text-emerald-400"></i> Exportar Matriz
+
+            <button onclick="exportarExcel()" class="bg-[#1e293b] hover:bg-[#0ea5e9] hover:text-[#090e17] text-white text-xs font-semibold px-3 py-1 rounded transition-all flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-file-excel text-emerald-400"></i> Analisar em Excel
             </button>
             <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Live Gateway
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> DirectQuery Conectado
             </span>
         </div>
     </header>
 
-    <!-- Canvas Principal no Estilo Enterprise Power BI (Múltiplos Gráficos e Cartões) -->
-    <main class="p-4 md:p-6 max-w-[1700px] w-full mx-auto space-y-5 flex-grow">
+    <!-- Canvas Principal do Relatório Power BI -->
+    <main class="p-3 md:p-5 max-w-[1750px] w-full mx-auto space-y-4 flex-grow">
 
-        <!-- Linha Superior de 5 KPIs Principais (Igual referência de analista pleno) -->
+        <!-- Linha Superior: Cartões de KPI Estilo DAX Measure Cards -->
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
             
-            <div class="pbi-card rounded p-3.5 flex flex-col justify-between">
-                <div class="flex items-center justify-between">
-                    <span class="text-[11px] font-semibold text-slate-400 uppercase">Total Incidents</span>
-                    <i class="fa-solid fa-shield-virus text-cyan-400"></i>
+            <div class="pbi-card rounded p-3 flex flex-col justify-between">
+                <div class="flex items-center justify-between text-[11px] font-semibold text-slate-400 uppercase">
+                    <span>Total Incidents</span>
+                    <i class="fa-solid fa-triangle-exclamation text-sky-400"></i>
                 </div>
-                <div class="my-2">
+                <div class="my-1.5">
                     <h3 id="kpiIncidents" class="text-2xl font-black text-white tracking-tight">139</h3>
                 </div>
-                <div class="text-[10px] text-slate-400 flex justify-between items-center border-t border-[#3a506b]/50 pt-1.5">
-                    <span>vs Nov 124</span>
-                    <span class="text-emerald-400 font-bold"><i class="fa-solid fa-caret-up"></i> +12.1%</span>
+                <div class="text-[10px] text-slate-400 flex justify-between items-center border-t border-[#1e293b] pt-1">
+                    <span>vs Mês Anterior (124)</span>
+                    <span class="text-emerald-400 font-bold"><i class="fa-solid fa-arrow-trend-up"></i> +12.1%</span>
                 </div>
             </div>
 
-            <div class="pbi-card rounded p-3.5 flex flex-col justify-between">
-                <div class="flex items-center justify-between">
-                    <span class="text-[11px] font-semibold text-slate-400 uppercase">First Time Fix Rate</span>
+            <div class="pbi-card rounded p-3 flex flex-col justify-between">
+                <div class="flex items-center justify-between text-[11px] font-semibold text-slate-400 uppercase">
+                    <span>First Time Fix Rate</span>
                     <i class="fa-solid fa-circle-check text-emerald-400"></i>
                 </div>
-                <div class="my-2">
-                    <h3 id="kpiFixRate" class="text-2xl font-black text-white tracking-tight">82%</h3>
+                <div class="my-1.5">
+                    <h3 id="kpiFixRate" class="text-2xl font-black text-white tracking-tight">82.0%</h3>
                 </div>
-                <div class="text-[10px] text-slate-400 flex justify-between items-center border-t border-[#3a506b]/50 pt-1.5">
-                    <span>vs Nov 76%</span>
-                    <span class="text-emerald-400 font-bold"><i class="fa-solid fa-caret-up"></i> +6.0%</span>
+                <div class="text-[10px] text-slate-400 flex justify-between items-center border-t border-[#1e293b] pt-1">
+                    <span>vs Mês Anterior (76%)</span>
+                    <span class="text-emerald-400 font-bold"><i class="fa-solid fa-arrow-trend-up"></i> +6.0%</span>
                 </div>
             </div>
 
-            <div class="pbi-card rounded p-3.5 flex flex-col justify-between">
-                <div class="flex items-center justify-between">
-                    <span class="text-[11px] font-semibold text-slate-400 uppercase">Time to Resolve (Avg)</span>
-                    <i class="fa-solid fa-clock-rotate-left text-purple-400"></i>
+            <div class="pbi-card rounded p-3 flex flex-col justify-between">
+                <div class="flex items-center justify-between text-[11px] font-semibold text-slate-400 uppercase">
+                    <span>Time to Resolve (Avg)</span>
+                    <i class="fa-solid fa-clock text-purple-400"></i>
                 </div>
-                <div class="my-2">
+                <div class="my-1.5">
                     <h3 id="kpiTimeToResolve" class="text-2xl font-black text-white tracking-tight">5.9 h</h3>
                 </div>
-                <div class="text-[10px] text-slate-400 flex justify-between items-center border-t border-[#3a506b]/50 pt-1.5">
-                    <span>vs Nov 6.8 h</span>
-                    <span class="text-emerald-400 font-bold"><i class="fa-solid fa-caret-down"></i> -13.2%</span>
+                <div class="text-[10px] text-slate-400 flex justify-between items-center border-t border-[#1e293b] pt-1">
+                    <span>vs Mês Anterior (6.8h)</span>
+                    <span class="text-emerald-400 font-bold"><i class="fa-solid fa-arrow-trend-down"></i> -13.2%</span>
                 </div>
             </div>
 
-            <div class="pbi-card rounded p-3.5 flex flex-col justify-between">
-                <div class="flex items-center justify-between">
-                    <span class="text-[11px] font-semibold text-slate-400 uppercase">Cost Impact</span>
-                    <i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
+            <div class="pbi-card rounded p-3 flex flex-col justify-between">
+                <div class="flex items-center justify-between text-[11px] font-semibold text-slate-400 uppercase">
+                    <span>Cost Impact</span>
+                    <i class="fa-solid fa-dollar-sign text-amber-400"></i>
                 </div>
-                <div class="my-2">
-                    <h3 id="kpiCostImpact" class="text-2xl font-black text-white tracking-tight">$ 2,00,000</h3>
+                <div class="my-1.5">
+                    <h3 id="kpiCost" class="text-2xl font-black text-white tracking-tight">$ 200.000</h3>
                 </div>
-                <div class="text-[10px] text-slate-400 flex justify-between items-center border-t border-[#3a506b]/50 pt-1.5">
-                    <span>vs Nov $ 2,45,000</span>
-                    <span class="text-emerald-400 font-bold"><i class="fa-solid fa-caret-down"></i> -18.4%</span>
+                <div class="text-[10px] text-slate-400 flex justify-between items-center border-t border-[#1e293b] pt-1">
+                    <span>vs Mês Anterior ($ 245k)</span>
+                    <span class="text-emerald-400 font-bold"><i class="fa-solid fa-arrow-trend-down"></i> -18.4%</span>
                 </div>
             </div>
 
-            <div class="pbi-card rounded p-3.5 flex flex-col justify-between col-span-2 lg:col-span-1">
-                <div class="flex items-center justify-between">
-                    <span class="text-[11px] font-semibold text-slate-400 uppercase">Downtime (Total)</span>
+            <div class="pbi-card rounded p-3 flex flex-col justify-between col-span-2 lg:col-span-1">
+                <div class="flex items-center justify-between text-[11px] font-semibold text-slate-400 uppercase">
+                    <span>Downtime (Total)</span>
                     <i class="fa-solid fa-stopwatch text-rose-400"></i>
                 </div>
-                <div class="my-2">
+                <div class="my-1.5">
                     <h3 id="kpiDowntime" class="text-2xl font-black text-white tracking-tight">152 h</h3>
                 </div>
-                <div class="text-[10px] text-slate-400 flex justify-between items-center border-t border-[#3a506b]/50 pt-1.5">
-                    <span>vs Nov 168 h</span>
-                    <span class="text-emerald-400 font-bold"><i class="fa-solid fa-caret-down"></i> -9.5%</span>
+                <div class="text-[10px] text-slate-400 flex justify-between items-center border-t border-[#1e293b] pt-1">
+                    <span>vs Mês Anterior (168h)</span>
+                    <span class="text-emerald-400 font-bold"><i class="fa-solid fa-arrow-trend-down"></i> -9.5%</span>
                 </div>
             </div>
 
         </div>
 
-        <!-- Painel de Insights Inteligentes (Cards Informativos Estilo Executive Summary) -->
+        <!-- Smart Narrative Cards / Painel de Insights Inteligentes -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div class="pbi-card rounded p-3 border-l-4 border-cyan-400">
-                <p class="text-[11px] font-bold text-cyan-400 uppercase mb-1"><i class="fa-solid fa-chart-line"></i> What is the trend?</p>
-                <p class="text-xs text-slate-300">Incidents, downtime, and costs show noticeable spikes in mid and later months (especially Jul, Sep, Nov) along with increasing repeat issue rates.</p>
+            <div class="pbi-card rounded p-3 selected-slicer">
+                <p class="text-[11px] font-bold text-sky-400 uppercase mb-1 flex items-center gap-1.5"><i class="fa-solid fa-chart-line"></i> What is the trend?</p>
+                <p class="text-[11px] text-slate-300 leading-relaxed">Incidents, downtime, and costs show noticeable spikes in mid and later months (especially Jul, Sep, Nov) along with increasing repeat issue rates.</p>
             </div>
-            <div class="pbi-card rounded p-3 border-l-4 border-amber-400">
-                <p class="text-[11px] font-bold text-amber-400 uppercase mb-1"><i class="fa-solid fa-magnifying-glass-chart"></i> Why such trend?</p>
-                <p class="text-xs text-slate-300">This trend is driven by recurring machine-related failures combined with ineffective root cause resolution and longer issue resolution times.</p>
+            <div class="pbi-card rounded p-3 border-l-4 border-amber-500">
+                <p class="text-[11px] font-bold text-amber-400 uppercase mb-1 flex items-center gap-1.5"><i class="fa-solid fa-magnifying-glass"></i> Why such trend?</p>
+                <p class="text-[11px] text-slate-300 leading-relaxed">This trend is driven by recurring machine-related failures combined with ineffective root cause resolution and longer issue resolution times.</p>
             </div>
-            <div class="pbi-card rounded p-3 border-l-4 border-emerald-400">
-                <p class="text-[11px] font-bold text-emerald-400 uppercase mb-1"><i class="fa-solid fa-lightbulb"></i> One-Line Management Insight</p>
-                <p class="text-xs text-slate-300">The rising trend is primarily due to unresolved recurring machine failures, indicating the need for stronger preventive maintenance and root cause elimination strategies.</p>
+            <div class="pbi-card rounded p-3 border-l-4 border-emerald-500">
+                <p class="text-[11px] font-bold text-emerald-400 uppercase mb-1 flex items-center gap-1.5"><i class="fa-solid fa-lightbulb"></i> One-Line Management Insight</p>
+                <p class="text-[11px] text-slate-300 leading-relaxed">The rising trend is primarily due to unresolved recurring machine failures, indicating the need for stronger preventive maintenance strategies.</p>
             </div>
         </div>
 
-        <!-- Seção Principal de Gráficos (Grid Avançado) -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Seção de Gráficos Principais (Grid Power BI Visuals) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
             
-            <!-- Gráfico 1: Monthly Incidents & Downtime -->
-            <div class="pbi-card rounded p-4 flex flex-col justify-between">
-                <div class="flex justify-between items-center mb-2 pb-2 border-b border-[#3a506b]">
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-white">Monthly Incidents & Downtime</h2>
+            <!-- Visual 1: Monthly Incidents & Downtime (Combo Chart) -->
+            <div class="pbi-card rounded p-3.5 flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-2 pb-1.5 border-b border-[#1e293b]">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
+                        <i class="fa-solid fa-chart-column text-sky-400"></i> Monthly Incidents & Downtime
+                    </h2>
                     <div class="flex items-center gap-3 text-[10px]">
-                        <span class="flex items-center gap-1 text-cyan-400"><span class="w-2 h-2 rounded-full bg-cyan-400"></span> Total Incidents</span>
-                        <span class="flex items-center gap-1 text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Downtime (hrs)</span>
+                        <span class="flex items-center gap-1 text-sky-400"><span class="w-2 h-2 rounded-full bg-sky-400"></span> Incidents</span>
+                        <span class="flex items-center gap-1 text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Downtime (h)</span>
                     </div>
                 </div>
-                <div class="relative h-64">
-                    <canvas id="chartMonthlyIncidents"></canvas>
+                <div class="relative h-60">
+                    <canvas id="chartMonthly"></canvas>
                 </div>
             </div>
 
-            <!-- Gráfico 2: Repeat Issues Trend (%) -->
-            <div class="pbi-card rounded p-4 flex flex-col justify-between">
-                <div class="flex justify-between items-center mb-2 pb-2 border-b border-[#3a506b]">
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-white">Repeat Issues Trend (%)</h2>
-                    <span class="text-[10px] text-amber-400 font-mono">Taxa de Recidiva</span>
+            <!-- Visual 2: Repeat Issues Trend (%) -->
+            <div class="pbi-card rounded p-3.5 flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-2 pb-1.5 border-b border-[#1e293b]">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
+                        <i class="fa-solid fa-arrow-trend-up text-amber-400"></i> Repeat Issues Trend (%)
+                    </h2>
+                    <span class="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded font-mono">Taxa Recidiva</span>
                 </div>
-                <div class="relative h-64">
-                    <canvas id="chartRepeatIssues"></canvas>
+                <div class="relative h-60">
+                    <canvas id="chartRepeat"></canvas>
                 </div>
             </div>
 
         </div>
 
-        <!-- Segunda Linha de Gráficos: Categorias e Defeitos por Máquina -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <!-- Linha de Gráficos Secundários: Categorias, Tipos de Falha e Defeitos por Máquina -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
             
-            <!-- Gráfico 3: Root Cause Category (Doughnut) -->
-            <div class="pbi-card rounded p-4 flex flex-col justify-between">
-                <div class="flex justify-between items-center mb-2 pb-2 border-b border-[#3a506b]">
+            <!-- Visual 3: Root Cause Category (Donut) -->
+            <div class="pbi-card rounded p-3.5 flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-2 pb-1.5 border-b border-[#1e293b]">
                     <h2 class="text-xs font-bold uppercase tracking-wider text-white">Root Cause Category</h2>
                 </div>
-                <div class="relative h-60 flex items-center justify-center">
+                <div class="relative h-56 flex items-center justify-center">
                     <canvas id="chartRootCause"></canvas>
                 </div>
             </div>
 
-            <!-- Gráfico 4: Failure Type Split (Bar) -->
-            <div class="pbi-card rounded p-4 flex flex-col justify-between">
-                <div class="flex justify-between items-center mb-2 pb-2 border-b border-[#3a506b]">
+            <!-- Visual 4: Failure Type Split (Column) -->
+            <div class="pbi-card rounded p-3.5 flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-2 pb-1.5 border-b border-[#1e293b]">
                     <h2 class="text-xs font-bold uppercase tracking-wider text-white">Failure Type Split</h2>
                 </div>
-                <div class="relative h-60">
+                <div class="relative h-56">
                     <canvas id="chartFailureSplit"></canvas>
                 </div>
             </div>
 
-            <!-- Gráfico 5: Machine Wise Defect Rate (%) (Horizontal Bar) -->
-            <div class="pbi-card rounded p-4 flex flex-col justify-between">
-                <div class="flex justify-between items-center mb-2 pb-2 border-b border-[#3a506b]">
+            <!-- Visual 5: Machine Wise Defect Rate (%) (Bar Horizontal) -->
+            <div class="pbi-card rounded p-3.5 flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-2 pb-1.5 border-b border-[#1e293b]">
                     <h2 class="text-xs font-bold uppercase tracking-wider text-white">Machine Wise Defect Rate (%)</h2>
                 </div>
-                <div class="relative h-60">
+                <div class="relative h-56">
                     <canvas id="chartMachineDefect"></canvas>
                 </div>
             </div>
 
         </div>
 
-        <!-- Terceira Seção: Severity Distribution e Tabela Analítica -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Linha Final: Severidade por Mês e Tabela Detalhada de Ações Corretivas -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
             
-            <!-- Gráfico 6: Severity Distribution by Month (Stacked Bar) -->
-            <div class="pbi-card rounded p-4 flex flex-col justify-between">
-                <div class="flex justify-between items-center mb-2 pb-2 border-b border-[#3a506b]">
+            <!-- Visual 6: Severity Distribution by Month (Stacked Bar) -->
+            <div class="pbi-card rounded p-3.5 flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-2 pb-1.5 border-b border-[#1e293b]">
                     <h2 class="text-xs font-bold uppercase tracking-wider text-white">Severity Distribution by Month</h2>
-                    <div class="flex items-center gap-3 text-[10px]">
+                    <div class="flex items-center gap-2.5 text-[10px]">
                         <span class="flex items-center gap-1 text-rose-500"><span class="w-2 h-2 rounded-full bg-rose-500"></span> High</span>
                         <span class="flex items-center gap-1 text-amber-400"><span class="w-2 h-2 rounded-full bg-amber-400"></span> Medium</span>
                         <span class="flex items-center gap-1 text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Low</span>
                     </div>
                 </div>
-                <div class="relative h-64">
-                    <canvas id="chartSeverityMonth"></canvas>
+                <div class="relative h-60">
+                    <canvas id="chartSeverity"></canvas>
                 </div>
             </div>
 
-            <!-- Tabela Analítica de Ações / Causa Raiz -->
-            <div class="pbi-card rounded p-4 flex flex-col justify-between">
-                <div class="flex justify-between items-center mb-3 pb-2 border-b border-[#3a506b]">
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-white"><i class="fa-solid fa-list-check text-cyan-400"></i> Top Recurring Root Causes</h2>
-                    <span class="text-[10px] text-slate-400">Ações Corretivas</span>
+            <!-- Visual 7: Tabela de Causa Raiz & Status de Mitigação -->
+            <div class="pbi-card rounded p-3.5 flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-2.5 pb-1.5 border-b border-[#1e293b]">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
+                        <i class="fa-solid fa-table-list text-sky-400"></i> Top Recurring Root Causes (Matriz DAX)
+                    </h2>
+                    <span class="text-[10px] text-slate-400 font-mono">Linhas: 4 / 4 Ativas</span>
                 </div>
 
                 <div class="overflow-x-auto flex-grow">
                     <table class="w-full text-left text-xs text-slate-300">
-                        <thead class="bg-[#0b132b] text-slate-400 uppercase text-[10px] font-bold border-b border-[#3a506b]">
+                        <thead class="bg-[#090e17] text-slate-400 uppercase text-[10px] font-bold border-b border-[#1e293b]">
                             <tr>
-                                <th class="p-2"># Causa Raiz</th>
-                                <th class="p-2">Descrição da Falha</th>
+                                <th class="p-2">Rank</th>
+                                <th class="p-2">Root Cause Description</th>
                                 <th class="p-2">Impacto (%)</th>
-                                <th class="p-2 text-center">Status</th>
+                                <th class="p-2 text-center">Status de Ação</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-[#3a506b]/40">
-                            <tr class="hover:bg-[#3a506b]/20">
-                                <td class="p-2 font-mono text-cyan-400">01</td>
-                                <td class="p-2">Wear & Tear / Component Failure</td>
-                                <td class="p-2 font-semibold">42%</td>
-                                <td class="p-2 text-center"><span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded text-[10px]">Em Análise</span></td>
+                        <tbody class="divide-y divide-[#1e293b]">
+                            <tr class="hover:bg-[#172038] transition-colors">
+                                <td class="p-2 font-mono text-sky-400 font-bold">#01</td>
+                                <td class="p-2 font-medium text-white">Wear & Tear / Component Failure</td>
+                                <td class="p-2 font-bold text-amber-400">42%</td>
+                                <td class="p-2 text-center"><span class="bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded text-[10px] font-semibold">Em Análise</span></td>
                             </tr>
-                            <tr class="hover:bg-[#3a506b]/20">
-                                <td class="p-2 font-mono text-cyan-400">02</td>
-                                <td class="p-2">Improper Maintenance</td>
-                                <td class="p-2 font-semibold">28%</td>
-                                <td class="p-2 text-center"><span class="bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 px-2 py-0.5 rounded text-[10px]">Mitigado</span></td>
+                            <tr class="hover:bg-[#172038] transition-colors">
+                                <td class="p-2 font-mono text-sky-400 font-bold">#02</td>
+                                <td class="p-2 font-medium text-white">Improper Maintenance Routine</td>
+                                <td class="p-2 font-bold text-amber-400">28%</td>
+                                <td class="p-2 text-center"><span class="bg-sky-500/15 text-sky-300 border border-sky-500/30 px-2 py-0.5 rounded text-[10px] font-semibold">Mitigado</span></td>
                             </tr>
-                            <tr class="hover:bg-[#3a506b]/20">
-                                <td class="p-2 font-mono text-cyan-400">03</td>
-                                <td class="p-2">Process Parameter Deviation</td>
-                                <td class="p-2 font-semibold">18%</td>
-                                <td class="p-2 text-center"><span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded text-[10px]">Concluído</span></td>
+                            <tr class="hover:bg-[#172038] transition-colors">
+                                <td class="p-2 font-mono text-sky-400 font-bold">#03</td>
+                                <td class="p-2 font-medium text-white">Process Parameter Deviation</td>
+                                <td class="p-2 font-bold text-amber-400">18%</td>
+                                <td class="p-2 text-center"><span class="bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-semibold">Concluído</span></td>
                             </tr>
-                            <tr class="hover:bg-[#3a506b]/20">
-                                <td class="p-2 font-mono text-cyan-400">04</td>
-                                <td class="p-2">Human Error / Training Gap</td>
-                                <td class="p-2 font-semibold">12%</td>
-                                <td class="p-2 text-center"><span class="bg-purple-500/20 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded text-[10px]">Pendente</span></td>
+                            <tr class="hover:bg-[#172038] transition-colors">
+                                <td class="p-2 font-mono text-sky-400 font-bold">#04</td>
+                                <td class="p-2 font-medium text-white">Human Error / Training Gap</td>
+                                <td class="p-2 font-bold text-amber-400">12%</td>
+                                <td class="p-2 text-center"><span class="bg-purple-500/15 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded text-[10px] font-semibold">Pendente</span></td>
                             </tr>
                         </tbody>
                     </table>
@@ -293,39 +300,40 @@
 
     </main>
 
-    <!-- Footer Corporativo -->
-    <footer class="bg-[#1c2541] border-t border-[#3a506b] px-6 py-2.5 text-center text-[11px] text-slate-400 flex flex-col sm:flex-row justify-between items-center max-w-[1700px] w-full mx-auto rounded-b">
+    <!-- Rodapé de Licenciamento / Power BI Service Footer -->
+    <footer class="bg-[#131b2e] border-t border-[#1e293b] px-4 py-2 text-center text-[10px] text-slate-400 flex justify-between items-center max-w-[1750px] w-full mx-auto rounded-b">
         <span>GEMBA CONCEPTS &bull; Drive Accuracy. Eliminate Recurrence. Prevent Loss.</span>
-        <span class="font-semibold text-cyan-400">Power BI Enterprise Embedded &bull; Live Telemetry Engine</span>
+        <span class="font-medium text-sky-400">Power BI Premium Workspace &bull; Conexão Ativa (DirectQuery)</span>
     </footer>
 
     <script>
-        // Configuração de Estilo Global Chart.js para Alta Precisão Corporativa
+        // Configurações globais do Chart.js orientadas a Design System Corporativo de BI
         Chart.defaults.color = '#94a3b8';
         Chart.defaults.font.family = "'Segoe UI', sans-serif";
+        Chart.defaults.scale.grid.color = '#1e293b50';
 
-        // 1. Gráfico de Linhas Combinado: Monthly Incidents & Downtime
-        const ctxMonthly = document.getElementById('chartMonthlyIncidents').getContext('2d');
-        const chartMonthly = new Chart(ctxMonthly, {
+        // 1. Gráfico Mensal (Linha + Barras / Duplo Eixo)
+        const chartMonthly = new Chart(document.getElementById('chartMonthly').getContext('2d'), {
             type: 'line',
             data: {
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 datasets: [
                     {
-                        label: 'Total Incidents',
+                        label: 'Incidents',
                         data: [14, 10, 16, 8, 15, 13, 18, 8, 20, 10, 17, 7],
-                        borderColor: '#00f2fe',
-                        backgroundColor: 'rgba(0, 242, 254, 0.1)',
-                        borderWidth: 2.5,
+                        borderColor: '#0ea5e9',
+                        backgroundColor: 'rgba(14, 165, 233, 0.15)',
+                        borderWidth: 2,
                         tension: 0.3,
+                        fill: true,
                         yAxisID: 'y'
                     },
                     {
-                        label: 'Downtime (hrs)',
+                        label: 'Downtime (h)',
                         data: [120, 90, 150, 70, 140, 110, 160, 60, 170, 90, 150, 45],
                         borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        borderWidth: 2.5,
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
                         tension: 0.3,
                         yAxisID: 'y1'
                     }
@@ -336,16 +344,15 @@
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { type: 'linear', position: 'left', grid: { color: '#3a506b40' }, min: 0, max: 25 },
-                    y1: { type: 'linear', position: 'right', grid: { display: false }, min: 0, max: 250 },
+                    y: { type: 'linear', position: 'left', min: 0, max: 25 },
+                    y1: { type: 'linear', position: 'right', min: 0, max: 220, grid: { display: false } },
                     x: { grid: { display: false } }
                 }
             }
         });
 
-        // 2. Gráfico de Repeat Issues Trend (%)
-        const ctxRepeat = document.getElementById('chartRepeatIssues').getContext('2d');
-        const chartRepeat = new Chart(ctxRepeat, {
+        // 2. Gráfico de Tendência de Recidiva
+        const chartRepeat = new Chart(document.getElementById('chartRepeat').getContext('2d'), {
             type: 'line',
             data: {
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
@@ -353,12 +360,11 @@
                     label: 'Repeat Issues %',
                     data: [22, 18, 25, 15, 20, 19, 26, 12, 28, 17, 23, 10],
                     borderColor: '#f59e0b',
-                    backgroundColor: 'rgba(245, 158, 11, 0.15)',
-                    borderWidth: 2.5,
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    borderWidth: 2,
                     fill: true,
                     tension: 0.3,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#f59e0b'
+                    pointRadius: 3
                 }]
             },
             options: {
@@ -366,20 +372,20 @@
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { grid: { color: '#3a506b40' }, min: 0, max: 35 },
+                    y: { min: 0, max: 35 },
                     x: { grid: { display: false } }
                 }
             }
         });
 
-        // 3. Gráfico Root Cause Category (Doughnut)
+        // 3. Root Cause Category (Donut)
         new Chart(document.getElementById('chartRootCause').getContext('2d'), {
             type: 'doughnut',
             data: {
                 labels: ['Machine (39%)', 'Material (35%)', 'Method (25%)'],
                 datasets: [{
                     data: [39, 35, 25],
-                    backgroundColor: ['#00f2fe', '#f59e0b', '#a855f7'],
+                    backgroundColor: ['#0ea5e9', '#f59e0b', '#a855f7'],
                     borderWidth: 0
                 }]
             },
@@ -387,19 +393,19 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } },
-                cutout: '70%'
+                cutout: '68%'
             }
         });
 
-        // 4. Gráfico Failure Type Split (Bar)
+        // 4. Failure Type Split (Column)
         new Chart(document.getElementById('chartFailureSplit').getContext('2d'), {
             type: 'bar',
             data: {
                 labels: ['Breakdown', 'Process', 'Quality'],
                 datasets: [{
                     data: [55, 50, 34],
-                    backgroundColor: ['#00f2fe', '#10b981', '#6366f1'],
-                    borderRadius: 4
+                    backgroundColor: ['#0ea5e9', '#10b981', '#6366f1'],
+                    borderRadius: 3
                 }]
             },
             options: {
@@ -407,21 +413,21 @@
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { grid: { color: '#3a506b40' }, min: 0, max: 70 },
+                    y: { min: 0, max: 70 },
                     x: { grid: { display: false } }
                 }
             }
         });
 
-        // 5. Gráfico Machine Wise Defect Rate (%) (Horizontal Bar)
+        // 5. Machine Wise Defect Rate (%) (Horizontal Bar)
         new Chart(document.getElementById('chartMachineDefect').getContext('2d'), {
             type: 'bar',
             data: {
-                labels: ['Robot-03', 'Robot-02', 'Robot-01', 'Press-03', 'Press-02', 'Press-01', 'Paint-03', 'Paint-02', 'Paint-01', 'CNC-03', 'CNC-02', 'CNC-01'],
+                labels: ['Robot-03', 'Robot-02', 'Robot-01', 'Press-03', 'Press-02', 'Press-01', 'CNC-03', 'CNC-02', 'CNC-01'],
                 datasets: [{
-                    data: [5.5, 3.2, 3.8, 3.7, 3.5, 5.2, 5.8, 5.5, 6.0, 4.0, 4.2, 4.5],
+                    data: [5.5, 3.2, 3.8, 3.7, 3.5, 5.2, 4.0, 4.2, 4.5],
                     backgroundColor: '#10b981',
-                    borderRadius: 3
+                    borderRadius: 2
                 }]
             },
             options: {
@@ -430,14 +436,14 @@
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    x: { grid: { color: '#3a506b40' }, min: 0, max: 10 },
+                    x: { min: 0, max: 8 },
                     y: { grid: { display: false }, ticks: { font: { size: 9 } } }
                 }
             }
         });
 
-        // 6. Gráfico Severity Distribution by Month (Stacked Bar)
-        new Chart(document.getElementById('chartSeverityMonth').getContext('2d'), {
+        // 6. Severity Distribution by Month (Stacked Bar)
+        new Chart(document.getElementById('chartSeverity').getContext('2d'), {
             type: 'bar',
             data: {
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
@@ -453,46 +459,38 @@
                 plugins: { legend: { display: false } },
                 scales: {
                     x: { stacked: true, grid: { display: false } },
-                    y: { stacked: true, grid: { color: '#3a506b40' }, min: 0, max: 10 }
+                    y: { stacked: true, min: 0, max: 10 }
                 }
             }
         });
 
-        // MOTOR DE SIMULAÇÃO EM TEMPO REAL (FAZ OS DADOS SE MEXEREM VIVOS NA TELA)
-        let baseIncidents = 139;
-        let baseDowntime = 152;
-        let baseCost = 200000;
+        // MOTOR DE SIMULAÇÃO EM TEMPO REAL (EVENTO DE STREAMING DE TELEMETRIA)
+        let totalIncidentsValue = 139;
+        let downtimeValue = 152;
 
         setInterval(() => {
-            const variacaoInc = Math.floor(Math.random() * 3) - 1;
-            baseIncidents += variacaoInc;
-            
-            const variacaoDown = Math.floor(Math.random() * 2) - 1;
-            baseDowntime += variacaoDown;
+            const variacao = Math.random() > 0.5 ? 1 : -1;
+            totalIncidentsValue += (variacao > 0 ? 1 : 0);
+            downtimeValue += (variacao > 0 ? 0 : 0);
 
             const elInc = document.getElementById('kpiIncidents');
-            elInc.innerText = baseIncidents;
-            elInc.classList.add('live-update', 'text-cyan-300');
-            setTimeout(() => elInc.classList.remove('live-update', 'text-cyan-300'), 500);
+            elInc.innerText = totalIncidentsValue;
+            elInc.classList.add('live-update', 'text-sky-300');
+            setTimeout(() => elInc.classList.remove('live-update', 'text-sky-300'), 400);
 
-            const elDown = document.getElementById('kpiDowntime');
-            elDown.innerText = `${baseDowntime} h`;
-            elDown.classList.add('live-update', 'text-rose-300');
-            setTimeout(() => elDown.classList.remove('live-update', 'text-rose-300'), 500);
-
-            // Atualiza o último ponto do gráfico principal em tempo real
-            let dataIncidents = chartMonthly.data.datasets[0].data;
-            dataIncidents[dataIncidents.length - 1] = Math.max(5, baseIncidents % 25);
+            // Atualiza dinamicamente o último ponto da série temporal principal
+            let currentData = chartMonthly.data.datasets[0].data;
+            currentData[currentData.length - 1] = Math.max(5, totalIncidentsValue % 20);
             chartMonthly.update('none');
 
-        }, 3000);
+        }, 4000);
 
-        function atualizarDashboard() {
-            alert("Alternando contexto de modelo semântico para a safra selecionada...");
+        function mudarPlanta() {
+            alert("Aplicando filtro de segurança por nível de acesso (Row-Level Security - RLS) para a planta selecionada...");
         }
 
-        function exportarRelatorio() {
-            alert("Exportando matriz de dados e relatórios de causa raiz corporativos para Excel...");
+        function exportarExcel() {
+            alert("Exportando dados resumidos do visual analítico para o Microsoft Excel via Power Automate...");
         }
     </script>
 </body>
