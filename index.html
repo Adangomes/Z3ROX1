@@ -1,361 +1,263 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Root Cause Analysis & IoT Telemetry &bull; Power BI Service</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --pbi-bg: #f3f4f6;
-            --pbi-card: #ffffff;
-            --pbi-border: #e5e7eb;
-            --pbi-text: #111827;
-            --pbi-subtext: #4b5563;
-            --pbi-header-bg: #1f2937;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estação de Chamada Automatizada</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f0f2f5; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 15px; }
+    
+    .card { background: white; width: 100%; max-width: 480px; padding: 20px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); text-align: center; position: relative; }
+    
+    h1 { font-size: 20px; color: #1a1a1a; margin-bottom: 15px; }
+    .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; margin-bottom: 15px; }
+    .status-espera { background: #e2e8f0; color: #475569; }
+    .status-ativo { background: #dcfce7; color: #166534; }
+    .status-erro { background: #fee2e2; color: #991b1b; }
 
-        body.dark-mode {
-            --pbi-bg: #18191a;
-            --pbi-card: #242526;
-            --pbi-border: #38393a;
-            --pbi-text: #e4e6eb;
-            --pbi-subtext: #b0b3b8;
-            --pbi-header-bg: #121212;
-        }
+    /* Telas / Etapas */
+    .screen { display: none; }
+    .screen.active { display: block; }
 
-        body { 
-            background-color: var(--pbi-bg); 
-            color: var(--pbi-text); 
-            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif; 
-            overflow-x: hidden; 
-            transition: background-color 0.3s, color 0.3s;
-        }
+    /* Câmera */
+    .video-container { position: relative; width: 100%; border-radius: 10px; overflow: hidden; background: #000; height: 320px; display: flex; align-items: center; justify-content: center; }
+    video { width: 100%; height: 100%; object-fit: cover; }
+    canvas { display: none; }
+    
+    .scanning-overlay { position: absolute; border: 2px dashed #22c55e; border-radius: 50%; width: 200px; height: 200px; pointer-events: none; animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
 
-        .pbi-card { 
-            background: var(--pbi-card); 
-            border: 1px solid var(--pbi-border); 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
-            position: relative; 
-            transition: all 0.2s ease;
-        }
-        .pbi-card:hover { 
-            border-color: #0078d4; 
-            box-shadow: 0 4px 12px rgba(0,120,212,0.15);
-        }
+    /* Formulários e Botões */
+    .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: background 0.2s; }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-warning { background: #f59e0b; color: white; }
+    .btn-danger { background: #ef4444; color: white; }
 
-        .pbi-card.filtered-highlight {
-            outline: 2px solid #0078d4;
-        }
+    .input-group { text-align: left; margin-top: 10px; }
+    .input-group label { font-size: 13px; font-weight: bold; color: #374151; display: block; margin-bottom: 4px; }
+    .input-group input { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 15px; }
 
-        @keyframes pulseIndicator {
-            0% { transform: scale(0.95); opacity: 0.8; }
-            50% { transform: scale(1.1); opacity: 1; }
-            100% { transform: scale(0.95); opacity: 0.8; }
-        }
-        .live-dot { animation: pulseIndicator 1.5s infinite; }
-
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        body.dark-mode ::-webkit-scrollbar-thumb { background: #3a3b3c; }
-    </style>
+    /* Card de Sucesso */
+    .success-box { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 20px; border-radius: 8px; }
+    .success-box h2 { font-size: 22px; margin-bottom: 10px; }
+  </style>
 </head>
-<body class="dark-mode min-h-screen pb-6 flex flex-col justify-between select-none">
+<body>
 
-    <!-- TOPO: Power BI Service Application Header -->
-    <header class="bg-[#181818] border-b border-[#333] px-4 py-2 flex flex-col md:flex-row justify-between items-center gap-3 text-slate-300">
-        <div class="flex items-center space-x-3 w-full md:w-auto">
-            <div class="bg-[#f2c811] text-black px-2 py-0.5 rounded font-black text-xs tracking-tight flex items-center gap-1 shadow">
-                <i class="fa-solid fa-chart-bar"></i> PBI
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="text-xs font-semibold text-white tracking-wide">Relatório Corporativo &bull; Root Cause Analysis (RCA) Enterprise</span>
-                <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700">Workspace: Supply Chain & Ops</span>
-            </div>
-        </div>
-        
-        <div class="flex items-center gap-2 w-full md:w-auto justify-end text-xs">
-            <!-- Botão de Gerenciamento de Cardinalidade (Novo Recurso) -->
-            <button onclick="abrirModalCardinalidade()" class="bg-[#252526] hover:bg-[#333] text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded transition-all flex items-center gap-1.5 font-medium">
-                <i class="fa-solid fa-network-wired"></i> Cardinalidade: <span id="badgeCardMode" class="text-white">1:* (Padrão)</span>
-            </button>
+  <div class="card">
+    <h1>Estação de Chamada</h1>
 
-            <div class="flex items-center bg-[#252526] border border-[#3f3f46] px-2.5 py-1 rounded gap-2">
-                <i class="fa-solid fa-filter text-amber-400"></i>
-                <span class="text-slate-400 text-[11px]">Safra:</span>
-                <select id="filtroSafra" onchange="alterarSafra()" class="bg-transparent text-white font-medium outline-none cursor-pointer">
-                    <option value="2026">2026 (Atual - DirectQuery)</option>
-                    <option value="2025">2025 (Histórico)</option>
-                </select>
-            </div>
-
-            <button onclick="alternarTema()" class="bg-[#252526] hover:bg-[#333] text-slate-200 border border-[#3f3f46] px-2.5 py-1 rounded transition-all flex items-center gap-1.5" title="Alternar Tema">
-                <i class="fa-solid fa-circle-half-stroke text-sky-400"></i>
-            </button>
-
-            <button onclick="resetarFiltros()" class="bg-[#0078d4] hover:bg-[#106ebe] text-white px-3 py-1 rounded font-medium shadow transition-all flex items-center gap-1">
-                <i class="fa-solid fa-rotate-right"></i> Redefinir
-            </button>
-        </div>
-    </header>
-
-    <!-- MODAL DE GERENCIAMENTO DE CARDINALIDADE (ESTILO POWER BI MODEL VIEW) -->
-    <div id="modalCardinalidade" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-[#242526] border border-[#38393a] rounded-lg max-w-lg w-full p-5 text-slate-200 shadow-2xl space-y-4">
-            <div class="flex justify-between items-center border-b border-[#38393a] pb-3">
-                <h3 class="font-bold text-sm flex items-center gap-2 text-amber-400">
-                    <i class="fa-solid fa-project-diagram"></i> Gerenciar Relacionamentos & Cardinalidade
-                </h3>
-                <button onclick="fecharModalCardinalidade()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            
-            <p class="text-xs text-slate-400 leading-relaxed">
-                Configure o tipo de relacionamento entre a Tabela Dimensão (<code class="text-sky-400">Dim_Plantas</code>) e a Tabela Fato (<code class="text-sky-400">Fato_Incidentes</code>). Isso altera a propagação de filtros cruzados (Cross-filter direction).
-            </p>
-
-            <div class="space-y-3 text-xs">
-                <label class="block bg-[#18191a] p-3 rounded border border-[#38393a] cursor-pointer hover:border-sky-500 transition-all">
-                    <div class="flex items-center justify-between font-semibold mb-1">
-                        <span class="flex items-center gap-2"><input type="radio" name="tipoCardinalidade" value="1_para_muitos" checked onchange="mudarCardinalidade('1:*')"> Um para muitos (1:*) [Recomendado]</span>
-                        <span class="text-emerald-400 text-[10px]">Ativo</span>
-                    </div>
-                    <span class="text-[11px] text-slate-400 font-normal">Uma linha na dimensão se relaciona com várias ocorrências na tabela fato. Filtros propagam sentido único.</span>
-                </label>
-
-                <label class="block bg-[#18191a] p-3 rounded border border-[#38393a] cursor-pointer hover:border-sky-500 transition-all">
-                    <div class="flex items-center justify-between font-semibold mb-1">
-                        <span class="flex items-center gap-2"><input type="radio" name="tipoCardinalidade" value="1_para_1" onchange="mudarCardinalidade('1:1')"> Um para um (1:1)</span>
-                    </div>
-                    <span class="text-[11px] text-slate-400 font-normal">Cada linha na tabela de dimensões possui apenas uma linha correspondente na tabela de dados.</span>
-                </label>
-
-                <label class="block bg-[#18191a] p-3 rounded border border-[#38393a] cursor-pointer hover:border-sky-500 transition-all">
-                    <div class="flex items-center justify-between font-semibold mb-1">
-                        <span class="flex items-center gap-2"><input type="radio" name="tipoCardinalidade" value="muitos_para_muitos" onchange="mudarCardinalidade('*:*')"> Muitos para muitos (*:*)</span>
-                    </div>
-                    <span class="text-[11px] text-slate-400 font-normal">Valores duplicados em ambos os lados. Atenção: pode gerar ambiguidade nos cálculos DAX.</span>
-                </label>
-            </div>
-
-            <div class="flex justify-end pt-2">
-                <button onclick="fecharModalCardinalidade()" class="bg-[#0078d4] hover:bg-[#106ebe] text-white px-4 py-1.5 rounded text-xs font-medium shadow">Aplicar e Fechar</button>
-            </div>
-        </div>
+    <!-- TELA 1: AGUARDANDO PROFESSOR INICIAR -->
+    <div id="screen-espera" class="screen active">
+      <span class="status-badge status-espera">Aguardando Chamada</span>
+      <p style="color: #666; margin: 20px 0;">O sistema está pronto. Clique no botão abaixo para liberar a câmera e começar a chamada da turma.</p>
+      <button class="btn btn-primary" onclick="iniciarChamada()">Iniciar Chamada da Turma</button>
     </div>
 
-    <!-- BARRA DE SEGMENTADORES (SLICERS) -->
-    <div class="bg-[var(--pbi-card)] border-b border-[var(--pbi-border)] px-4 py-2 flex flex-wrap items-center gap-4 text-xs">
-        <div class="flex items-center gap-1.5 text-slate-400 font-semibold uppercase text-[10px]">
-            <i class="fa-solid fa-sliders"></i> Slicers Ativos:
-        </div>
-        
-        <div class="flex items-center gap-1 bg-[var(--pbi-bg)] border border-[var(--pbi-border)] px-2 py-0.5 rounded">
-            <span class="text-[11px] text-slate-400">Planta:</span>
-            <select id="slicerPlanta" onchange="aplicarCrossHighlight()" class="bg-transparent font-medium outline-none cursor-pointer text-[11px]">
-                <option value="all">Todas (Consolidado)</option>
-                <option value="sp">Planta SP - Montagem</option>
-                <option value="pr">Planta PR - Injeção</option>
-            </select>
-        </div>
-
-        <div class="flex items-center gap-1 bg-[var(--pbi-bg)] border border-[var(--pbi-border)] px-2 py-0.5 rounded">
-            <span class="text-[11px] text-slate-400">Linha:</span>
-            <select id="slicerLinha" onchange="aplicarCrossHighlight()" class="bg-transparent font-medium outline-none cursor-pointer text-[11px]">
-                <option value="all">Todas as Linhas</option>
-                <option value="L1">Linha 01 - Robótica</option>
-                <option value="L2">Linha 02 - Solda</option>
-                <option value="L3">Linha 03 - Prensas</option>
-            </select>
-        </div>
-
-        <div class="ml-auto flex items-center gap-2 text-[11px] text-emerald-400">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 live-dot"><span></span></span>
-            <span id="cardinalityStatusLabel">Cardinalidade Relacional: 1:* (Ativa)</span>
-        </div>
+    <!-- TELA 2: CÂMERA PROCURANDO ROSTO (LOOP AUTOMÁTICO) -->
+    <div id="screen-camera" class="screen">
+      <span class="status-badge status-ativo">Câmera Ativa - Aproxime o Rosto</span>
+      <div class="video-container">
+        <video id="webcam" autoplay playsinline muted></video>
+        <div class="scanning-overlay"></div>
+      </div>
+      <canvas id="canvas"></canvas>
+      <p id="feedback-txt" style="margin-top: 10px; font-size: 14px; color: #6b7280;">Procurando aluno...</p>
     </div>
 
-    <!-- CANVAS DO RELATÓRIO -->
-    <main class="p-3 md:p-4 max-w-[1800px] w-full mx-auto space-y-3 flex-grow">
+    <!-- TELA 3: SUCESSO (PRESENÇA REGISTRADA) -->
+    <div id="screen-sucesso" class="screen">
+      <div class="success-box">
+        <h2>Presença Registrada! ✅</h2>
+        <p><strong>Aluno:</strong> <span id="res-nome">---</span></p>
+        <p><strong>RA:</strong> <span id="res-ra">---</span></p>
+        <p style="font-size: 12px; margin-top: 10px; color: #15803d;">Retornando à câmera em instantes...</p>
+      </div>
+    </div>
 
-        <!-- LINHA 1: CARTÕES DE KPI -->
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
-            <div class="pbi-card rounded p-3 flex flex-col justify-between">
-                <div class="flex items-center justify-between text-[11px] font-medium text-[var(--pbi-subtext)]">
-                    <span>Total Incidents</span>
-                    <i class="fa-solid fa-circle-exclamation text-sky-500"></i>
-                </div>
-                <div class="my-1">
-                    <h3 id="kpiIncidents" class="text-2xl font-bold tracking-tight">139</h3>
-                </div>
-                <div class="text-[10px] flex justify-between items-center border-t border-[var(--pbi-border)] pt-1 text-[var(--pbi-subtext)]">
-                    <span>Contexto de Relacionamento</span>
-                    <span id="kpiCardInfo" class="text-sky-400 font-mono">1:*</span>
-                </div>
-            </div>
+    <!-- TELA 4: FALLBACK (DIGITAR RA E E-MAIL) -->
+    <div id="screen-fallback" class="screen">
+      <span class="status-badge status-erro">Rosto Não Reconhecido</span>
+      <p style="font-size: 14px; color: #4b5563; margin-bottom: 10px;">Não conseguimos ler seu rosto. Digite seu RA e E-mail para buscar seu cadastro no banco de dados e tentar a leitura novamente:</p>
+      
+      <div class="input-group">
+        <label for="input-ra">RA do Aluno:</label>
+        <input type="text" id="input-ra" placeholder="Ex: 20261045">
+      </div>
 
-            <div class="pbi-card rounded p-3 flex flex-col justify-between">
-                <div class="flex items-center justify-between text-[11px] font-medium text-[var(--pbi-subtext)]">
-                    <span>First Time Fix Rate</span>
-                    <i class="fa-solid fa-circle-check text-emerald-500"></i>
-                </div>
-                <div class="my-1">
-                    <h3 id="kpiFixRate" class="text-2xl font-bold tracking-tight">82.0%</h3>
-                </div>
-                <div class="text-[10px] flex justify-between items-center border-t border-[var(--pbi-border)] pt-1 text-[var(--pbi-subtext)]">
-                    <span>vs Mês Anterior (76%)</span>
-                    <span class="text-emerald-500 font-bold">+6.0%</span>
-                </div>
-            </div>
+      <div class="input-group">
+        <label for="input-email">E-mail Acadêmico:</label>
+        <input type="email" id="input-email" placeholder="aluno@universidade.edu.br">
+      </div>
 
-            <div class="pbi-card rounded p-3 flex flex-col justify-between">
-                <div class="flex items-center justify-between text-[11px] font-medium text-[var(--pbi-subtext)]">
-                    <span>Time to Resolve (Avg)</span>
-                    <i class="fa-solid fa-clock-rotate-left text-purple-500"></i>
-                </div>
-                <div class="my-1">
-                    <h3 id="kpiTimeToResolve" class="text-2xl font-bold tracking-tight">5.9 h</h3>
-                </div>
-                <div class="text-[10px] flex justify-between items-center border-t border-[var(--pbi-border)] pt-1 text-[var(--pbi-subtext)]">
-                    <span>vs Mês Anterior (6.8h)</span>
-                    <span class="text-emerald-500 font-bold">-13.2%</span>
-                </div>
-            </div>
+      <button class="btn btn-warning" onclick="tentarLeituraComDados()">Confirmar e Ler Rosto Novamente</button>
+      
+      <!-- Fallback do Professor se persistir o erro -->
+      <button class="btn btn-danger" style="margin-top: 20px;" onclick="presencaManualProfessor()">Presença Manual pelo Professor</button>
+    </div>
 
-            <div class="pbi-card rounded p-3 flex flex-col justify-between">
-                <div class="flex items-center justify-between text-[11px] font-medium text-[var(--pbi-subtext)]">
-                    <span>Cost Impact</span>
-                    <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
-                </div>
-                <div class="my-1">
-                    <h3 id="kpiCost" class="text-2xl font-bold tracking-tight">$ 200.000</h3>
-                </div>
-                <div class="text-[10px] flex justify-between items-center border-t border-[var(--pbi-border)] pt-1 text-[var(--pbi-subtext)]">
-                    <span>vs Mês Anterior ($ 245k)</span>
-                    <span class="text-emerald-500 font-bold">-18.4%</span>
-                </div>
-            </div>
+  </div>
 
-            <div class="pbi-card rounded p-3 flex flex-col justify-between col-span-2 lg:col-span-1">
-                <div class="flex items-center justify-between text-[11px] font-medium text-[var(--pbi-subtext)]">
-                    <span>Downtime (Total)</span>
-                    <i class="fa-solid fa-stopwatch text-rose-500"></i>
-                </div>
-                <div class="my-1">
-                    <h3 id="kpiDowntime" class="text-2xl font-bold tracking-tight">152 h</h3>
-                </div>
-                <div class="text-[10px] flex justify-between items-center border-t border-[var(--pbi-border)] pt-1 text-[var(--pbi-subtext)]">
-                    <span>vs Mês Anterior (168h)</span>
-                    <span class="text-emerald-500 font-bold">-9.5%</span>
-                </div>
-            </div>
-        </div>
+  <script>
+    const API_URL = "https://sua-api-no-render.onrender.com"; 
 
-        <!-- GRÁFICOS -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            <div class="pbi-card rounded p-3 flex flex-col justify-between">
-                <div class="flex justify-between items-center mb-2 pb-1 border-b border-[var(--pbi-border)] text-xs">
-                    <span class="font-bold uppercase tracking-wider">Monthly Incidents & Downtime</span>
-                </div>
-                <div class="relative h-60">
-                    <canvas id="chartMonthly"></canvas>
-                </div>
-            </div>
+    const video = document.getElementById('webcam');
+    const canvas = document.getElementById('canvas');
+    let streamCamera = null;
+    let loopInterval = null;
+    let processandoRosto = false;
 
-            <div class="pbi-card rounded p-3 flex flex-col justify-between">
-                <div class="flex justify-between items-center mb-2 pb-1 border-b border-[var(--pbi-border)] text-xs">
-                    <span class="font-bold uppercase tracking-wider">Repeat Issues Trend (%)</span>
-                </div>
-                <div class="relative h-60">
-                    <canvas id="chartRepeat"></canvas>
-                </div>
-            </div>
-        </div>
+    // Troca de Telas
+    function setScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+    }
 
-    </main>
+    // PASSO 1: Professor Clica e Abre a Câmera
+    async function iniciarChamada() {
+      setScreen('screen-camera');
+      try {
+        streamCamera = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+        video.srcObject = streamCamera;
+        processandoRosto = false;
+        
+        // Inicia o Loop de Varredura (Analisa um frame a cada 2.5 segundos)
+        loopInterval = setInterval(varrerEVerificarRosto, 2500);
+      } catch (err) {
+        alert("Erro ao acessar a câmera do aparelho: " + err.message);
+        setScreen('screen-espera');
+      }
+    }
 
-    <!-- RODAPÉ -->
-    <footer class="bg-[var(--pbi-card)] border-t border-[var(--pbi-border)] px-4 py-2 text-xs flex justify-between items-center max-w-[1800px] w-full mx-auto rounded-b">
-        <div class="text-[11px] text-[var(--pbi-subtext)]">
-            <span>Modelo Semântico: <strong>RCA_Enterprise_Live</strong></span>
-        </div>
-        <div class="text-[11px] text-emerald-500 font-semibold">
-            <span>Conexão DirectQuery Estabelecida</span>
-        </div>
-    </footer>
+    // PASSO 2: Loop de Varredura Automática do Rosto
+    async function varrerEVerificarRosto() {
+      if (processandoRosto) return;
+      processandoRosto = true;
 
-    <script>
-        let currentCardinality = '1:*';
+      document.getElementById('feedback-txt').innerText = "Analisando imagem...";
 
-        function abrirModalCardinalidade() {
-            document.getElementById('modalCardinalidade').classList.remove('hidden');
-        }
+      const imageBase64 = capturarFrameBase64();
 
-        function fecharModalCardinalidade() {
-            document.getElementById('modalCardinalidade').classList.add('hidden');
-        }
-
-        function mudarCardinalidade(tipo) {
-            currentCardinality = tipo;
-            document.getElementById('badgeCardMode').innerText = tipo;
-            document.getElementById('cardinalityStatusLabel').innerText = `Cardinalidade Relacional: ${tipo} (Ativa)`;
-            document.getElementById('kpiCardInfo').innerText = tipo;
-            
-            // Simula reavaliação do motor Tabular xVelocity do PBI ao alterar cardinalidade
-            aplicarCrossHighlight();
-        }
-
-        function alternarTema() {
-            document.body.classList.toggle('dark-mode');
-        }
-
-        const chartMonthly = new Chart(document.getElementById('chartMonthly').getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                datasets: [
-                    { label: 'Incidents', data: [14, 10, 16, 8, 15, 13, 18, 8, 20, 10, 17, 7], borderColor: '#0078d4', borderWidth: 2, tension: 0.2, fill: true, backgroundColor: 'rgba(0,120,212,0.1)' },
-                    { label: 'Downtime (h)', data: [120, 90, 150, 70, 140, 110, 160, 60, 170, 90, 150, 45], borderColor: '#107c41', borderWidth: 2, tension: 0.2 }
-                ]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      try {
+        const response = await fetch(`${API_URL}/api/reconhecer-rosto`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imagem: imageBase64 })
         });
 
-        const chartRepeat = new Chart(document.getElementById('chartRepeat').getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                datasets: [{ label: 'Repeat Issues %', data: [22, 18, 25, 15, 20, 19, 26, 12, 28, 17, 23, 10], borderColor: '#ffb900', borderWidth: 2, fill: true, backgroundColor: 'rgba(255,185,0,0.1)' }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        const data = await response.json();
+
+        if (response.ok && data.sucesso) {
+          // BATEU COM O BANCO -> SUCESSO E LOOP
+          exibirSucessoELoop(data.aluno.nome, data.aluno.ra);
+        } else if (data.rosto_detectado === false) {
+          // Ninguém na frente da câmera -> Continua procurando no loop
+          document.getElementById('feedback-txt').innerText = "Procurando aluno...";
+          processandoRosto = false;
+        } else {
+          // Detectou rosto, mas NÃO RECONHECEU -> Para o loop e vai para a Tela de RA
+          clearInterval(loopInterval);
+          setScreen('screen-fallback');
+        }
+      } catch (error) {
+        console.error("Erro na comunicação com a API", error);
+        processandoRosto = false;
+      }
+    }
+
+    // PASSO 3: Tratamento de Sucesso e Retorno Automático para o Loop
+    function exibirSucessoELoop(nome, ra) {
+      clearInterval(loopInterval);
+      document.getElementById('res-nome').innerText = nome;
+      document.getElementById('res-ra').innerText = ra;
+      setScreen('screen-sucesso');
+
+      // Aguarda 3 segundos para o aluno ver o nome e volta automaticamente para a câmera
+      setTimeout(() => {
+        setScreen('screen-camera');
+        processandoRosto = false;
+        loopInterval = setInterval(varrerEVerificarRosto, 2500);
+      }, 3000);
+    }
+
+    // PASSO 4: Aluno Digita RA + E-mail e Tenta a Leitura Novamente
+    async function tentarLeituraComDados() {
+      const ra = document.getElementById('input-ra').value.trim();
+      const email = document.getElementById('input-email').value.trim();
+
+      if (!ra || !email) {
+        alert("Preencha o RA e o E-mail para buscar seu cadastro.");
+        return;
+      }
+
+      const imageBase64 = capturarFrameBase64();
+
+      try {
+        const response = await fetch(`${API_URL}/api/reconhecer-rosto`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imagem: imageBase64, ra: ra, email: email })
         });
 
-        function aplicarCrossHighlight() {
-            const planta = document.getElementById('slicerPlanta').value;
-            
-            // Multiplicador baseado no tipo de cardinalidade escolhido (Simulando engine DAX)
-            let fatorCard = 1.0;
-            if (currentCardinality === '1:1') fatorCard = 0.85;
-            if (currentCardinality === '*:*') fatorCard = 1.35; // Muitos para muitos infla o contexto se mal modelado
+        const data = await response.json();
 
-            let fatorPlanta = planta === 'sp' ? 1.2 : (planta === 'pr' ? 0.9 : 1.0);
-            
-            const elInc = document.getElementById('kpiIncidents');
-            elInc.innerText = Math.round(139 * fatorPlanta * fatorCard);
+        if (response.ok && data.sucesso) {
+          // Limpa os campos do formulário
+          document.getElementById('input-ra').value = '';
+          document.getElementById('input-email').value = '';
+          
+          // Confirma e volta para o loop da câmera
+          exibirSucessoELoop(data.aluno.nome, data.aluno.ra);
+        } else {
+          alert("Não foi possível confirmar o rosto para este RA/E-mail. Tente novamente ou solicite validação do professor.");
         }
+      } catch (error) {
+        alert("Erro ao conectar com o servidor.");
+      }
+    }
 
-        function resetarFiltros() {
-            document.getElementById('slicerPlanta').value = 'all';
-            document.getElementById('slicerLinha').value = 'all';
-            mudarCardinalidade('1:*');
-            document.querySelector('input[value="1_para_muitos"]').checked = true;
-        }
+    // PASSO 5: Caso Persista o Erro, Professor Confirma Manualmente
+    async function presencaManualProfessor() {
+      const ra = document.getElementById('input-ra').value.trim();
+      
+      if (!ra) {
+        alert("Informe o RA do aluno para registrar a presença manual.");
+        return;
+      }
 
-        function alterarSafra() {
-            alert("Atualizando contexto de safra no modelo de dados tabular...");
+      if (confirm(`Professor, confirma a presença manual para o RA: ${ra}?`)) {
+        try {
+          const response = await fetch(`${API_URL}/api/presenca-manual`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ra: ra })
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.sucesso) {
+            document.getElementById('input-ra').value = '';
+            document.getElementById('input-email').value = '';
+            exibirSucessoELoop(data.aluno.nome, data.aluno.ra);
+          } else {
+            alert("Erro ao registrar presença manual no servidor.");
+          }
+        } catch (err) {
+          alert("Erro na conexão.");
         }
-    </script>
+      }
+    }
+
+    // Auxiliar: Captura a Imagem da Câmera
+    function capturarFrameBase64() {
+      const context = canvas.getContext('2d');
+      canvas.width = video.videoWidth || 320;
+      canvas.height = video.videoHeight || 240;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL('image/jpeg');
+    }
+  </script>
 </body>
 </html>
