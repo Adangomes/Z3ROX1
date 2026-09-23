@@ -1,0 +1,151 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { KeyRound, Loader2 } from 'lucide-react';
+
+export default function VerifyOTP() {
+  const [otp, setOtp] = useState(['5', '6', '6', '5']);
+  const [timer, setTimer] = useState(36);
+  const [isVerifying, setIsVerifying] = useState(true);
+  const inputRefs = useRef([]);
+
+  // Contagem decrescente do temporizador
+  useEffect(() => {
+    if (timer > 0) {
+      const interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+      return () => clearInterval(interval);
+    }
+  }, [timer]);
+
+  // Manipulação de mudança no input
+  const handleChange = (index, value) => {
+    if (isNaN(value)) return;
+    const newOtp = [...otp];
+    newOtp[index] = value.slice(-1); // Aceita apenas o último caractere
+    setOtp(newOtp);
+
+    // Mover foco para o próximo campo
+    if (value && index < 3) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  // Mover foco para trás com Backspace
+  const handleKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4 relative overflow-hidden font-sans">
+      {/* Luz de fundo dourada (Glow) */}
+      <div className="absolute w-96 h-96 bg-amber-500/10 blur-[120px] rounded-full pointer-events-none" />
+
+      {/* Card Principal em Glassmorphism */}
+      <div className="relative w-full max-w-md bg-neutral-900/60 backdrop-blur-xl border border-amber-500/20 rounded-3xl p-8 flex flex-col items-center text-center shadow-2xl">
+        
+        {/* Ícone de Chave */}
+        <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl mb-4 text-amber-400">
+          <KeyRound className="w-6 h-6" />
+        </div>
+
+        {/* Título e Subtítulo */}
+        <h1 className="text-2xl font-bold text-white tracking-wide mb-2">
+          Verify <span className="text-amber-400">OTP</span>
+        </h1>
+        <p className="text-neutral-400 text-sm mb-8 max-w-xs">
+          Enter the 4-digit security code sent to your device
+        </p>
+
+        {/* Grelha em Diamante / Losango para os 4 dígitos */}
+        <div className="grid grid-cols-3 grid-rows-3 gap-2 my-4 w-52 h-52 place-items-center">
+          {/* Dígito 1: Topo */}
+          <div className="col-start-2 row-start-1">
+            <OTPInput
+              index={0}
+              value={otp[0]}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              inputRef={(el) => (inputRefs.current[0] = el)}
+            />
+          </div>
+
+          {/* Dígito 2: Esquerda */}
+          <div className="col-start-1 row-start-2">
+            <OTPInput
+              index={1}
+              value={otp[1]}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              inputRef={(el) => (inputRefs.current[1] = el)}
+            />
+          </div>
+
+          {/* Dígito 3: Direita */}
+          <div className="col-start-3 row-start-2">
+            <OTPInput
+              index={2}
+              value={otp[2]}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              inputRef={(el) => (inputRefs.current[2] = el)}
+            />
+          </div>
+
+          {/* Dígito 4: Fundo */}
+          <div className="col-start-2 row-start-3">
+            <OTPInput
+              index={3}
+              value={otp[3]}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              inputRef={(el) => (inputRefs.current[3] = el)}
+            />
+          </div>
+        </div>
+
+        {/* Reenvio e Temporizador */}
+        <p className="text-sm text-neutral-400 mt-6 mb-6">
+          Didn't receive the code?{' '}
+          <button
+            disabled={timer > 0}
+            className={`font-semibold transition-colors ${
+              timer > 0 ? 'text-amber-500/80 cursor-not-allowed' : 'text-amber-400 hover:underline'
+            }`}
+          >
+            Resend in {`00:${timer < 10 ? `0${timer}` : timer}`}
+          </button>
+        </p>
+
+        {/* Botão de Verificação */}
+        <button
+          onClick={() => setIsVerifying(!isVerifying)}
+          className="w-full py-3.5 px-6 bg-gradient-to-r from-amber-500/80 to-yellow-500/80 hover:from-amber-500 hover:to-yellow-500 text-neutral-950 font-semibold rounded-xl shadow-lg shadow-amber-500/10 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+        >
+          {isVerifying ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>Verifying Code...</span>
+            </>
+          ) : (
+            <span>Verify</span>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Subcomponente reutilizável para cada quadrado de código
+function OTPInput({ index, value, onChange, onKeyDown, inputRef }) {
+  return (
+    <input
+      ref={inputRef}
+      type="text"
+      maxLength={1}
+      value={value}
+      onChange={(e) => onChange(index, e.target.value)}
+      onKeyDown={(e) => onKeyDown(index, e)}
+      className="w-14 h-14 bg-neutral-900/80 border border-amber-500/30 rounded-2xl text-center text-xl font-bold text-white shadow-inner focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all"
+    />
+  );
+}
