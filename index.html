@@ -1,263 +1,215 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Estação de Chamada Automatizada</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: #f0f2f5; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 15px; }
-    
-    .card { background: white; width: 100%; max-width: 480px; padding: 20px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); text-align: center; position: relative; }
-    
-    h1 { font-size: 20px; color: #1a1a1a; margin-bottom: 15px; }
-    .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; margin-bottom: 15px; }
-    .status-espera { background: #e2e8f0; color: #475569; }
-    .status-ativo { background: #dcfce7; color: #166534; }
-    .status-erro { background: #fee2e2; color: #991b1b; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verify OTP</title>
 
-    /* Telas / Etapas */
-    .screen { display: none; }
-    .screen.active { display: block; }
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-    /* Câmera */
-    .video-container { position: relative; width: 100%; border-radius: 10px; overflow: hidden; background: #000; height: 320px; display: flex; align-items: center; justify-content: center; }
-    video { width: 100%; height: 100%; object-fit: cover; }
-    canvas { display: none; }
-    
-    .scanning-overlay { position: absolute; border: 2px dashed #22c55e; border-radius: 50%; width: 200px; height: 200px; pointer-events: none; animation: pulse 2s infinite; }
-    @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+  <!-- React e React DOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
 
-    /* Formulários e Botões */
-    .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: background 0.2s; }
-    .btn-primary { background: #2563eb; color: white; }
-    .btn-primary:hover { background: #1d4ed8; }
-    .btn-warning { background: #f59e0b; color: white; }
-    .btn-danger { background: #ef4444; color: white; }
-
-    .input-group { text-align: left; margin-top: 10px; }
-    .input-group label { font-size: 13px; font-weight: bold; color: #374151; display: block; margin-bottom: 4px; }
-    .input-group input { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 15px; }
-
-    /* Card de Sucesso */
-    .success-box { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 20px; border-radius: 8px; }
-    .success-box h2 { font-size: 22px; margin-bottom: 10px; }
-  </style>
+  <!-- Babel Standalone para compilar JSX no navegador -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body>
+<body class="bg-neutral-950 text-white min-h-screen">
 
-  <div class="card">
-    <h1>Estação de Chamada</h1>
+  <div id="root"></div>
 
-    <!-- TELA 1: AGUARDANDO PROFESSOR INICIAR -->
-    <div id="screen-espera" class="screen active">
-      <span class="status-badge status-espera">Aguardando Chamada</span>
-      <p style="color: #666; margin: 20px 0;">O sistema está pronto. Clique no botão abaixo para liberar a câmera e começar a chamada da turma.</p>
-      <button class="btn btn-primary" onclick="iniciarChamada()">Iniciar Chamada da Turma</button>
-    </div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
 
-    <!-- TELA 2: CÂMERA PROCURANDO ROSTO (LOOP AUTOMÁTICO) -->
-    <div id="screen-camera" class="screen">
-      <span class="status-badge status-ativo">Câmera Ativa - Aproxime o Rosto</span>
-      <div class="video-container">
-        <video id="webcam" autoplay playsinline muted></video>
-        <div class="scanning-overlay"></div>
-      </div>
-      <canvas id="canvas"></canvas>
-      <p id="feedback-txt" style="margin-top: 10px; font-size: 14px; color: #6b7280;">Procurando aluno...</p>
-    </div>
-
-    <!-- TELA 3: SUCESSO (PRESENÇA REGISTRADA) -->
-    <div id="screen-sucesso" class="screen">
-      <div class="success-box">
-        <h2>Presença Registrada! ✅</h2>
-        <p><strong>Aluno:</strong> <span id="res-nome">---</span></p>
-        <p><strong>RA:</strong> <span id="res-ra">---</span></p>
-        <p style="font-size: 12px; margin-top: 10px; color: #15803d;">Retornando à câmera em instantes...</p>
-      </div>
-    </div>
-
-    <!-- TELA 4: FALLBACK (DIGITAR RA E E-MAIL) -->
-    <div id="screen-fallback" class="screen">
-      <span class="status-badge status-erro">Rosto Não Reconhecido</span>
-      <p style="font-size: 14px; color: #4b5563; margin-bottom: 10px;">Não conseguimos ler seu rosto. Digite seu RA e E-mail para buscar seu cadastro no banco de dados e tentar a leitura novamente:</p>
-      
-      <div class="input-group">
-        <label for="input-ra">RA do Aluno:</label>
-        <input type="text" id="input-ra" placeholder="Ex: 20261045">
-      </div>
-
-      <div class="input-group">
-        <label for="input-email">E-mail Acadêmico:</label>
-        <input type="email" id="input-email" placeholder="aluno@universidade.edu.br">
-      </div>
-
-      <button class="btn btn-warning" onclick="tentarLeituraComDados()">Confirmar e Ler Rosto Novamente</button>
-      
-      <!-- Fallback do Professor se persistir o erro -->
-      <button class="btn btn-danger" style="margin-top: 20px;" onclick="presencaManualProfessor()">Presença Manual pelo Professor</button>
-    </div>
-
-  </div>
-
-  <script>
-    const API_URL = "https://sua-api-no-render.onrender.com"; 
-
-    const video = document.getElementById('webcam');
-    const canvas = document.getElementById('canvas');
-    let streamCamera = null;
-    let loopInterval = null;
-    let processandoRosto = false;
-
-    // Troca de Telas
-    function setScreen(screenId) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(screenId).classList.add('active');
+    // Componente do Ícone KeyRound
+    function KeyRound({ className }) {
+      return (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className={className}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z" />
+          <circle cx="16.5" cy="7.5" r=".5" fill="currentColor" />
+        </svg>
+      );
     }
 
-    // PASSO 1: Professor Clica e Abre a Câmera
-    async function iniciarChamada() {
-      setScreen('screen-camera');
-      try {
-        streamCamera = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-        video.srcObject = streamCamera;
-        processandoRosto = false;
-        
-        // Inicia o Loop de Varredura (Analisa um frame a cada 2.5 segundos)
-        loopInterval = setInterval(varrerEVerificarRosto, 2500);
-      } catch (err) {
-        alert("Erro ao acessar a câmera do aparelho: " + err.message);
-        setScreen('screen-espera');
-      }
+    // Componente do Ícone Loader2
+    function Loader2({ className }) {
+      return (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className={className}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+        </svg>
+      );
     }
 
-    // PASSO 2: Loop de Varredura Automática do Rosto
-    async function varrerEVerificarRosto() {
-      if (processandoRosto) return;
-      processandoRosto = true;
+    // Subcomponente reutilizável para cada quadrado de código
+    function OTPInput({ index, value, onChange, onKeyDown, inputRef }) {
+      return (
+        <input
+          ref={inputRef}
+          type="text"
+          maxLength={1}
+          value={value}
+          onChange={(e) => onChange(index, e.target.value)}
+          onKeyDown={(e) => onKeyDown(index, e)}
+          className="w-14 h-14 bg-neutral-900/80 border border-amber-500/30 rounded-2xl text-center text-xl font-bold text-white shadow-inner focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all"
+        />
+      );
+    }
 
-      document.getElementById('feedback-txt').innerText = "Analisando imagem...";
+    function VerifyOTP() {
+      const [otp, setOtp] = useState(['5', '6', '6', '5']);
+      const [timer, setTimer] = useState(36);
+      const [isVerifying, setIsVerifying] = useState(true);
+      const inputRefs = useRef([]);
 
-      const imageBase64 = capturarFrameBase64();
-
-      try {
-        const response = await fetch(`${API_URL}/api/reconhecer-rosto`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imagem: imageBase64 })
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.sucesso) {
-          // BATEU COM O BANCO -> SUCESSO E LOOP
-          exibirSucessoELoop(data.aluno.nome, data.aluno.ra);
-        } else if (data.rosto_detectado === false) {
-          // Ninguém na frente da câmera -> Continua procurando no loop
-          document.getElementById('feedback-txt').innerText = "Procurando aluno...";
-          processandoRosto = false;
-        } else {
-          // Detectou rosto, mas NÃO RECONHECEU -> Para o loop e vai para a Tela de RA
-          clearInterval(loopInterval);
-          setScreen('screen-fallback');
+      // Contagem decrescente do temporizador
+      useEffect(() => {
+        if (timer > 0) {
+          const interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+          return () => clearInterval(interval);
         }
-      } catch (error) {
-        console.error("Erro na comunicação com a API", error);
-        processandoRosto = false;
-      }
-    }
+      }, [timer]);
 
-    // PASSO 3: Tratamento de Sucesso e Retorno Automático para o Loop
-    function exibirSucessoELoop(nome, ra) {
-      clearInterval(loopInterval);
-      document.getElementById('res-nome').innerText = nome;
-      document.getElementById('res-ra').innerText = ra;
-      setScreen('screen-sucesso');
+      // Manipulação de mudança no input
+      const handleChange = (index, value) => {
+        if (isNaN(value)) return;
+        const newOtp = [...otp];
+        newOtp[index] = value.slice(-1); // Aceita apenas o último caractere
+        setOtp(newOtp);
 
-      // Aguarda 3 segundos para o aluno ver o nome e volta automaticamente para a câmera
-      setTimeout(() => {
-        setScreen('screen-camera');
-        processandoRosto = false;
-        loopInterval = setInterval(varrerEVerificarRosto, 2500);
-      }, 3000);
-    }
-
-    // PASSO 4: Aluno Digita RA + E-mail e Tenta a Leitura Novamente
-    async function tentarLeituraComDados() {
-      const ra = document.getElementById('input-ra').value.trim();
-      const email = document.getElementById('input-email').value.trim();
-
-      if (!ra || !email) {
-        alert("Preencha o RA e o E-mail para buscar seu cadastro.");
-        return;
-      }
-
-      const imageBase64 = capturarFrameBase64();
-
-      try {
-        const response = await fetch(`${API_URL}/api/reconhecer-rosto`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imagem: imageBase64, ra: ra, email: email })
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.sucesso) {
-          // Limpa os campos do formulário
-          document.getElementById('input-ra').value = '';
-          document.getElementById('input-email').value = '';
-          
-          // Confirma e volta para o loop da câmera
-          exibirSucessoELoop(data.aluno.nome, data.aluno.ra);
-        } else {
-          alert("Não foi possível confirmar o rosto para este RA/E-mail. Tente novamente ou solicite validação do professor.");
+        // Mover foco para o próximo campo
+        if (value && index < 3) {
+          inputRefs.current[index + 1]?.focus();
         }
-      } catch (error) {
-        alert("Erro ao conectar com o servidor.");
-      }
-    }
+      };
 
-    // PASSO 5: Caso Persista o Erro, Professor Confirma Manualmente
-    async function presencaManualProfessor() {
-      const ra = document.getElementById('input-ra').value.trim();
-      
-      if (!ra) {
-        alert("Informe o RA do aluno para registrar a presença manual.");
-        return;
-      }
-
-      if (confirm(`Professor, confirma a presença manual para o RA: ${ra}?`)) {
-        try {
-          const response = await fetch(`${API_URL}/api/presenca-manual`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ra: ra })
-          });
-
-          const data = await response.json();
-
-          if (response.ok && data.sucesso) {
-            document.getElementById('input-ra').value = '';
-            document.getElementById('input-email').value = '';
-            exibirSucessoELoop(data.aluno.nome, data.aluno.ra);
-          } else {
-            alert("Erro ao registrar presença manual no servidor.");
-          }
-        } catch (err) {
-          alert("Erro na conexão.");
+      // Mover foco para trás com Backspace
+      const handleKeyDown = (index, e) => {
+        if (e.key === 'Backspace' && !otp[index] && index > 0) {
+          inputRefs.current[index - 1]?.focus();
         }
-      }
+      };
+
+      return (
+        <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4 relative overflow-hidden font-sans">
+          {/* Luz de fundo dourada (Glow) */}
+          <div className="absolute w-96 h-96 bg-amber-500/10 blur-[120px] rounded-full pointer-events-none" />
+
+          {/* Card Principal em Glassmorphism */}
+          <div className="relative w-full max-w-md bg-neutral-900/60 backdrop-blur-xl border border-amber-500/20 rounded-3xl p-8 flex flex-col items-center text-center shadow-2xl">
+            
+            {/* Ícone de Chave */}
+            <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl mb-4 text-amber-400">
+              <KeyRound className="w-6 h-6" />
+            </div>
+
+            {/* Título e Subtítulo */}
+            <h1 className="text-2xl font-bold text-white tracking-wide mb-2">
+              Verify <span className="text-amber-400">OTP</span>
+            </h1>
+            <p className="text-neutral-400 text-sm mb-8 max-w-xs">
+              Enter the 4-digit security code sent to your device
+            </p>
+
+            {/* Grelha em Diamante / Losango para os 4 dígitos */}
+            <div className="grid grid-cols-3 grid-rows-3 gap-2 my-4 w-52 h-52 place-items-center">
+              {/* Dígito 1: Topo */}
+              <div className="col-start-2 row-start-1">
+                <OTPInput
+                  index={0}
+                  value={otp[0]}
+                  onChange={handleChange}
+                  onKeyDown={handleKeyDown}
+                  inputRef={(el) => (inputRefs.current[0] = el)}
+                />
+              </div>
+
+              {/* Dígito 2: Esquerda */}
+              <div className="col-start-1 row-start-2">
+                <OTPInput
+                  index={1}
+                  value={otp[1]}
+                  onChange={handleChange}
+                  onKeyDown={handleKeyDown}
+                  inputRef={(el) => (inputRefs.current[1] = el)}
+                />
+              </div>
+
+              {/* Dígito 3: Direita */}
+              <div className="col-start-3 row-start-2">
+                <OTPInput
+                  index={2}
+                  value={otp[2]}
+                  onChange={handleChange}
+                  onKeyDown={handleKeyDown}
+                  inputRef={(el) => (inputRefs.current[2] = el)}
+                />
+              </div>
+
+              {/* Dígito 4: Fundo */}
+              <div className="col-start-2 row-start-3">
+                <OTPInput
+                  index={3}
+                  value={otp[3]}
+                  onChange={handleChange}
+                  onKeyDown={handleKeyDown}
+                  inputRef={(el) => (inputRefs.current[3] = el)}
+                />
+              </div>
+            </div>
+
+            {/* Reenvio e Temporizador */}
+            <p className="text-sm text-neutral-400 mt-6 mb-6">
+              Didn't receive the code?{' '}
+              <button
+                disabled={timer > 0}
+                className={`font-semibold transition-colors ${
+                  timer > 0 ? 'text-amber-500/80 cursor-not-allowed' : 'text-amber-400 hover:underline'
+                }`}
+              >
+                Resend in {`00:${timer < 10 ? `0${timer}` : timer}`}
+              </button>
+            </p>
+
+            {/* Botão de Verificação */}
+            <button
+              onClick={() => setIsVerifying(!isVerifying)}
+              className="w-full py-3.5 px-6 bg-gradient-to-r from-amber-500/80 to-yellow-500/80 hover:from-amber-500 hover:to-yellow-500 text-neutral-950 font-semibold rounded-xl shadow-lg shadow-amber-500/10 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+            >
+              {isVerifying ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Verifying Code...</span>
+                </>
+              ) : (
+                <span>Verify</span>
+              )}
+            </button>
+          </div>
+        </div>
+      );
     }
 
-    // Auxiliar: Captura a Imagem da Câmera
-    function capturarFrameBase64() {
-      const context = canvas.getContext('2d');
-      canvas.width = video.videoWidth || 320;
-      canvas.height = video.videoHeight || 240;
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      return canvas.toDataURL('image/jpeg');
-    }
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<VerifyOTP />);
   </script>
 </body>
 </html>
