@@ -3,12 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Verify OTP</title>
+  <title>Verificar OTP</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Import Map: Mapeia os imports 'react' e 'lucide-react' para carregar via CDN -->
+  <!-- Animação CSS para a Borda Giratória Luminosa -->
+  <style>
+    @keyframes spin-gradient {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .animate-border-spin {
+      animation: spin-gradient 3.5s linear infinite;
+    }
+  </style>
+
+  <!-- Import Map: Mapeia os imports 'react' e 'lucide-react' via CDN -->
   <script type="importmap">
     {
       "imports": {
@@ -26,11 +37,36 @@
 
   <div id="root"></div>
 
-  <!-- data-type="module" preserva os imports ES6 nativos -->
   <script type="text/babel" data-type="module" data-presets="react">
     import React, { useState, useEffect, useRef } from 'react';
     import { createRoot } from 'react-dom/client';
     import { KeyRound, Loader2 } from 'lucide-react';
+
+    // Subcomponente do Campo de Entrada com Borda Luminosa em Movimento
+    function OTPInput({ index, value, onChange, onKeyDown, inputRef }) {
+      return (
+        <div className="relative p-[2px] rounded-2xl overflow-hidden shadow-lg shadow-amber-500/10">
+          {/* Efeito de Luz em Rotação na Borda */}
+          <div 
+            className="absolute -inset-[150%] animate-border-spin opacity-90"
+            style={{
+              background: 'conic-gradient(from 0deg at 50% 50%, transparent 0deg, transparent 270deg, #f59e0b 330deg, #fbbf24 360deg)'
+            }}
+          />
+
+          {/* Campo de Texto Interno */}
+          <input
+            ref={inputRef}
+            type="text"
+            maxLength={1}
+            value={value}
+            onChange={(e) => onChange(index, e.target.value)}
+            onKeyDown={(e) => onKeyDown(index, e)}
+            className="relative w-14 h-14 bg-neutral-900/90 rounded-[14px] text-center text-xl font-bold text-white shadow-inner focus:outline-none focus:ring-2 focus:ring-amber-400/40 transition-all z-10"
+          />
+        </div>
+      );
+    }
 
     export default function VerifyOTP() {
       const [otp, setOtp] = useState(['5', '6', '6', '5']);
@@ -50,10 +86,9 @@
       const handleChange = (index, value) => {
         if (isNaN(value)) return;
         const newOtp = [...otp];
-        newOtp[index] = value.slice(-1); // Aceita apenas o último caractere
+        newOtp[index] = value.slice(-1);
         setOtp(newOtp);
 
-        // Mover foco para o próximo campo
         if (value && index < 3) {
           inputRefs.current[index + 1]?.focus();
         }
@@ -63,6 +98,12 @@
       const handleKeyDown = (index, e) => {
         if (e.key === 'Backspace' && !otp[index] && index > 0) {
           inputRefs.current[index - 1]?.focus();
+        }
+      };
+
+      const handleResend = () => {
+        if (timer === 0) {
+          setTimer(36);
         }
       };
 
@@ -81,15 +122,15 @@
 
             {/* Título e Subtítulo */}
             <h1 className="text-2xl font-bold text-white tracking-wide mb-2">
-              Verify <span className="text-amber-400">OTP</span>
+              Verificar <span className="text-amber-400">OTP</span>
             </h1>
             <p className="text-neutral-400 text-sm mb-8 max-w-xs">
-              Enter the 4-digit security code sent to your device
+              Introduza o código de segurança de 4 dígitos enviado para o seu dispositivo
             </p>
 
-            {/* Grelha em Diamante / Losango para os 4 dígitos */}
+            {/* Grelha em Diamante / Losango */}
             <div className="grid grid-cols-3 grid-rows-3 gap-2 my-4 w-52 h-52 place-items-center">
-              {/* Dígito 1: Topo */}
+              {/* Topo */}
               <div className="col-start-2 row-start-1">
                 <OTPInput
                   index={0}
@@ -100,7 +141,7 @@
                 />
               </div>
 
-              {/* Dígito 2: Esquerda */}
+              {/* Esquerda */}
               <div className="col-start-1 row-start-2">
                 <OTPInput
                   index={1}
@@ -111,7 +152,7 @@
                 />
               </div>
 
-              {/* Dígito 3: Direita */}
+              {/* Direita */}
               <div className="col-start-3 row-start-2">
                 <OTPInput
                   index={2}
@@ -122,7 +163,7 @@
                 />
               </div>
 
-              {/* Dígito 4: Fundo */}
+              {/* Fundo */}
               <div className="col-start-2 row-start-3">
                 <OTPInput
                   index={3}
@@ -136,29 +177,30 @@
 
             {/* Reenvio e Temporizador */}
             <p className="text-sm text-neutral-400 mt-6 mb-6">
-              Didn't receive the code?{' '}
+              Não recebeu o código?{' '}
               <button
+                onClick={handleResend}
                 disabled={timer > 0}
                 className={`font-semibold transition-colors ${
-                  timer > 0 ? 'text-amber-500/80 cursor-not-allowed' : 'text-amber-400 hover:underline'
+                  timer > 0 ? 'text-amber-500/80 cursor-not-allowed' : 'text-amber-400 hover:underline cursor-pointer'
                 }`}
               >
-                Resend in {`00:${timer < 10 ? `0${timer}` : timer}`}
+                Reenviar em {`00:${timer < 10 ? `0${timer}` : timer}`}
               </button>
             </p>
 
             {/* Botão de Verificação */}
             <button
               onClick={() => setIsVerifying(!isVerifying)}
-              className="w-full py-3.5 px-6 bg-gradient-to-r from-amber-500/80 to-yellow-500/80 hover:from-amber-500 hover:to-yellow-500 text-neutral-950 font-semibold rounded-xl shadow-lg shadow-amber-500/10 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+              className="w-full py-3.5 px-6 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-neutral-950 font-semibold rounded-xl shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
             >
               {isVerifying ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Verifying Code...</span>
+                  <span>A verificar código...</span>
                 </>
               ) : (
-                <span>Verify</span>
+                <span>Verificar</span>
               )}
             </button>
           </div>
@@ -166,22 +208,7 @@
       );
     }
 
-    // Subcomponente reutilizável para cada quadrado de código
-    function OTPInput({ index, value, onChange, onKeyDown, inputRef }) {
-      return (
-        <input
-          ref={inputRef}
-          type="text"
-          maxLength={1}
-          value={value}
-          onChange={(e) => onChange(index, e.target.value)}
-          onKeyDown={(e) => onKeyDown(index, e)}
-          className="w-14 h-14 bg-neutral-900/80 border border-amber-500/30 rounded-2xl text-center text-xl font-bold text-white shadow-inner focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all"
-        />
-      );
-    }
-
-    // Renderização do componente na div #root
+    // Renderização no DOM
     const root = createRoot(document.getElementById('root'));
     root.render(<VerifyOTP />);
   </script>
