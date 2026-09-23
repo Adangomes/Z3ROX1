@@ -8,9 +8,16 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- React e React DOM -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- Import Map: Mapeia os imports 'react' e 'lucide-react' para carregar via CDN -->
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "lucide-react": "https://esm.sh/lucide-react@0.263.1"
+      }
+    }
+  </script>
 
   <!-- Babel Standalone para compilar JSX no navegador -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -19,62 +26,13 @@
 
   <div id="root"></div>
 
-  <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
+  <!-- data-type="module" preserva os imports ES6 nativos -->
+  <script type="text/babel" data-type="module" data-presets="react">
+    import React, { useState, useEffect, useRef } from 'react';
+    import { createRoot } from 'react-dom/client';
+    import { KeyRound, Loader2 } from 'lucide-react';
 
-    // Componente do Ícone KeyRound
-    function KeyRound({ className }) {
-      return (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className={className}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z" />
-          <circle cx="16.5" cy="7.5" r=".5" fill="currentColor" />
-        </svg>
-      );
-    }
-
-    // Componente do Ícone Loader2
-    function Loader2({ className }) {
-      return (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className={className}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-        </svg>
-      );
-    }
-
-    // Subcomponente reutilizável para cada quadrado de código
-    function OTPInput({ index, value, onChange, onKeyDown, inputRef }) {
-      return (
-        <input
-          ref={inputRef}
-          type="text"
-          maxLength={1}
-          value={value}
-          onChange={(e) => onChange(index, e.target.value)}
-          onKeyDown={(e) => onKeyDown(index, e)}
-          className="w-14 h-14 bg-neutral-900/80 border border-amber-500/30 rounded-2xl text-center text-xl font-bold text-white shadow-inner focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all"
-        />
-      );
-    }
-
-    function VerifyOTP() {
+    export default function VerifyOTP() {
       const [otp, setOtp] = useState(['5', '6', '6', '5']);
       const [timer, setTimer] = useState(36);
       const [isVerifying, setIsVerifying] = useState(true);
@@ -208,7 +166,23 @@
       );
     }
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
+    // Subcomponente reutilizável para cada quadrado de código
+    function OTPInput({ index, value, onChange, onKeyDown, inputRef }) {
+      return (
+        <input
+          ref={inputRef}
+          type="text"
+          maxLength={1}
+          value={value}
+          onChange={(e) => onChange(index, e.target.value)}
+          onKeyDown={(e) => onKeyDown(index, e)}
+          className="w-14 h-14 bg-neutral-900/80 border border-amber-500/30 rounded-2xl text-center text-xl font-bold text-white shadow-inner focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all"
+        />
+      );
+    }
+
+    // Renderização do componente na div #root
+    const root = createRoot(document.getElementById('root'));
     root.render(<VerifyOTP />);
   </script>
 </body>
