@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Stencil HD Pro - Qualidade Vetor</title>
+<title>Stencil HD Pro - Corrigido</title>
 <style>
 :root{--bg:#0f172a;--card:#1e293b;--accent:#8b5cf6;--accent-hover:#7c3aed;--text:#f8fafc;--border:#334155}
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -12,10 +12,8 @@ body{background:var(--bg);color:var(--text);padding:15px;display:flex;justify-co
 h1{text-align:center;font-size:1.8rem;margin-bottom:5px;background:linear-gradient(to right,#a78bfa,#c084fc);-webkit-background-clip:text;color:transparent;font-weight:900}
 .subtitle{text-align:center;color:#94a3b8;font-size:0.9rem;margin-bottom:24px}
 
-.upload-area{border:2px dashed #475569;border-radius:16px;padding:30px 20px;text-align:center;cursor:pointer;background:rgba(255,255,255,0.02);transition:all 0.3s;margin-bottom:20px}
-.upload-area:hover{border-color:var(--accent);background:rgba(139,92,246,0.1)}
-.upload-area svg{width:40px;height:40px;fill:#8b5cf6;margin-bottom:10px}
-input[type=file]{display:none}
+.upload-area{border:2px dashed #475569;border-radius:16px;padding:30px 20px;text-align:center;background:rgba(255,255,255,0.02);transition:all 0.3s;margin-bottom:20px}
+input[type=file]{display:block;margin:0 auto;color:#e2e8f0;font-size:0.9rem;padding:10px;background:#0f172a;border-radius:8px;border:1px solid var(--border);cursor:pointer;width:100%;max-width:300px}
 
 .workspace{display:none;flex-direction:column;gap:20px}
 
@@ -56,14 +54,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 
 <div class="app">
   <h1>Stencil HD Pro</h1>
-  <p class="subtitle">Algoritmo de Adaptação Local (Estilo Vetor)</p>
+  <p class="subtitle">Versão Estável Direta</p>
 
-  <div class="upload-area" onclick="document.getElementById('fileIn').click()" id="upArea">
-    <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.36 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
-    <div id="upText" style="font-weight:600; font-size:1.1rem; color:#e2e8f0">Toque para Selecionar a Imagem</div>
-    <div style="font-size:0.85rem; color:#64748b; margin-top:5px">O sistema fará o ajuste automático inicial.</div>
+  <div class="upload-area" id="upArea">
+    <div style="font-weight:600; font-size:1.0rem; color:#e2e8f0; margin-bottom:12px">📁 Escolha a Imagem do Desenho</div>
+    <input type="file" id="fileIn" accept="image/*">
   </div>
-  <input type="file" id="fileIn" accept="image/*">
 
   <div class="workspace" id="workArea">
     
@@ -81,7 +77,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
       <div class="control-box">
         <div class="ctrl-header">
           <label>🧹 Anti-Tremelido (Limpeza)</label>
-          <span class="val-display" id="valClean">Suave</span>
+          <span class="val-display" id="valClean">Nível 1</span>
         </div>
         <input type="range" id="pClean" min="0" max="6" value="1" step="1">
         <p class="desc">Aumente se a foto tiver muita textura de pele ou ruído. Linhas ficarão mais contínuas.</p>
@@ -91,30 +87,30 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
       <div class="control-box">
         <div class="ctrl-header">
           <label>✒️ Sensibilidade das Linhas</label>
-          <span class="val-display" id="valSens">Padrão</span>
+          <span class="val-display" id="valSens">10</span>
         </div>
         <input type="range" id="pSens" min="1" max="25" value="10" step="1">
-        <p class="desc">Define o quão escuro um detalhe precisa ser para virar linha. Controla os pelos e hachuras finas.</p>
+        <p class="desc">Define o quão escuro um detalhe precisa ser para virar linha.</p>
       </div>
 
       <!-- Blocos Pretos Sólidos -->
       <div class="control-box">
         <div class="ctrl-header">
-          <label>⬛ Forçar Blocos Pretos (Preenchimento)</label>
-          <span class="val-display" id="valBlock">Alto (80)</span>
+          <label>⬛ Forçar Blocos Pretos</label>
+          <span class="val-display" id="valBlock">80</span>
         </div>
         <input type="range" id="pBlock" min="0" max="150" value="80" step="5">
-        <p class="desc">Preenche áreas escuras inteiras (como tribais e bordas grossas) sem deixar buracos no meio.</p>
+        <p class="desc">Preenche áreas escuras inteiras (como tribales e bordas grossas) sem deixar buracos.</p>
       </div>
       
       <!-- Detalhamento -->
       <div class="control-box">
         <div class="ctrl-header">
           <label>🔍 Nível de Detalhe (Raio)</label>
-          <span class="val-display" id="valDetail">Fino (15px)</span>
+          <span class="val-display" id="valDetail">15px</span>
         </div>
         <input type="range" id="pDetail" min="3" max="50" value="15" step="1">
-        <p class="desc">Raio de busca do contraste. Valores menores pegam detalhes finos. Valores maiores engrossam os traços.</p>
+        <p class="desc">Raio de busca do contraste.</p>
       </div>
     </div>
 
@@ -133,12 +129,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 const $ = id => document.getElementById(id);
 const fileIn = $('fileIn'), cvs =$('cvs'), ctx = cvs.getContext('2d', { willReadFrequently: true });
 const viewer = $('viewer'), imgBefore =$('imgBefore'), slider = $('slider'), loading =$('loading');
-let W = 0, H = 0, imgDataRaw = null, grayArray = null, timer = null;
+let W = 0, H = 0, grayArray = null, timer = null;
 
-// Cor exata da Tinta Hectográfica Roxa HD
 const INK_R = 45, INK_G = 15, INK_B = 140;
 
-// O segredo para rodar rápido: Box Blur Rápido
 function fastBoxBlur(src, w, h, radius) {
   const tr = new Float32Array(w * h), out = new Float32Array(w * h);
   for(let y=0; y<h; y++) {
@@ -162,51 +156,41 @@ function fastBoxBlur(src, w, h, radius) {
   return out;
 }
 
-// O MOTOR PRINCIPAL DE PROCESSAMENTO (Adaptive Local Thresholding)
 function renderDecalque() {
   if (!grayArray) return;
   
   const cleanRadius = parseInt($('pClean').value);
   const detailRadius = parseInt($('pDetail').value);
-  const sens = parseInt($('pSens').value); // Diferença de cor pra virar linha
-  const blockThresh = parseInt($('pBlock').value); // 0 a 255. Abaixo disso é preto absoluto.
+  const sens = parseInt($('pSens').value);
+  const blockThresh = parseInt($('pBlock').value);
 
-  // 1. Anti-Tremelido (Limpeza de ruído)
   let baseImg = grayArray;
   if (cleanRadius > 0) {
     baseImg = fastBoxBlur(grayArray, W, H, cleanRadius);
-    // Passo extra para suavizar ainda mais o ruído
     if(cleanRadius > 2) baseImg = fastBoxBlur(baseImg, W, H, cleanRadius-1);
   }
 
-  // 2. Cria o mapa de Médias Locais (O segredo para pegar hachuras finas perfeitamente)
   const localMeans = fastBoxBlur(baseImg, W, H, detailRadius);
-
-  // 3. Renderiza a imagem final
   const outData = ctx.createImageData(W, H);
   const data = outData.data;
 
   for (let i = 0; i < W * H; i++) {
     const px = baseImg[i];
     const mean = localMeans[i];
-    
-    // Regra A: É escuro o suficiente absoluto para ser um BLOCO SÓLIDO?
     let isBlack = (px < blockThresh);
 
-    // Regra B: É mais escuro que o ambiente ao redor dele? (LINHAS E HACHURAS)
-    // Se o pixel atual for menor que a (Média Local - Sensibilidade), é uma linha!
     if (!isBlack && px < mean - sens) {
       isBlack = true;
     }
 
     const idx = i * 4;
     if (isBlack) {
-      data[idx] = INK_R;     // R
-      data[idx+1] = INK_G;   // G
-      data[idx+2] = INK_B;   // B
-      data[idx+3] = 255;     // Alpha
+      data[idx] = INK_R;     
+      data[idx+1] = INK_G;   
+      data[idx+2] = INK_B;   
+      data[idx+3] = 255;     
     } else {
-      data[idx] = 255;       // Branco
+      data[idx] = 255;       
       data[idx+1] = 255;
       data[idx+2] = 255;
       data[idx+3] = 255;
@@ -215,13 +199,11 @@ function renderDecalque() {
 
   ctx.putImageData(outData, 0, 0);
   
-  // Atualiza a imagem de download final
   cvs.toBlob(blob => {
     $('outImg').src = URL.createObjectURL(blob);
   }, 'image/png');
 }
 
-// Lógica de Carregamento da Imagem
 fileIn.addEventListener('change', e => {
   const file = e.target.files[0];
   if (!file) return;
@@ -231,7 +213,6 @@ fileIn.addEventListener('change', e => {
   const url = URL.createObjectURL(file);
   const img = new Image();
   img.onload = () => {
-    // Redimensiona mantendo proporção para alta definição mas sem travar o cel
     const max = 2200;
     let w = img.width, h = img.height;
     if (Math.max(w, h) > max) {
@@ -241,14 +222,12 @@ fileIn.addEventListener('change', e => {
     W = w; H = h;
     cvs.width = W; cvs.height = H;
     
-    // Desenha e pega os dados GrayScale
     ctx.fillStyle = '#fff'; ctx.fillRect(0,0,W,H);
     ctx.drawImage(img, 0, 0, W, H);
     const raw = ctx.getImageData(0,0,W,H).data;
     
     grayArray = new Float32Array(W * H);
     for(let i=0; i < W*H; i++) {
-      // Fórmula Luminosidade Rec. 709
       grayArray[i] = 0.2126 * raw[i*4] + 0.7152 * raw[i*4+1] + 0.0722 * raw[i*4+2];
     }
     
@@ -262,20 +241,17 @@ fileIn.addEventListener('change', e => {
 function triggerRender() {
   clearTimeout(timer);
   loading.style.display = 'flex';
-  // Joga pra próxima frame pra UI não travar e mostrar o Loading
   timer = setTimeout(() => {
     renderDecalque();
     loading.style.display = 'none';
-  }, 100);
+  }, 50);
 }
 
-// Atualização dos textos dos controles
 const updateTxt = (id, val, suffix='') => $(id).innerText = val + suffix;
-$('pClean').oninput = e => { updateTxt('valClean', e.target.value == 0 ? 'Desligado' : 'Nível ' + e.target.value); triggerRender(); }
+$('pClean').oninput = e => { updateTxt('valClean', 'Nível ' + e.target.value); triggerRender(); }
 $('pSens').oninput = e => { updateTxt('valSens', e.target.value); triggerRender(); }
 $('pBlock').oninput = e => { updateTxt('valBlock', e.target.value); triggerRender(); }$('pDetail').oninput = e => { updateTxt('valDetail', e.target.value, 'px'); triggerRender(); }
 
-// Slider Antes/Depois
 let isDragging = false;
 function setSliderPos(percent) {
   percent = Math.max(0, Math.min(100, percent));
@@ -294,7 +270,6 @@ viewer.addEventListener('touchstart', e => { isDragging = true; onMove(e.touches
 window.addEventListener('touchmove', e => { if (isDragging) onMove(e.touches[0].clientX); }, {passive:true});
 window.addEventListener('touchend', () => isDragging = false);
 
-// Botão de Salvar
 $('btnFinal').onclick = () => {
   $('finalRes').style.display = 'block';$('finalRes').scrollIntoView({behavior: "smooth"});
 };
