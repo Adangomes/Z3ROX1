@@ -13,7 +13,7 @@ h1{text-align:center;font-size:1.8rem;margin-bottom:5px;background:linear-gradie
 .subtitle{text-align:center;color:#94a3b8;font-size:0.9rem;margin-bottom:24px}
 
 .upload-area{border:2px dashed #475569;border-radius:16px;padding:30px 20px;text-align:center;background:rgba(255,255,255,0.02);transition:all 0.3s;margin-bottom:20px}
-input[type=file]{display:block;margin:0 auto;color:#e2e8f0;font-size:0.9rem;padding:10px;background:#0f172a;border-radius:8px;border:1px solid var(--border);cursor:pointer;width:100%;max-width:300px}
+input[type=file]{display:block;margin:12px auto 0 auto;color:#e2e8f0;font-size:0.9rem;padding:10px;background:#0f172a;border-radius:8px;border:1px solid var(--border);cursor:pointer;width:100%;max-width:300px}
 
 .workspace{display:none;flex-direction:column;gap:20px}
 
@@ -57,7 +57,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
   <p class="subtitle">Versão Estável Direta</p>
 
   <div class="upload-area" id="upArea">
-    <div style="font-weight:600; font-size:1.0rem; color:#e2e8f0; margin-bottom:12px">📁 Escolha a Imagem do Desenho</div>
+    <div style="font-weight:600; font-size:1.0rem; color:#e2e8f0;">📁 Escolha a Imagem do Desenho</div>
     <input type="file" id="fileIn" accept="image/*">
   </div>
 
@@ -208,6 +208,7 @@ fileIn.addEventListener('change', e => {
   const file = e.target.files[0];
   if (!file) return;
   
+  // Exibe a workspace e esconde a área de upload imediatamente
   $('upArea').style.display = 'none';$('workArea').style.display = 'flex';
   
   const url = URL.createObjectURL(file);
