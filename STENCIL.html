@@ -22,6 +22,10 @@ input[type=file]{display:none}
 .badge{position:absolute;top:10px;padding:4px 10px;border-radius:6px;font-size:.75rem;font-weight:bold;background:rgba(0,0,0,.7);z-index:11}
 .bl{left:10px}.br{right:10px}
 .busy{position:absolute;inset:0;z-index:20;background:rgba(18,18,20,.55);display:none;align-items:center;justify-content:center;font-weight:bold}
+.magic-box{background:rgba(108,92,231,.15);border:1px solid var(--accent);border-radius:12px;padding:14px;margin-bottom:16px;display:none;text-align:center}
+.magic-box p{font-size:.85rem;color:#ccc;margin-bottom:10px}
+.btn-magic{width:100%;background:linear-gradient(135deg, #6c5ce7, #a29bfe);color:#fff;border:none;padding:14px;border-radius:10px;font-size:1rem;font-weight:bold;cursor:pointer;box-shadow:0 4px 12px rgba(108,92,231,.4)}
+.btn-magic:hover{opacity:.9}
 .controls{display:flex;flex-direction:column;gap:14px;margin-bottom:20px}
 .hd{display:flex;justify-content:space-between;font-size:.88rem;margin-bottom:4px}
 input[type=range],select{accent-color:var(--accent);width:100%}
@@ -32,6 +36,8 @@ select{background:#2a2a32;color:#fff;border:1px solid var(--border);padding:10px
 .prev{margin-top:16px;text-align:center;display:none;background:rgba(255,255,255,.05);padding:12px;border-radius:12px;border:1px dashed var(--border)}
 .prev img{max-width:100%;border-radius:8px;margin-top:8px;background:#fff}
 .hint{font-size:.8rem;color:#aaa}
+.footer{text-align:center;margin-top:20px;font-size:.8rem;color:#888;border-top:1px solid var(--border);padding-top:12px}
+.footer b{color:var(--text)}
 </style>
 </head>
 <body>
@@ -39,7 +45,12 @@ select{background:#2a2a32;color:#fff;border:1px solid var(--border);padding:10px
   <h1>Tattoo Stencil Pro</h1>
   <p class="subtitle">Linhas sólidas, preenchimento inteligente e pontilhismo de sombra</p>
 
-  <div class="upload" onclick="fileInput.click()"><span id="uploadText">📷 Toque aqui para escolher a imagem</span><input type="file" id="fileInput" accept="image/*"></div>
+  <div class="upload" onclick="fileInput.click()"><span id="uploadText">Toque aqui para escolher a imagem</span><input type="file" id="fileInput" accept="image/*"></div>
+
+  <div class="magic-box" id="magicBox">
+    <p>Ajuste instantâneo baseado no estilo de linha limpa com hachuras e sombras da sua referência</p>
+    <button class="btn-magic" id="magicBtn">Estêncil Automático</button>
+  </div>
 
   <div class="cmp" id="cmp">
     <span class="badge bl">Foto Original</span><span class="badge br">Decalque</span>
@@ -66,17 +77,21 @@ select{background:#2a2a32;color:#fff;border:1px solid var(--border);padding:10px
     </div>
   </div>
 
-  <button id="saveBtn" class="btn" disabled>📸 Salvar Decalque na Galeria</button>
+  <button id="saveBtn" class="btn" disabled>Salvar Decalque na Galeria</button>
 
   <div class="prev" id="prev">
-    <p class="hint">💡 <b>Para salvar no iOS/Android:</b> pressione e segure a imagem abaixo e toque em <b>"Adicionar às Fotos"</b> ou <b>"Fazer Download"</b>.</p>
+    <p class="hint"><b>Para salvar no iOS/Android:</b> pressione e segure a imagem abaixo e toque em <b>Adicionar às Fotos</b> ou <b>Fazer Download</b>.</p>
     <img id="out" alt="Decalque Pronto">
+  </div>
+
+  <div class="footer">
+    Sistema desenvolvido por Adam Gomes. Linha firme, traço limpo e cliente satisfeito na hora de riscar.
   </div>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
-const fileInput=$('fileInput'), cv=$('cv'), ctx=cv.getContext('2d'), cmp=$('cmp'), before=$('before'), handle=$('handle'), busy=$('busy'), saveBtn=$('saveBtn');
+const fileInput=$('fileInput'), cv=$('cv'), ctx=cv.getContext('2d'), cmp=$('cmp'), before=$('before'), handle=$('handle'), busy=$('busy'), saveBtn=$('saveBtn'), magicBox=$('magicBox'), magicBtn=$('magicBtn');
 const MAX_SIDE = 3000, MIN_SIDE = 1800;   
 const INKS = { black:[10,10,10], purple:[40,20,130], blue:[25,35,135], red:[205,25,35] };
 
@@ -103,7 +118,7 @@ const hash=(a,b)=>{let h=Math.imul(a,374761393)^Math.imul(b,668265263); h=Math.i
 /* ---------- 1. carregar imagem ---------- */
 fileInput.addEventListener('change', e=>{
   const file=e.target.files[0]; if(!file) return;
-  $('uploadText').innerText='📷 '+file.name;
+  $('uploadText').innerText=file.name;
   const url=URL.createObjectURL(file), im=new Image();
   im.onload=()=>{
     const long=Math.max(im.naturalWidth,im.naturalHeight);
@@ -120,10 +135,20 @@ fileInput.addEventListener('change', e=>{
     tone=new Float32Array(n); for(let i=0;i<n;i++){const t=(g[i]-lo)/(hi-lo); tone[i]=t<0?0:t>1?1:t;}
     prepEdges();
     toneBlur=gblur(tone,W,H,Math.max(2,L/350));
-    $('orig').src=url; cmp.style.display='block'; setSlider(50); saveBtn.disabled=false;
+    $('orig').src=url; cmp.style.display='block'; magicBox.style.display='block'; setSlider(50); saveBtn.disabled=false;
     schedule(0);
   };
   im.src=url;
+});
+
+/* ---------- Botão de Estêncil Automático Baseado na Referência ---------- */
+magicBtn.addEventListener('click', ()=>{
+  $('sens').value = '1.8';$('sensV').innerText = '1.8';
+  $('clean').value = '6';$('cleanV').innerText = '6';
+  $('thick').value = '2';$('thickV').innerText = '2';
+  $('dens').value = '20';$('densV').innerText = '20%';
+  $('dot').value = '2.5';$('dotV').innerText = '2.5';
+  schedule(0);
 });
 
 /* ---------- 2. detecção refinada de bordas + sólidos ---------- */
@@ -202,7 +227,6 @@ function render(){
   const sens=parseFloat($('sens').value), clean=+$('clean').value, thick=+$('thick').value, dens=+$('dens').value/100, dotK=parseFloat($('dot').value);
   const n=W*H, hi=80/sens, lo=hi*0.4, minLen=Math.round(clean*L/700);
   
-  // Extrai linhas por Canny
   let edge=buildLines(hi,lo,minLen);
   const R=Math.max(1,Math.round(thick*L/3000));
   edge=dilate(edge,W,H,R);
@@ -214,17 +238,14 @@ function render(){
     if(a>0) ink[i]=Math.min(255, a*255);
   }
 
-  // Identifica áreas muito escuras na imagem original (ex: pupilas, cabelos profundos, lettering forte) para preencher sólido com borda marcada
   for(let i=0;i<n;i++){
-    if(tone[i] < 0.22) { // Zonas bem escuras
+    if(tone[i] < 0.22) { 
       ink[i] = 255;
     }
   }
 
-  // Aplica o pontilhismo nas áreas de sombra/degradê
   drawDots(ink,dens,dotK);
 
-  // Renderiza a cor escolhida pelo usuário
   const c=INKS[$('color').value], img=ctx.createImageData(W,H), o=img.data;
   for(let i=0;i<n;i++){
     const a=ink[i]/255, k=i*4;
