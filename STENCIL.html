@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Tattoo Stencil Ultra Precision - Decalque Profissional</title>
+<title>Tattoo Stencil Ultra Precision - Nível Profissional</title>
 <style>
 :root{--bg:#121214;--card:#1e1e24;--accent:#6c5ce7;--accent2:#5b4bc4;--text:#f1f2f6;--border:#333}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -22,7 +22,7 @@ input[type=file]{display:none}
 .badge{position:absolute;top:10px;padding:4px 10px;border-radius:6px;font-size:.75rem;font-weight:bold;background:rgba(0,0,0,.7);z-index:11;color:#fff}
 .bl{left:10px}.br{right:10px}
 .busy{position:absolute;inset:0;z-index:20;background:rgba(18,18,20,.65);display:none;align-items:center;justify-content:center;font-weight:bold;color:#fff;font-size:1.1rem}
-.controls{display:flex;flex-direction:column;gap:14px;margin-bottom:20px}
+.controls{display:flex;flex-direction:column;gap:14px;margin-bottom:20px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 12px;}
 .hd{display:flex;justify-content:space-between;font-size:.88rem;margin-bottom:4px;color:#ddd;font-weight:500}
 input[type=range],select{accent-color:var(--accent);width:100%}
 select{background:#2a2a32;color:#fff;border:1px solid var(--border);padding:10px;border-radius:8px;font-size:.9rem}
@@ -36,8 +36,8 @@ select{background:#2a2a32;color:#fff;border:1px solid var(--border);padding:10px
 </head>
 <body>
 <div class="app">
-  <h1>Tattoo Stencil Precision Pro</h1>
-  <p class="subtitle">Decalque sem manchas: traços limpos e pontilhismo de sombra</p>
+  <h1>Stencil Pro V2</h1>
+  <p class="subtitle">Linhas apenas onde tem linha, pontilhismo perfeito na sombra.</p>
 
   <div class="upload" onclick="fileInput.click()"><span id="uploadText">📷 Selecionar foto para decalque</span><input type="file" id="fileInput" accept="image/*"></div>
 
@@ -46,41 +46,45 @@ select{background:#2a2a32;color:#fff;border:1px solid var(--border);padding:10px
     <canvas id="cv"></canvas>
     <div class="before" id="before"><img id="orig" alt="Original"></div>
     <div class="handle" id="handle"><div class="knob">↔</div></div>
-    <div class="busy" id="busy">Gerando Traços e Pontilhismo…</div>
+    <div class="busy" id="busy">Processando Decalque…</div>
   </div>
 
   <div class="controls">
     <div>
-      <div class="hd"><label for="lineSens">Sensibilidade do Traço (Contornos)</label><span id="lineSensV">1.4</span></div>
-      <input type="range" id="lineSens" min="0.5" max="3.0" value="1.4" step="0.1">
+      <div class="hd"><label for="lineSens">Força do Contorno (Linhas)</label><span id="lineSensV">1.5</span></div>
+      <input type="range" id="lineSens" min="0.2" max="3.0" value="1.5" step="0.1">
+      <p style="font-size: 0.75rem; color: #888; margin-top: 4px;">↑ Maior: Pega linhas mais fracas. ↓ Menor: Apenas contornos principais.</p>
     </div>
-    <div>
-      <div class="hd"><label for="dotwork">Sombreamento em Pontilhismo (Dotwork)</label><span id="dotworkV">60%</span></div>
-      <input type="range" id="dotwork" min="0" max="100" value="60" step="5">
+    
+    <div style="margin-top: 8px;">
+      <div class="hd"><label for="dotwork">Intensidade da Sombra (Pontilhismo)</label><span id="dotworkV">50%</span></div>
+      <input type="range" id="dotwork" min="0" max="100" value="50" step="5">
     </div>
-    <div>
-      <div class="hd"><label for="shadowGuides">Linhas Guia de Contorno de Sombra (Isófotas)</label><span id="shadowGuidesV">4</span></div>
-      <input type="range" id="shadowGuides" min="0" max="10" value="4" step="1">
+
+    <div style="margin-top: 8px;">
+      <div class="hd"><label for="dotSize">Tamanho do Ponto da Sombra</label><span id="dotSizeV">2</span></div>
+      <input type="range" id="dotSize" min="1" max="5" value="2" step="1">
     </div>
-    <div>
-      <div class="hd"><label for="smooth">Suavização da Pele (Remover Poros/Ruído)</label><span id="smoothV">2</span></div>
-      <input type="range" id="smooth" min="0" max="6" value="2" step="1">
+
+    <div style="margin-top: 8px;">
+      <div class="hd"><label for="smooth">Limpeza de Pele (Ignorar poros)</label><span id="smoothV">2</span></div>
+      <input type="range" id="smooth" min="0" max="8" value="2" step="1">
     </div>
-    <div>
+
+    <div style="margin-top: 12px;">
       <label style="font-size:.85rem;color:#ccc;display:block;margin-bottom:4px">Cor do Papel Hectográfico</label>
       <select id="color">
         <option value="purple">Roxo Hectográfico (Anubis / Spirit)</option>
         <option value="blue" selected>Azul Marinho Clássico</option>
-        <option value="red">Vermelho Stencil</option>
         <option value="black">Preto Nanquim</option>
       </select>
     </div>
   </div>
 
-  <button id="saveBtn" class="btn" disabled>📸 Salvar Decalque de Alta Resolução</button>
+  <button id="saveBtn" class="btn" disabled>📸 Salvar Decalque Pronto</button>
 
   <div class="prev" id="prev">
-    <p class="hint">💡 <b>Dica de Impressão:</b> Pressione e segure na imagem abaixo para baixar e enviar para sua impressora térmica.</p>
+    <p class="hint">💡 <b>Dica de Impressão:</b> Pressione e segure na imagem abaixo para salvar e enviar para impressora térmica.</p>
     <img id="out" alt="Decalque Pronto">
   </div>
 </div>
@@ -88,10 +92,9 @@ select{background:#2a2a32;color:#fff;border:1px solid var(--border);padding:10px
 <script>
 const $ = id => document.getElementById(id);
 const fileInput=$('fileInput'), cv=$('cv'), ctx=cv.getContext('2d'), cmp=$('cmp'), before=$('before'), handle=$('handle'), busy=$('busy'), saveBtn=$('saveBtn');
-const MAX_SIDE = 3000, MIN_SIDE = 1800;
-const INKS = { purple:[40,20,130], blue:[25,35,145], red:[205,25,35], black:[20,20,20] };
+const MAX_SIDE = 3000, MIN_SIDE = 1500;
+const INKS = { purple:[40,20,130], blue:[25,35,145], black:[20,20,20] };
 
-// Matriz Bayer 8x8 para Pontilhismo de alta precisão
 const BAYER_8X8 = [
    0, 32,  8, 40,  2, 34, 10, 42,
   48, 16, 56, 24, 50, 18, 58, 26,
@@ -103,24 +106,22 @@ const BAYER_8X8 = [
   63, 31, 55, 23, 61, 29, 53, 21
 ];
 
-let W=0, H=0, n=0, rawGray=null, tone=null, outUrl=null, outBlob=null, timer=null, running=false, again=false;
+let W=0, H=0, n=0, tone=null, outUrl=null, outBlob=null, timer=null, running=false, again=false;
 
-/* ---------- Algoritmo de Blur Gaussiano 1D Separável ---------- */
+/* ---------- Blur Gaussiano (Para ignorar poros e ruídos) ---------- */
 function gblur(src, w, h, s){
   if(s <= 0.1) return new Float32Array(src);
   const r = Math.max(1, Math.ceil(s * 3)), k = new Float32Array(2 * r + 1);
   let sum = 0;
   for(let i = -r; i <= r; i++){ k[i+r] = Math.exp(-i*i / (2 * s * s)); sum += k[i+r]; }
   for(let i = 0; i < k.length; i++) k[i] /= sum;
-
   const tmp = new Float32Array(w * h), out = new Float32Array(w * h);
   for(let y = 0; y < h; y++){
     const o = y * w;
     for(let x = 0; x < w; x++){
       let a = 0;
       for(let i = -r; i <= r; i++){
-        let xx = x + i;
-        xx = xx < 0 ? 0 : xx >= w ? w - 1 : xx;
+        let xx = Math.max(0, Math.min(w - 1, x + i));
         a += src[o + xx] * k[i + r];
       }
       tmp[o + x] = a;
@@ -130,8 +131,7 @@ function gblur(src, w, h, s){
     for(let x = 0; x < w; x++){
       let a = 0;
       for(let i = -r; i <= r; i++){
-        let yy = y + i;
-        yy = yy < 0 ? 0 : yy >= h ? h - 1 : yy;
+        let yy = Math.max(0, Math.min(h - 1, y + i));
         a += tmp[yy * w + x] * k[i + r];
       }
       out[y * w + x] = a;
@@ -140,80 +140,51 @@ function gblur(src, w, h, s){
   return out;
 }
 
-/* ---------- 1. Extrator de Contornos e Traços Puros (Sem Empastar) ---------- */
-function computePureEdges(src, w, h, sensitivity) {
-  const sigma = Math.max(0.8, (Math.max(w, h) / 1800));
-  const g1 = gblur(src, w, h, sigma);
-  const g2 = gblur(src, w, h, sigma * 2.0);
-  const out = new Float32Array(w * h);
+/* ---------- O NOVO MOTOR: Separa Linha da Sombra ---------- */
+function processStencil(src, w, h, lineSens, dotDensity, dotSize) {
+  const out = new Uint8Array(w * h);
+  const limit = (0.2 / lineSens); // Limiar de detecção de borda (Sobel)
 
-  for (let i = 0; i < w * h; i++) {
-    // Gradiente de contraste relativo para evitar blocos pretos
-    let diff = (g1[i] - g2[i]) / (g1[i] + 0.08);
-    if (diff > 0.015) {
-      let val = diff * sensitivity * 18.0;
-      out[i] = Math.min(1.0, val);
-    }
-  }
-  return out;
-}
-
-/* ---------- 2. Motor de Pontilhismo (Dotwork) para Sombras ---------- */
-function computeDotwork(src, w, h, density) {
-  if (density <= 0) return new Float32Array(w * h);
-  const out = new Float32Array(w * h);
-  const smooth = gblur(src, w, h, Math.max(w, h) / 250);
-  
-  // Tamanho do grão do ponto proporcional à resolução
-  const step = Math.max(2, Math.round(Math.max(w, h) / 500));
-
-  for (let y = 0; y < h; y += step) {
-    for (let x = 0; x < w; x += step) {
-      const idx = y * w + x;
-      const darkness = 1.0 - smooth[idx]; // 0 = claro, 1 = escuro
+  for(let y=1; y<h-1; y++) {
+    for(let x=1; x<w-1; x++) {
+      let i = y * w + x;
       
-      if (darkness < 0.12) continue; // Ignora brilhos/brancos
+      // Matriz 3x3 em volta do pixel
+      let p00 = src[(y-1)*w + (x-1)], p01 = src[(y-1)*w + x], p02 = src[(y-1)*w + (x+1)];
+      let p10 = src[y*w + (x-1)],                             p12 = src[y*w + (x+1)];
+      let p20 = src[(y+1)*w + (x-1)], p21 = src[(y+1)*w + x], p22 = src[(y+1)*w + (x+1)];
 
-      const mx = Math.floor(x / step) % 8;
-      const my = Math.floor(y / step) % 8;
-      const bayerVal = BAYER_8X8[my * 8 + mx] / 64.0;
-      
-      const targetDarkness = Math.pow(darkness, 1.4) * (density * 1.2);
+      // Operador Sobel (Calcula a "força" da borda)
+      let gx = -p00 + p02 - 2*p10 + 2*p12 - p20 + p22;
+      let gy = -p00 - 2*p01 - p02 + p20 + 2*p21 + p22;
+      let edgeStrength = Math.sqrt(gx*gx + gy*gy);
 
-      if (targetDarkness > bayerVal) {
-        // Desenha o ponto de pontilhismo
-        for (let dy = 0; dy < step && (y + dy) < h; dy++) {
-          for (let dx = 0; dx < step && (x + dx) < w; dx++) {
-            const rSq = (dx - step/2)**2 + (dy - step/2)**2;
-            if (rSq <= (step/2)**2 + 0.5) {
-              out[(y + dy) * w + (x + dx)] = 0.9;
-            }
-          }
-        }
+      let darkness = 1.0 - src[i]; // Quão escuro é o pixel (0=branco, 1=preto)
+
+      // 1. É UMA LINHA DE CONTORNO?
+      if (edgeStrength > limit) {
+         out[i] = 1; // Marca como linha sólida
       }
-    }
-  }
-  return out;
-}
+      // 2. SE NÃO É LINHA, É UMA SOMBRA?
+      else if (darkness > 0.05 && dotDensity > 0) {
+         
+         const mx = Math.floor(x / dotSize) % 8;
+         const my = Math.floor(y / dotSize) % 8;
+         const bayerVal = BAYER_8X8[my * 8 + mx] / 65.0;
+         
+         let targetDarkness = Math.pow(darkness, 1.2) * (dotDensity * 1.5);
 
-/* ---------- 3. Linhas Guia Topográficas de Sombra (Isófotas) ---------- */
-function computeIsophotes(src, w, h, numLevels) {
-  if (numLevels <= 0) return new Float32Array(w * h);
-  const smooth = gblur(src, w, h, Math.max(w, h) / 120);
-  const out = new Float32Array(w * h);
-  const step = 1.0 / numLevels;
-
-  for (let y = 1; y < h - 1; y++) {
-    for (let x = 1; x < w - 1; x++) {
-      const i = y * w + x;
-      const val = smooth[i];
-      const q = Math.floor(val / step);
-      
-      const qR = Math.floor(smooth[i + 1] / step);
-      const qD = Math.floor(smooth[i + w] / step);
-      
-      if (q !== qR || q !== qD) {
-        out[i] = 0.6; // Linha guia fina
+         if (targetDarkness > bayerVal) {
+             // Desenha o "ponto" do tamanho configurado
+             for(let dy=0; dy<dotSize; dy++){
+                for(let dx=0; dx<dotSize; dx++){
+                   let py = y+dy, px = x+dx;
+                   if(py < h && px < w && out[py*w + px] === 0) {
+                       out[py*w + px] = 1;
+                   }
+                }
+             }
+         }
       }
     }
   }
@@ -229,9 +200,7 @@ fileInput.addEventListener('change', e => {
   im.onload = () => {
     const long = Math.max(im.naturalWidth, im.naturalHeight);
     const scale = long < MIN_SIDE ? Math.min(3, MIN_SIDE / long) : (long > MAX_SIDE ? MAX_SIDE / long : 1);
-    W = Math.round(im.naturalWidth * scale);
-    H = Math.round(im.naturalHeight * scale);
-    n = W * H;
+    W = Math.round(im.naturalWidth * scale); H = Math.round(im.naturalHeight * scale); n = W * H;
 
     cv.width = W; cv.height = H;
     ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
@@ -239,7 +208,7 @@ fileInput.addEventListener('change', e => {
     ctx.drawImage(im, 0, 0, W, H);
 
     const d = ctx.getImageData(0, 0, W, H).data;
-    rawGray = new Float32Array(n);
+    let rawGray = new Float32Array(n);
     const hist = new Uint32Array(256);
 
     for (let i = 0; i < n; i++) {
@@ -248,7 +217,7 @@ fileInput.addEventListener('change', e => {
       hist[v | 0]++;
     }
 
-    // Normalização de Contraste Inteligente
+    // Normaliza Contraste Automático
     let acc = 0, lo = 0, hi = 255;
     for (let i = 0; i < 256; i++) { acc += hist[i]; if (acc >= n * 0.01) { lo = i; break; } }
     acc = 0;
@@ -256,8 +225,7 @@ fileInput.addEventListener('change', e => {
     if (hi - lo < 20) { lo = 0; hi = 255; }
 
     tone = new Float32Array(n);
-    const range = (hi - lo) / 255.0;
-    const minV = lo / 255.0;
+    const range = (hi - lo) / 255.0, minV = lo / 255.0;
     for (let i = 0; i < n; i++) {
       const t = (rawGray[i] - minV) / range;
       tone[i] = t < 0 ? 0 : t > 1 ? 1 : t;
@@ -278,41 +246,27 @@ function render() {
 
   const lineSens   = parseFloat($('lineSens').value);
   const dotVal     = parseInt($('dotwork').value) / 100.0;
-  const shadowVal  = parseInt($('shadowGuides').value);
+  const dotSize    = parseInt($('dotSize').value);
   const smoothVal  = parseInt($('smooth').value);
 
-  // 1. Pré-suavização leve para remover ruído
-  const smoothTone = smoothVal > 0 ? gblur(tone, W, H, smoothVal * 0.4) : tone;
+  // Aplica blur sutil para evitar transformar poros em linhas
+  const smoothTone = smoothVal > 0 ? gblur(tone, W, H, smoothVal * 0.8) : tone;
 
-  // 2. Traços Puros e Limpos
-  const edgeMap = computePureEdges(smoothTone, W, H, lineSens);
+  // Processa o stencil (Linha vs Sombra)
+  const stencilMap = processStencil(smoothTone, W, H, lineSens, dotVal, dotSize);
 
-  // 3. Pontilhismo para Sombras (Dotwork)
-  const dotMap = computeDotwork(smoothTone, W, H, dotVal);
-
-  // 4. Linhas Guia de Sombra
-  const isoMap = computeIsophotes(smoothTone, W, H, shadowVal);
-
-  // 5. Combinação dos Mapas
-  const finalInk = new Uint8Array(n);
-
-  for (let i = 0; i < n; i++) {
-    let val = Math.max(edgeMap[i], dotMap[i], isoMap[i]);
-    finalInk[i] = Math.min(255, Math.round(val * 255));
-  }
-
-  // 6. Aplicação da Cor da Tinta
+  // Aplica cor do papel hectográfico
   const c = INKS[$('color').value];
   const imgData = ctx.createImageData(W, H);
   const o = imgData.data;
 
   for (let i = 0; i < n; i++) {
-    const a = finalInk[i] / 255.0;
     const k = i * 4;
-    o[k]   = Math.round(255 + (c[0] - 255) * a);
-    o[k+1] = Math.round(255 + (c[1] - 255) * a);
-    o[k+2] = Math.round(255 + (c[2] - 255) * a);
-    o[k+3] = 255;
+    if (stencilMap[i] === 1) {
+      o[k] = c[0]; o[k+1] = c[1]; o[k+2] = c[2]; o[k+3] = 255; // Tinta
+    } else {
+      o[k] = 255; o[k+1] = 255; o[k+2] = 255; o[k+3] = 255; // Papel branco
+    }
   }
 
   ctx.putImageData(imgData, 0, 0);
@@ -341,7 +295,7 @@ function schedule(delay = 180) {
 }
 
 /* ---------- Eventos dos Controles ---------- */
-$('lineSens').addEventListener('input', e => { $('lineSensV').innerText = e.target.value; schedule(); });$('dotwork').addEventListener('input', e => { $('dotworkV').innerText = e.target.value + '\%'; schedule(); });$('shadowGuides').addEventListener('input', e => { $('shadowGuidesV').innerText = e.target.value; schedule(); });$('smooth').addEventListener('input', e => { $('smoothV').innerText = e.target.value; schedule(); });$('color').addEventListener('change', () => schedule(0));
+$('lineSens').addEventListener('input', e => { $('lineSensV').innerText = e.target.value; schedule(); });$('dotwork').addEventListener('input', e => { $('dotworkV').innerText = e.target.value + '\%'; schedule(); });$('dotSize').addEventListener('input', e => { $('dotSizeV').innerText = e.target.value; schedule(); });$('smooth').addEventListener('input', e => { $('smoothV').innerText = e.target.value; schedule(); });$('color').addEventListener('change', () => schedule(0));
 
 /* Slider de Comparação Antes/Depois */
 let drag = false;
@@ -357,12 +311,12 @@ window.addEventListener('touchend', () => drag = false);
 /* Salvar Imagem */
 saveBtn.addEventListener('click', async () => {
   if (!outBlob) return;
-  const file = new File([outBlob], 'decalque-precisao-tattoo.png', { type: 'image/png' });
+  const file = new File([outBlob], 'stencil-pro-v2.png', { type: 'image/png' });
   try {
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: 'Decalque Tatuagem Pro' });
+      await navigator.share({ files: [file], title: 'Decalque Tatuagem' });
     } else {
-      const a = document.createElement('a'); a.download = 'decalque-precisao-tattoo.png'; a.href = outUrl; a.click();
+      const a = document.createElement('a'); a.download = 'stencil-pro-v2.png'; a.href = outUrl; a.click();
     }
   } catch (err) { if (err.name !== 'AbortError') console.error('Erro ao salvar:', err); }
 });
