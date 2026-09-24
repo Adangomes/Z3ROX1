@@ -3,276 +3,262 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Stencil HD Pro - Ultra Estável</title>
+<title>Tattoo Stencil Pro - Decalque Profissional</title>
 <style>
-:root{--bg:#0f172a;--card:#1e293b;--accent:#8b5cf6;--accent-hover:#7c3aed;--text:#f8fafc;--border:#334155}
-*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
-body{background:var(--bg);color:var(--text);padding:15px;display:flex;justify-content:center;touch-action:manipulation}
-.app{max-width:750px;width:100%;background:var(--card);padding:24px;border-radius:20px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.7);border:1px solid var(--border)}
-h1{text-align:center;font-size:1.8rem;margin-bottom:5px;background:linear-gradient(to right,#a78bfa,#c084fc);-webkit-background-clip:text;color:transparent;font-weight:900}
-.subtitle{text-align:center;color:#94a3b8;font-size:0.9rem;margin-bottom:24px}
-
-.upload-area{border:2px dashed #475569;border-radius:16px;padding:30px 20px;text-align:center;background:rgba(255,255,255,0.02);transition:all 0.3s;margin-bottom:20px}
-input[type=file]{display:block;margin:12px auto 0 auto;color:#e2e8f0;font-size:0.9rem;padding:10px;background:#0f172a;border-radius:8px;border:1px solid var(--border);cursor:pointer;width:100%;max-width:300px}
-
-.workspace{display:none;flex-direction:column;gap:20px}
-
-/* Comparador de Imagem */
-.viewer{position:relative;width:100%;background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--border);box-shadow:0 10px 30px rgba(0,0,0,0.5)}
-.viewer canvas{width:100%;height:auto;display:block}
-.img-before{position:absolute;inset:0;z-index:2;clip-path:inset(0 50% 0 0)}
-.img-before img{width:100%;height:100%;object-fit:fill;pointer-events:none}
-.slider-handle{position:absolute;top:0;bottom:0;left:50%;width:4px;background:#fff;z-index:10;transform:translateX(-50%);cursor:ew-resize;box-shadow:0 0 10px rgba(0,0,0,0.8)}
-.slider-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid #fff;color:#fff;font-weight:bold;box-shadow:0 4px 6px rgba(0,0,0,0.4)}
-.tag{position:absolute;top:12px;padding:6px 12px;border-radius:8px;font-size:0.75rem;font-weight:700;background:rgba(15,23,42,0.8);color:#fff;backdrop-filter:blur(4px);z-index:11;border:1px solid rgba(255,255,255,0.1)}
-.tag-l{left:12px} .tag-r{right:12px}
-
-/* Controles */
-.controls-grid{display:grid;grid-template-columns:1fr;gap:12px}
-.control-box{background:#0f172a;padding:16px;border-radius:12px;border:1px solid var(--border)}
-.ctrl-header{display:flex;justify-content:space-between;margin-bottom:12px;align-items:center}
-.ctrl-header label{font-weight:600;font-size:0.95rem;color:#e2e8f0;display:flex;align-items:center;gap:8px}
-.val-display{background:#1e293b;padding:4px 8px;border-radius:6px;font-size:0.8rem;color:#a78bfa;font-weight:bold;border:1px solid #334155}
-
-input[type=range]{-webkit-appearance:none;width:100%;height:8px;background:#334155;border-radius:4px;outline:none;margin-bottom:8px}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;background:var(--accent);border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 0 10px rgba(139,92,246,0.5)}
-.desc{font-size:0.75rem;color:#64748b;line-height:1.4}
-
-.action-btn{width:100%;padding:18px;background:linear-gradient(135deg, var(--accent), var(--accent-hover));color:white;border:none;border-radius:12px;font-size:1.1rem;font-weight:800;cursor:pointer;transition:transform 0.2s, box-shadow 0.2s;text-transform:uppercase;letter-spacing:1px;box-shadow:0 8px 20px rgba(139,92,246,0.3)}
-.action-btn:hover{transform:translateY(-2px);box-shadow:0 12px 25px rgba(139,92,246,0.4)}
-
-.loading-overlay{position:absolute;inset:0;background:rgba(15,23,42,0.85);backdrop-filter:blur(5px);z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:1.2rem}
-.spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,0.1);border-left-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:15px}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-.final-result{margin-top:20px;text-align:center;display:none;background:#0f172a;padding:20px;border-radius:16px;border:1px dashed var(--border)}
-.final-result img{max-width:100%;border-radius:8px;background:#fff;box-shadow:0 10px 25px rgba(0,0,0,0.5);margin-top:15px}
-.download-hint{font-size:0.85rem;color:#a78bfa;margin-top:10px;font-weight:600}
+:root{--bg:#121214;--card:#1e1e24;--accent:#6c5ce7;--accent2:#5b4bc4;--text:#f1f2f6;--border:#333}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);padding:12px;display:flex;justify-content:center;touch-action:manipulation}
+.app{max-width:650px;width:100%;background:var(--card);padding:20px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+h1{font-size:1.4rem;text-align:center;margin-bottom:4px}
+.subtitle{text-align:center;color:#aaa;font-size:.85rem;margin-bottom:16px}
+.upload{border:2px dashed var(--accent);border-radius:12px;padding:18px;text-align:center;cursor:pointer;background:rgba(108,92,231,.08);margin-bottom:16px}
+input[type=file]{display:none}
+.cmp{position:relative;width:100%;background:#fff;border-radius:12px;overflow:hidden;border:1px solid var(--border);user-select:none;-webkit-user-select:none;touch-action:pan-y;margin-bottom:16px;display:none}
+.cmp canvas{width:100%;height:auto;display:block;background:#fff}
+.before{position:absolute;inset:0;z-index:2;clip-path:inset(0 50% 0 0)}
+.before img{width:100%;height:100%;object-fit:fill;display:block;pointer-events:none}
+.handle{position:absolute;top:0;bottom:0;left:50%;width:3px;background:#fff;z-index:10;transform:translateX(-50%);cursor:ew-resize;box-shadow:0 0 8px rgba(0,0,0,.8)}
+.knob{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;border:2px solid #fff}
+.badge{position:absolute;top:10px;padding:4px 10px;border-radius:6px;font-size:.75rem;font-weight:bold;background:rgba(0,0,0,.7);z-index:11}
+.bl{left:10px}.br{right:10px}
+.busy{position:absolute;inset:0;z-index:20;background:rgba(18,18,20,.55);display:none;align-items:center;justify-content:center;font-weight:bold}
+.controls{display:flex;flex-direction:column;gap:14px;margin-bottom:20px}
+.hd{display:flex;justify-content:space-between;font-size:.88rem;margin-bottom:4px}
+input[type=range],select{accent-color:var(--accent);width:100%}
+select{background:#2a2a32;color:#fff;border:1px solid var(--border);padding:10px;border-radius:8px;font-size:.9rem}
+.btn{width:100%;background:var(--accent);color:#fff;border:none;padding:16px;border-radius:10px;font-size:1rem;font-weight:bold;cursor:pointer}
+.btn:disabled{background:#444;cursor:not-allowed}
+.btn:hover:not(:disabled){background:var(--accent2)}
+.prev{margin-top:16px;text-align:center;display:none;background:rgba(255,255,255,.05);padding:12px;border-radius:12px;border:1px dashed var(--border)}
+.prev img{max-width:100%;border-radius:8px;margin-top:8px;background:#fff}
+.hint{font-size:.8rem;color:#aaa}
 </style>
 </head>
 <body>
-
 <div class="app">
-  <h1>Stencil HD Pro</h1>
-  <p class="subtitle">Versão Ultra Estável</p>
+  <h1>Tattoo Stencil Pro</h1>
+  <p class="subtitle">Contorno nítido em resolução máxima, com pontilhismo de sombra</p>
 
-  <div class="upload-area" id="upArea">
-    <div style="font-weight:600; font-size:1.0rem; color:#e2e8f0;">📁 Escolha a Imagem do Desenho</div>
-    <input type="file" id="fileIn" accept="image/*">
+  <div class="upload" onclick="fileInput.click()"><span id="uploadText">📷 Toque aqui para escolher a imagem</span><input type="file" id="fileInput" accept="image/*"></div>
+
+  <div class="cmp" id="cmp">
+    <span class="badge bl">Foto Original</span><span class="badge br">Decalque</span>
+    <canvas id="cv"></canvas>
+    <div class="before" id="before"><img id="orig" alt="Original"></div>
+    <div class="handle" id="handle"><div class="knob">↔</div></div>
+    <div class="busy" id="busy">Processando…</div>
   </div>
 
-  <div class="workspace" id="workArea">
-    
-    <div class="viewer" id="viewer">
-      <span class="tag tag-l">Foto Original</span>
-      <span class="tag tag-r">Decalque HD</span>
-      <canvas id="cvs"></canvas>
-      <div class="img-before" id="imgBefore"><img id="origImg"></div>
-      <div class="slider-handle" id="slider"><div class="slider-btn">↔</div></div>
-      <div class="loading-overlay" id="loading"><div class="spinner"></div>Processando Linhas HD...</div>
+  <div class="controls">
+    <div><div class="hd"><label for="sens">Sensibilidade dos Traços</label><span id="sensV">1.2</span></div><input type="range" id="sens" min="0.5" max="2.5" value="1.2" step="0.1"></div>
+    <div><div class="hd"><label for="clean">Limpeza de Ruído</label><span id="cleanV">4</span></div><input type="range" id="clean" min="0" max="10" value="4" step="1"></div>
+    <div><div class="hd"><label for="thick">Espessura do Traço</label><span id="thickV">2</span></div><input type="range" id="thick" min="1" max="6" value="2" step="1"></div>
+    <div><div class="hd"><label for="dens">Pontilhismo de Sombra (Dotwork)</label><span id="densV">60%</span></div><input type="range" id="dens" min="0" max="100" value="60" step="5"></div>
+    <div><div class="hd"><label for="dot">Tamanho do Ponto</label><span id="dotV">3.5</span></div><input type="range" id="dot" min="2" max="8" value="3.5" step="0.5"></div>
+    <div>
+      <label style="font-size:.85rem;color:#ccc;display:block;margin-bottom:4px">Cor do Papel Hectográfico</label>
+      <select id="color">
+        <option value="purple">Roxo Hectográfico (Anubis)</option>
+        <option value="blue">Azul Marinho (Palhaço)</option>
+        <option value="red">Vermelho Stencil (Garota Bandana)</option>
+        <option value="black">Preto Clássico</option>
+      </select>
     </div>
+  </div>
 
-    <div class="controls-grid">
-      <div class="control-box">
-        <div class="ctrl-header">
-          <label>🧹 Anti-Tremelido (Limpeza)</label>
-          <span class="val-display" id="valClean">Nível 1</span>
-        </div>
-        <input type="range" id="pClean" min="0" max="6" value="1" step="1">
-        <p class="desc">Aumente se a foto tiver muita textura de pele ou ruído. Linhas ficarão mais contínuas.</p>
-      </div>
+  <button id="saveBtn" class="btn" disabled>📸 Salvar Decalque na Galeria</button>
 
-      <div class="control-box">
-        <div class="ctrl-header">
-          <label>✒️ Sensibilidade das Linhas</label>
-          <span class="val-display" id="valSens">10</span>
-        </div>
-        <input type="range" id="pSens" min="1" max="25" value="10" step="1">
-        <p class="desc">Define o quão escuro um detalhe precisa ser para virar linha.</p>
-      </div>
-
-      <div class="control-box">
-        <div class="ctrl-header">
-          <label>⬛ Forçar Blocos Pretos</label>
-          <span class="val-display" id="valBlock">80</span>
-        </div>
-        <input type="range" id="pBlock" min="0" max="150" value="80" step="5">
-        <p class="desc">Preenche áreas escuras inteiras (como tribales e bordas grossas) sem deixar buracos.</p>
-      </div>
-      
-      <div class="control-box">
-        <div class="ctrl-header">
-          <label>🔍 Nível de Detalhe (Raio)</label>
-          <span class="val-display" id="valDetail">15px</span>
-        </div>
-        <input type="range" id="pDetail" min="3" max="50" value="15" step="1">
-        <p class="desc">Raio de busca do contraste.</p>
-      </div>
-    </div>
-
-    <button class="action-btn" id="btnFinal">Salvar Decalque Hectográfico</button>
-
-    <div class="final-result" id="finalRes">
-      <h3 style="color:#e2e8f0;font-size:1.1rem">Decalque Pronto!</h3>
-      <p class="download-hint">Pressione e segure (ou clique com botão direito) na imagem abaixo para Salvar / Imprimir.</p>
-      <img id="outImg" alt="Decalque Final HD">
-    </div>
-
+  <div class="prev" id="prev">
+    <p class="hint">💡 <b>Para salvar no iOS/Android:</b> pressione e segure a imagem abaixo e toque em <b>"Adicionar às Fotos"</b> ou <b>"Fazer Download"</b>.</p>
+    <img id="out" alt="Decalque Pronto">
   </div>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
-const fileIn = $('fileIn'), cvs =$('cvs'), ctx = cvs.getContext('2d', { willReadFrequently: true });
-const viewer = $('viewer'), imgBefore =$('imgBefore'), slider = $('slider'), loading =$('loading');
-let W = 0, H = 0, grayArray = null, timer = null;
+const fileInput=$('fileInput'), cv=$('cv'), ctx=cv.getContext('2d'), cmp=$('cmp'), before=$('before'), handle=$('handle'), busy=$('busy'), saveBtn=$('saveBtn');
+const MAX_SIDE = 3000, MIN_SIDE = 1800;   
+const INKS = { purple:[40,20,130], blue:[25,35,135], red:[205,25,35], black:[20,20,20] };
 
-const INK_R = 45, INK_G = 15, INK_B = 140;
+let W=0, H=0, L=0, tone=null, toneBlur=null, nms=null, outUrl=null, outBlob=null, timer=null, running=false, again=false;
 
-function fastBoxBlur(src, w, h, radius) {
-  const tr = new Float32Array(w * h), out = new Float32Array(w * h);
-  for(let y=0; y<h; y++) {
-    let sum = 0, idx = y * w;
-    for(let i=-radius; i<=radius; i++) sum += src[idx + Math.max(0, Math.min(w-1, i))];
-    tr[idx] = sum / (2*radius+1);
-    for(let x=1; x<w; x++) {
-      sum += src[idx + Math.min(w-1, x+radius)] - src[idx + Math.max(0, x-radius-1)];
-      tr[idx + x] = sum / (2*radius+1);
-    }
-  }
-  for(let x=0; x<w; x++) {
-    let sum = 0;
-    for(let i=-radius; i<=radius; i++) sum += tr[Math.max(0, Math.min(h-1, i))*w + x];
-    out[x] = sum / (2*radius+1);
-    for(let y=1; y<h; y++) {
-      sum += tr[Math.min(h-1, y+radius)*w + x] - tr[Math.max(0, y-radius-1)*w + x];
-      out[y*w + x] = sum / (2*radius+1);
-    }
-  }
+/* ---------- utilidades ---------- */
+function gblur(src,w,h,s){
+  const r=Math.max(1,Math.ceil(s*3)), k=new Float32Array(2*r+1); let sum=0;
+  for(let i=-r;i<=r;i++){k[i+r]=Math.exp(-i*i/(2*s*s)); sum+=k[i+r];}
+  for(let i=0;i<k.length;i++) k[i]/=sum;
+  const tmp=new Float32Array(w*h), out=new Float32Array(w*h);
+  for(let y=0;y<h;y++){const o=y*w; for(let x=0;x<w;x++){let a=0; for(let i=-r;i<=r;i++){let xx=x+i; xx=xx<0?0:xx>=w?w-1:xx; a+=src[o+xx]*k[i+r];} tmp[o+x]=a;}}
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){let a=0; for(let i=-r;i<=r;i++){let yy=y+i; yy=yy<0?0:yy>=h?h-1:yy; a+=tmp[yy*w+x]*k[i+r];} out[y*w+x]=a;}
   return out;
 }
-
-function renderDecalque() {
-  if (!grayArray) return;
-  
-  const cleanRadius = parseInt($('pClean').value);
-  const detailRadius = parseInt($('pDetail').value);
-  const sens = parseInt($('pSens').value);
-  const blockThresh = parseInt($('pBlock').value);
-
-  let baseImg = grayArray;
-  if (cleanRadius > 0) {
-    baseImg = fastBoxBlur(grayArray, W, H, cleanRadius);
-    if(cleanRadius > 2) baseImg = fastBoxBlur(baseImg, W, H, cleanRadius-1);
-  }
-
-  const localMeans = fastBoxBlur(baseImg, W, H, detailRadius);
-  const outData = ctx.createImageData(W, H);
-  const data = outData.data;
-
-  for (let i = 0; i < W * H; i++) {
-    const px = baseImg[i];
-    const mean = localMeans[i];
-    let isBlack = (px < blockThresh);
-
-    if (!isBlack && px < mean - sens) {
-      isBlack = true;
-    }
-
-    const idx = i * 4;
-    if (isBlack) {
-      data[idx] = INK_R;     
-      data[idx+1] = INK_G;   
-      data[idx+2] = INK_B;   
-      data[idx+3] = 255;     
-    } else {
-      data[idx] = 255;       
-      data[idx+1] = 255;
-      data[idx+2] = 255;
-      data[idx+3] = 255;
-    }
-  }
-
-  ctx.putImageData(outData, 0, 0);
-  
-  cvs.toBlob(blob => {
-    $('outImg').src = URL.createObjectURL(blob);
-  }, 'image/png');
+function dilate(e,w,h,R){
+  const t=new Uint8Array(w*h), o=new Uint8Array(w*h);
+  for(let y=0;y<h;y++){const r0=y*w; for(let x=0;x<w;x++){ if(!e[r0+x])continue; const a=Math.max(0,x-R), b=Math.min(w-1,x+R); for(let i=a;i<=b;i++) t[r0+i]=1; }}
+  for(let y=0;y<h;y++){ for(let x=0;x<w;x++){ if(!t[y*w+x])continue; const a=Math.max(0,y-R), b=Math.min(h-1,y+R); for(let j=a;j<=b;j++) o[j*w+x]=1; }}
+  return o;
 }
+const hash=(a,b)=>{let h=Math.imul(a,374761393)^Math.imul(b,668265263); h=Math.imul(h^(h>>>13),1274126177); return ((h^(h>>>16))>>>0)/4294967296;};
 
-fileIn.addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  // Usa FileReader para evitar qualquer bloqueio de stream no mobile
-  const reader = new FileReader();
-  reader.onload = function(event) {
-    const img = new Image();
-    img.onload = () => {
-      const max = 2200;
-      let w = img.width, h = img.height;
-      if (Math.max(w, h) > max) {
-        const scale = max / Math.max(w, h);
-        w = Math.round(w * scale); h = Math.round(h * scale);
-      }
-      W = w; H = h;
-      cvs.width = W; cvs.height = H;
-      
-      ctx.fillStyle = '#fff'; ctx.fillRect(0,0,W,H);
-      ctx.drawImage(img, 0, 0, W, H);
-      const raw = ctx.getImageData(0,0,W,H).data;
-      
-      grayArray = new Float32Array(W * H);
-      for(let i=0; i < W*H; i++) {
-        grayArray[i] = 0.2126 * raw[i*4] + 0.7152 * raw[i*4+1] + 0.0722 * raw[i*4+2];
-      }
-      
-      // Troca de tela com segurança total
-      $('upArea').style.display = 'none';
-      $('workArea').style.display = 'flex';$('origImg').src = event.target.result;
-      setSliderPos(50);
-      triggerRender();
-    };
-    img.src = event.target.result;
+/* ---------- 1. carregar imagem ---------- */
+fileInput.addEventListener('change', e=>{
+  const file=e.target.files[0]; if(!file) return;
+  $('uploadText').innerText='📷 '+file.name;
+  const url=URL.createObjectURL(file), im=new Image();
+  im.onload=()=>{
+    const long=Math.max(im.naturalWidth,im.naturalHeight);
+    const s = long<MIN_SIDE ? Math.min(3,MIN_SIDE/long) : (long>MAX_SIDE ? MAX_SIDE/long : 1);
+    W=Math.round(im.naturalWidth*s); H=Math.round(im.naturalHeight*s); L=Math.max(W,H);
+    cv.width=W; cv.height=H;
+    ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H); ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+    ctx.drawImage(im,0,0,W,H);
+    const d=ctx.getImageData(0,0,W,H).data, n=W*H, g=new Float32Array(n), hist=new Uint32Array(256);
+    for(let i=0;i<n;i++){const v=0.299*d[i*4]+0.587*d[i*4+1]+0.114*d[i*4+2]; g[i]=v; hist[v|0]++;}
+    let acc=0, lo=0, hi=255; for(let i=0;i<256;i++){acc+=hist[i]; if(acc>=n*.01){lo=i;break;}}
+    acc=0; for(let i=255;i>=0;i--){acc+=hist[i]; if(acc>=n*.01){hi=i;break;}}
+    if(hi-lo<20){lo=0;hi=255;}
+    tone=new Float32Array(n); for(let i=0;i<n;i++){const t=(g[i]-lo)/(hi-lo); tone[i]=t<0?0:t>1?1:t;}
+    prepEdges();
+    toneBlur=gblur(tone,W,H,Math.max(2,L/350));
+    $('orig').src=url; cmp.style.display='block'; setSlider(50); saveBtn.disabled=false;
+    schedule(0);
   };
-  reader.readAsDataURL(file);
+  im.src=url;
 });
 
-function triggerRender() {
+/* ---------- 2. bordas (Canny) ---------- */
+function prepEdges(){
+  const n=W*H, src=new Float32Array(n);
+  for(let i=0;i<n;i++) src[i]=Math.pow(tone[i],0.8)*255;
+  const b=gblur(src,W,H,Math.max(1.1,L/1300));
+  const mag=new Float32Array(n), dir=new Uint8Array(n);
+  for(let y=1;y<H-1;y++) for(let x=1;x<W-1;x++){
+    const i=y*W+x;
+    const gx=-b[i-W-1]+b[i-W+1]-2*b[i-1]+2*b[i+1]-b[i+W-1]+b[i+W+1];
+    const gy=-b[i-W-1]-2*b[i-W]-b[i-W+1]+b[i+W-1]+2*b[i+W]+b[i+W+1];
+    mag[i]=Math.sqrt(gx*gx+gy*gy);
+    const ax=Math.abs(gx), ay=Math.abs(gy);
+    dir[i]= ay<=0.4142*ax ? 0 : ay>=2.4142*ax ? 2 : (gx*gy>0 ? 1 : 3);
+  }
+  nms=new Float32Array(n);
+  for(let y=1;y<H-1;y++) for(let x=1;x<W-1;x++){
+    const i=y*W+x, m=mag[i]; if(m<4) continue;
+    let a,c;
+    switch(dir[i]){
+      case 0: a=mag[i-1]; c=mag[i+1]; break;
+      case 2: a=mag[i-W]; c=mag[i+W]; break;
+      case 1: a=mag[i-W-1]; c=mag[i+W+1]; break;
+      default: a=mag[i-W+1]; c=mag[i+W-1];
+    }
+    if(m>=a && m>=c) nms[i]=m;
+  }
+}
+
+function buildLines(hi,lo,minLen){
+  const n=W*H, edge=new Uint8Array(n), vis=new Uint8Array(n), q=new Int32Array(n);
+  for(let i=0;i<n;i++){
+    if(nms[i]<hi||vis[i]) continue;
+    let t=0; q[t++]=i; vis[i]=1;
+    for(let h=0;h<t;h++){
+      const p=q[h], x=p%W, y=(p/W)|0;
+      for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){
+        if(!dx&&!dy) continue;
+        const xx=x+dx, yy=y+dy; if(xx<1||yy<1||xx>=W-1||yy>=H-1) continue;
+        const j=yy*W+xx; if(!vis[j] && nms[j]>=lo){vis[j]=1; q[t++]=j;}
+      }
+    }
+    if(t>=minLen) for(let h=0;h<t;h++) edge[q[h]]=1;
+  }
+  return edge;
+}
+
+/* ---------- 3. pontilhismo ---------- */
+function drawDots(ink,dens,dotK){
+  if(dens<=0) return;
+  const sp=Math.max(3,Math.round(dotK*L/1000)), gw=Math.ceil(W/sp), gh=Math.ceil(H/sp);
+  let cur=new Float32Array(gw+2), nxt=new Float32Array(gw+2);
+  for(let cy=0;cy<gh;cy++){
+    nxt.fill(0);
+    for(let cx=0;cx<gw;cx++){
+      const px=Math.min(W-1,cx*sp+(sp>>1)), py=Math.min(H-1,cy*sp+(sp>>1));
+      const d=1-toneBlur[py*W+px];
+      let v=Math.max(0,(d-0.2)/0.8)*dens*1.15; if(v>1) v=1;
+      const val=v+cur[cx+1], on=val>0.5, e=val-(on?1:0);
+      cur[cx+2]+=e*7/16; nxt[cx]+=e*3/16; nxt[cx+1]+=e*5/16; nxt[cx+2]+=e/16;
+      if(!on) continue;
+      const jx=cx*sp+sp/2+(hash(cx,cy)-.5)*sp*.4, jy=cy*sp+sp/2+(hash(cy,cx+7)-.5)*sp*.4;
+      const r=sp*(0.2+0.16*v), x0=Math.max(0,Math.floor(jx-r-1)), x1=Math.min(W-1,Math.ceil(jx+r+1)), y0=Math.max(0,Math.floor(jy-r-1)), y1=Math.min(H-1,Math.ceil(jy+r+1));
+      for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++){
+        const dd=Math.hypot(x+.5-jx,y+.5-jy), a=Math.max(0,Math.min(1,r+.5-dd))*255, p=y*W+x;
+        if(a>ink[p]) ink[p]=a;
+      }
+    }
+    const t=cur; cur=nxt; nxt=t;
+  }
+}
+
+/* ---------- 4. montagem final ---------- */
+function render(){
+  const sens=parseFloat($('sens').value), clean=+$('clean').value, thick=+$('thick').value, dens=+$('dens').value/100, dotK=parseFloat($('dot').value);
+  const n=W*H, hi=90/sens, lo=hi*0.45, minLen=Math.round(clean*L/600);
+  let edge=buildLines(hi,lo,minLen);
+  const R=Math.max(1,Math.round(thick*L/3000));
+  edge=dilate(edge,W,H,R);
+  const f=new Float32Array(n); for(let i=0;i<n;i++) f[i]=edge[i];
+  const sm=gblur(f,W,H,0.8), ink=new Uint8Array(n);
+  for(let i=0;i<n;i++){const a=(sm[i]-0.2)/0.6; ink[i]=a<=0?0:a>=1?255:a*255;}
+  drawDots(ink,dens,dotK);
+  const c=INKS[$('color').value], img=ctx.createImageData(W,H), o=img.data;
+  for(let i=0;i<n;i++){
+    const a=ink[i]/255, k=i*4;
+    o[k]=255+(c[0]-255)*a; o[k+1]=255+(c[1]-255)*a; o[k+2]=255+(c[2]-255)*a; o[k+3]=255;
+  }
+  ctx.putImageData(img,0,0);
+  cv.toBlob(b=>{ if(!b) return; outBlob=b; if(outUrl) URL.revokeObjectURL(outUrl); outUrl=URL.createObjectURL(b); $('out').src=outUrl; $('prev').style.display='block'; },'image/png');
+}
+
+function schedule(delay=180){
   clearTimeout(timer);
-  loading.style.display = 'flex';
-  timer = setTimeout(() => {
-    renderDecalque();
-    loading.style.display = 'none';
-  }, 50);
+  timer=setTimeout(async()=>{
+    if(!tone) return;
+    if(running){again=true; return;}
+    running=true; busy.style.display='flex';
+    await new Promise(r=>setTimeout(r,30));
+    try{ render(); }catch(err){ console.error(err); }
+    busy.style.display='none'; running=false;
+    if(again){again=false; schedule(0);}
+  },delay);
 }
 
-const updateTxt = (id, val, suffix='') => $(id).innerText = val + suffix;
-$('pClean').oninput = e => { updateTxt('valClean', 'Nível ' + e.target.value); triggerRender(); }
-$('pSens').oninput = e => { updateTxt('valSens', e.target.value); triggerRender(); }
-$('pBlock').oninput = e => { updateTxt('valBlock', e.target.value); triggerRender(); }$('pDetail').oninput = e => { updateTxt('valDetail', e.target.value, 'px'); triggerRender(); }
+/* ---------- 5. controles ---------- */
+[['sens',v=>v],['clean',v=>v],['thick',v=>v],['dens',v=>v+'%'],['dot',v=>v]].forEach(([id,fmt])=>{
+  $(id).addEventListener('input',e=>{$(id+'V').innerText=fmt(e.target.value); schedule(); });
+});
+$('color').addEventListener('change',()=>schedule(0));
 
-let isDragging = false;
-function setSliderPos(percent) {
-  percent = Math.max(0, Math.min(100, percent));
-  imgBefore.style.clipPath = `inset(0 ${100 - percent}% 0 0)`;
-  slider.style.left = percent + '%';
-}
-function onMove(clientX) {
-  const rect = viewer.getBoundingClientRect();
-  const x = clientX - rect.left;
-  setSliderPos((x / rect.width) * 100);
-}
-viewer.addEventListener('mousedown', e => { isDragging = true; onMove(e.clientX); });
-window.addEventListener('mousemove', e => { if (isDragging) onMove(e.clientX); });
-window.addEventListener('mouseup', () => isDragging = false);
-viewer.addEventListener('touchstart', e => { isDragging = true; onMove(e.touches[0].clientX); }, {passive:true});
-window.addEventListener('touchmove', e => { if (isDragging) onMove(e.touches[0].clientX); }, {passive:true});
-window.addEventListener('touchend', () => isDragging = false);
+/* slider antes/depois */
+let drag=false;
+function setSlider(p){ p=Math.max(0,Math.min(100,p)); before.style.clipPath=`inset(0 ${100-p}% 0 0)`; handle.style.left=p+'%'; }
+function moveTo(x){ const r=cmp.getBoundingClientRect(); setSlider((x-r.left)/r.width*100); }
+cmp.addEventListener('mousedown',e=>{drag=true; moveTo(e.clientX);});
+window.addEventListener('mousemove',e=>{ if(drag) moveTo(e.clientX); });
+window.addEventListener('mouseup',()=>drag=false);
+cmp.addEventListener('touchstart',e=>{drag=true; moveTo(e.touches[0].clientX);},{passive:true});
+window.addEventListener('touchmove',e=>{ if(drag) moveTo(e.touches[0].clientX); },{passive:true});
+window.addEventListener('touchend',()=>drag=false);
 
-$('btnFinal').onclick = () => {
-  $('finalRes').style.display = 'block';$('finalRes').scrollIntoView({behavior: "smooth"});
-};
+/* ---------- 6. salvar ---------- */
+saveBtn.addEventListener('click',async()=>{
+  if(!outBlob) return;
+  const file=new File([outBlob],'decalque-tatuagem.png',{type:'image/png'});
+  try{
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:'Decalque Tatuagem'});
+    }else{
+      const a=document.createElement('a'); a.download='decalque-tatuagem.png'; a.href=outUrl; a.click();
+    }
+  }catch(err){ if(err.name!=='AbortError') console.error('Erro ao salvar:',err); }
+});
 </script>
 </body>
 </html>
