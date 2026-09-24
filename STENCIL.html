@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Decalque de Tatuagem</title>
+  <style>
+    :root {
+      --bg-color: #121214;
+      --card-bg: #1e1e24;
+      --accent: #6c5ce7;
+      --text: #f1f2f6;
+      --border: #333;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text);
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app-container {
+      max-width: 600px;
+      width: 100%;
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    p.subtitle {
+      text-align: center;
+      color: #aaa;
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+    }
+
+    .upload-box {
+      border: 2px dashed var(--accent);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      background: rgba(108, 92, 231, 0.05);
+      transition: 0.2s;
+      margin-bottom: 20px;
+    }
+
+    .upload-box:hover {
+      background: rgba(108, 92, 231, 0.15);
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .control-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+
+    input[type="range"] {
+      accent-color: var(--accent);
+      width: 100%;
+    }
+
+    .canvas-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      min-height: 250px;
+      margin-bottom: 20px;
+    }
+
+    canvas {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .btn {
+      width: 100%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn:disabled {
+      background: #444;
+      cursor: not-allowed;
+    }
+
+    .btn:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <h1>Tattoo Stencil Generator</h1>
+    <p class="subtitle">Transforme suas fotos em decalques para tatuagem</p>
+
+    <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+      <span id="uploadText">📁 Clique ou arraste uma foto aqui</span>
+      <input type="file" id="fileInput" accept="image/*">
+    </div>
+
+    <div class="controls">
+      <div class="control-group">
+        <div class="control-header">
+          <label for="threshold">Sensibilidade das Linhas</label>
+          <span id="thresholdVal">40</span>
+        </div>
+        <input type="range" id="threshold" min="5" max="150" value="40">
+      </div>
+
+      <div class="control-group">
+        <div class="control-header">
+          <label for="thickness">Espessura do Traço</label>
+          <span id="thicknessVal">1.5</span>
+        </div>
+        <input type="range" id="thickness" min="0.5" max="3" step="0.1" value="1.5">
+      </div>
+    </div>
+
+    <div class="canvas-wrapper">
+      <canvas id="stencilCanvas"></canvas>
+    </div>
+
+    <button id="downloadBtn" class="btn" disabled>Baixar Decalque (PNG)</button>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const canvas = document.getElementById('stencilCanvas');
+    const ctx = canvas.getContext('2d');
+    const thresholdInput = document.getElementById('threshold');
+    const thicknessInput = document.getElementById('thickness');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    let currentImage = null;
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      document.getElementById('uploadText').innerText = `📷 ${file.name}`;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          currentImage = img;
+          canvas.width = img.width;
+          canvas.height = img.height;
+          processStencil();
+          downloadBtn.disabled = false;
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function processStencil() {
+      if (!currentImage) return;
+
+      const w = canvas.width;
+      const h = canvas.height;
+
+      // Desenha imagem original
+      ctx.drawImage(currentImage, 0, 0, w, h);
+      const imgData = ctx.getImageData(0, 0, w, h);
+      const src = imgData.data;
+
+      // 1. Converte para Grayscale
+      const gray = new Uint8ClampedArray(w * h);
+      for (let i = 0; i < src.length; i += 4) {
+        gray[i / 4] = 0.299 * src[i] + 0.587 * src[i + 1] + 0.114 * src[i + 2];
+      }
+
+      // 2. Filtro Sobel para detecção de bordas/linhas
+      const output = ctx.createImageData(w, h);
+      const dst = output.data;
+
+      const threshold = parseFloat(thresholdInput.value);
+      const thickness = parseFloat(thicknessInput.value);
+
+      for (let y = 1; y < h - 1; y++) {
+        for (let x = 1; x < w - 1; x++) {
+          const idx = y * w + x;
+
+          // Matriz Sobel Horizontal & Vertical
+          const gx = 
+            -gray[idx - w - 1] + gray[idx - w + 1]
+            -2 * gray[idx - 1] + 2 * gray[idx + 1]
+            -gray[idx + w - 1] + gray[idx + w + 1];
+
+          const gy = 
+            -gray[idx - w - 1] - 2 * gray[idx - w] - gray[idx - w + 1]
+            +gray[idx + w - 1] + 2 * gray[idx + w] + gray[idx + w + 1];
+
+          const edge = Math.sqrt(gx * gx + gy * gy) * thickness;
+
+          const pixelIdx = idx * 4;
+          // Se for borda > limite (threshold), pinta de preto (0), senão branco (255)
+          const color = edge > threshold ? 0 : 255;
+
+          dst[pixelIdx] = color;     // R
+          dst[pixelIdx + 1] = color; // G
+          dst[pixelIdx + 2] = color; // B
+          dst[pixelIdx + 3] = 255;   // Alpha
+        }
+      }
+
+      ctx.putImageData(output, 0, 0);
+    }
+
+    // Controles interativos
+    thresholdInput.addEventListener('input', (e) => {
+      document.getElementById('thresholdVal').innerText = e.target.value;
+      processStencil();
+    });
+
+    thicknessInput.addEventListener('input', (e) => {
+      document.getElementById('thicknessVal').innerText = e.target.value;
+      processStencil();
+    });
+
+    // Download do decalque gerado
+    downloadBtn.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'decalque-tatuagem.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  </script>
+</body>
+</html>
