@@ -3,386 +3,301 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Tattoo Stencil Ultra Precision - V3</title>
+<title>Stencil HD Pro - Qualidade Vetor</title>
 <style>
-:root{--bg:#0f0f11;--card:#18181c;--accent:#6c5ce7;--accent2:#5b4bc4;--text:#f1f2f6;--border:#333;--sec:#25252b}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);padding:10px;display:flex;justify-content:center;touch-action:manipulation}
-.app{max-width:700px;width:100%;background:var(--card);padding:20px;border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,.6)}
-h1{font-size:1.5rem;text-align:center;margin-bottom:4px;color:#fff;font-weight:800}
-.subtitle{text-align:center;color:#aaa;font-size:.85rem;margin-bottom:20px}
-.upload{border:2px dashed var(--accent);border-radius:12px;padding:20px;text-align:center;cursor:pointer;background:rgba(108,92,231,.08);margin-bottom:16px;font-weight:600;transition:all .2s}
-.upload:hover{background:rgba(108,92,231,.15)}
+:root{--bg:#0f172a;--card:#1e293b;--accent:#8b5cf6;--accent-hover:#7c3aed;--text:#f8fafc;--border:#334155}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
+body{background:var(--bg);color:var(--text);padding:15px;display:flex;justify-content:center;touch-action:manipulation}
+.app{max-width:750px;width:100%;background:var(--card);padding:24px;border-radius:20px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.7);border:1px solid var(--border)}
+h1{text-align:center;font-size:1.8rem;margin-bottom:5px;background:linear-gradient(to right,#a78bfa,#c084fc);-webkit-background-clip:text;color:transparent;font-weight:900}
+.subtitle{text-align:center;color:#94a3b8;font-size:0.9rem;margin-bottom:24px}
+
+.upload-area{border:2px dashed #475569;border-radius:16px;padding:30px 20px;text-align:center;cursor:pointer;background:rgba(255,255,255,0.02);transition:all 0.3s;margin-bottom:20px}
+.upload-area:hover{border-color:var(--accent);background:rgba(139,92,246,0.1)}
+.upload-area svg{width:40px;height:40px;fill:#8b5cf6;margin-bottom:10px}
 input[type=file]{display:none}
-.cmp{position:relative;width:100%;background:#fff;border-radius:12px;overflow:hidden;border:1px solid var(--border);user-select:none;-webkit-user-select:none;touch-action:pan-y;margin-bottom:20px;display:none}
-.cmp canvas{width:100%;height:auto;display:block;background:#fff}
-.before{position:absolute;inset:0;z-index:2;clip-path:inset(0 50% 0 0)}
-.before img{width:100%;height:100%;object-fit:fill;display:block;pointer-events:none}
-.handle{position:absolute;top:0;bottom:0;left:50%;width:4px;background:#fff;z-index:10;transform:translateX(-50%);cursor:ew-resize;box-shadow:0 0 10px rgba(0,0,0,.8)}
-.knob{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:38px;height:38px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;border:3px solid #fff;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.5)}
-.badge{position:absolute;top:10px;padding:6px 12px;border-radius:8px;font-size:.75rem;font-weight:bold;background:rgba(0,0,0,.75);z-index:11;color:#fff;backdrop-filter:blur(4px)}
-.bl{left:10px}.br{right:10px}
-.busy{position:absolute;inset:0;z-index:20;background:rgba(15,15,17,.75);display:none;align-items:center;justify-content:center;font-weight:bold;color:#fff;font-size:1.2rem;backdrop-filter:blur(3px)}
 
-.panel{background:var(--sec);padding:16px;border-radius:12px;margin-bottom:12px;border:1px solid rgba(255,255,255,.05)}
-.panel-title{font-size:.9rem;color:#fff;margin-bottom:12px;font-weight:700;display:flex;align-items:center;gap:6px}
-.ctrl-group{margin-bottom:14px}
-.ctrl-group:last-child{margin-bottom:0}
-.hd{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:6px;color:#ccc;font-weight:500}
-.val-badge{background:var(--accent);color:#fff;padding:2px 8px;border-radius:10px;font-size:.75rem;font-weight:bold}
+.workspace{display:none;flex-direction:column;gap:20px}
 
-input[type=range]{accent-color:var(--accent);width:100%;height:6px;background:#444;border-radius:4px;outline:none}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#fff;border-radius:50%;cursor:pointer}
-select{width:100%;background:#1e1e24;color:#fff;border:1px solid var(--border);padding:10px;border-radius:8px;font-size:.9rem;outline:none}
+/* Comparador de Imagem */
+.viewer{position:relative;width:100%;background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--border);box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+.viewer canvas{width:100%;height:auto;display:block}
+.img-before{position:absolute;inset:0;z-index:2;clip-path:inset(0 50% 0 0)}
+.img-before img{width:100%;height:100%;object-fit:fill;pointer-events:none}
+.slider-handle{position:absolute;top:0;bottom:0;left:50%;width:4px;background:#fff;z-index:10;transform:translateX(-50%);cursor:ew-resize;box-shadow:0 0 10px rgba(0,0,0,0.8)}
+.slider-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid #fff;color:#fff;font-weight:bold;box-shadow:0 4px 6px rgba(0,0,0,0.4)}
+.tag{position:absolute;top:12px;padding:6px 12px;border-radius:8px;font-size:0.75rem;font-weight:700;background:rgba(15,23,42,0.8);color:#fff;backdrop-filter:blur(4px);z-index:11;border:1px solid rgba(255,255,255,0.1)}
+.tag-l{left:12px} .tag-r{right:12px}
 
-.btn{width:100%;background:var(--accent);color:#fff;border:none;padding:16px;border-radius:12px;font-size:1.05rem;font-weight:bold;cursor:pointer;transition:all .2s;box-shadow:0 4px 12px rgba(108,92,231,.3)}
-.btn:disabled{background:#333;color:#777;cursor:not-allowed;box-shadow:none}
-.btn:hover:not(:disabled){background:var(--accent2);transform:translateY(-2px)}
-.prev{margin-top:16px;text-align:center;display:none;background:rgba(255,255,255,.03);padding:16px;border-radius:12px;border:1px dashed var(--border)}
-.prev img{max-width:100%;border-radius:8px;margin-top:10px;background:#fff}
-.hint{font-size:.85rem;color:#aaa;line-height:1.4}
+/* Controles */
+.controls-grid{display:grid;grid-template-columns:1fr;gap:12px}
+.control-box{background:#0f172a;padding:16px;border-radius:12px;border:1px solid var(--border)}
+.ctrl-header{display:flex;justify-content:space-between;margin-bottom:12px;align-items:center}
+.ctrl-header label{font-weight:600;font-size:0.95rem;color:#e2e8f0;display:flex;align-items:center;gap:8px}
+.val-display{background:#1e293b;padding:4px 8px;border-radius:6px;font-size:0.8rem;color:#a78bfa;font-weight:bold;border:1px solid #334155}
+
+input[type=range]{-webkit-appearance:none;width:100%;height:8px;background:#334155;border-radius:4px;outline:none;margin-bottom:8px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;background:var(--accent);border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 0 10px rgba(139,92,246,0.5)}
+.desc{font-size:0.75rem;color:#64748b;line-height:1.4}
+
+.action-btn{width:100%;padding:18px;background:linear-gradient(135deg, var(--accent), var(--accent-hover));color:white;border:none;border-radius:12px;font-size:1.1rem;font-weight:800;cursor:pointer;transition:transform 0.2s, box-shadow 0.2s;text-transform:uppercase;letter-spacing:1px;box-shadow:0 8px 20px rgba(139,92,246,0.3)}
+.action-btn:hover{transform:translateY(-2px);box-shadow:0 12px 25px rgba(139,92,246,0.4)}
+
+.loading-overlay{position:absolute;inset:0;background:rgba(15,23,42,0.85);backdrop-filter:blur(5px);z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:1.2rem}
+.spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,0.1);border-left-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:15px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.final-result{margin-top:20px;text-align:center;display:none;background:#0f172a;padding:20px;border-radius:16px;border:1px dashed var(--border)}
+.final-result img{max-width:100%;border-radius:8px;background:#fff;box-shadow:0 10px 25px rgba(0,0,0,0.5);margin-top:15px}
+.download-hint{font-size:0.85rem;color:#a78bfa;margin-top:10px;font-weight:600}
 </style>
 </head>
 <body>
+
 <div class="app">
-  <h1>Stencil Pro V3</h1>
-  <p class="subtitle">Controle Absoluto: Sombras, Linhas e Preenchimentos separados.</p>
+  <h1>Stencil HD Pro</h1>
+  <p class="subtitle">Algoritmo de Adaptação Local (Estilo Vetor)</p>
 
-  <div class="upload" onclick="fileInput.click()"><span id="uploadText">📸 Toque aqui para escolher a imagem</span><input type="file" id="fileInput" accept="image/*"></div>
-
-  <div class="cmp" id="cmp">
-    <span class="badge bl">Foto Original</span><span class="badge br">Decalque Gerado</span>
-    <canvas id="cv"></canvas>
-    <div class="before" id="before"><img id="orig" alt="Original"></div>
-    <div class="handle" id="handle"><div class="knob">↔</div></div>
-    <div class="busy" id="busy">Gerando Matriz...</div>
+  <div class="upload-area" onclick="document.getElementById('fileIn').click()" id="upArea">
+    <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.36 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+    <div id="upText" style="font-weight:600; font-size:1.1rem; color:#e2e8f0">Toque para Selecionar a Imagem</div>
+    <div style="font-size:0.85rem; color:#64748b; margin-top:5px">O sistema fará o ajuste automático inicial.</div>
   </div>
+  <input type="file" id="fileIn" accept="image/*">
 
-  <!-- PAINEL 1: CONTORNOS -->
-  <div class="panel">
-    <div class="panel-title">✏️ Linhas e Contornos</div>
-    <div class="ctrl-group">
-      <div class="hd"><label>Sensibilidade da Borda (Captura linhas fracas)</label><span class="val-badge" id="lineSensV">1.5</span></div>
-      <input type="range" id="lineSens" min="0.1" max="3.0" value="1.5" step="0.1">
-    </div>
-    <div class="ctrl-group">
-      <div class="hd"><label>Grossura da Linha</label><span class="val-badge" id="lineThickV">1 px</span></div>
-      <input type="range" id="lineThick" min="1" max="5" value="1" step="1">
-    </div>
-  </div>
-
-  <!-- PAINEL 2: SOMBRAS E PREENCHIMENTOS -->
-  <div class="panel">
-    <div class="panel-title">🌑 Sombra & Blocos de Preto</div>
+  <div class="workspace" id="workArea">
     
-    <div class="ctrl-group">
-      <div class="hd"><label>Intensidade da Sombra (0% = Só Contorno)</label><span class="val-badge" id="shadowIntV">50%</span></div>
-      <input type="range" id="shadowInt" min="0" max="100" value="50" step="5">
+    <div class="viewer" id="viewer">
+      <span class="tag tag-l">Foto Original</span>
+      <span class="tag tag-r">Decalque HD</span>
+      <canvas id="cvs"></canvas>
+      <div class="img-before" id="imgBefore"><img id="origImg"></div>
+      <div class="slider-handle" id="slider"><div class="slider-btn">↔</div></div>
+      <div class="loading-overlay" id="loading"><div class="spinner"></div>Processando Linhas HD...</div>
     </div>
 
-    <div class="ctrl-group" style="margin-top:20px; border-top: 1px dashed #444; padding-top:14px;">
-      <div class="hd"><label>Preenchimento de Blocos Escuros</label><span class="val-badge" id="solidBlackV">100%</span></div>
-      <input type="range" id="solidBlack" min="0" max="100" value="100" step="10">
-      <p style="font-size: 0.7rem; color: #888; margin-top: 6px;">0% = Fica Vazado (Só linha em volta) | 50% = Sombreado Denso | 100% = Preto Sólido</p>
+    <div class="controls-grid">
+      <!-- Filtro Anti-Tremelido -->
+      <div class="control-box">
+        <div class="ctrl-header">
+          <label>🧹 Anti-Tremelido (Limpeza)</label>
+          <span class="val-display" id="valClean">Suave</span>
+        </div>
+        <input type="range" id="pClean" min="0" max="6" value="1" step="1">
+        <p class="desc">Aumente se a foto tiver muita textura de pele ou ruído. Linhas ficarão mais contínuas.</p>
+      </div>
+
+      <!-- Sensibilidade do Traço (Hachuras) -->
+      <div class="control-box">
+        <div class="ctrl-header">
+          <label>✒️ Sensibilidade das Linhas</label>
+          <span class="val-display" id="valSens">Padrão</span>
+        </div>
+        <input type="range" id="pSens" min="1" max="25" value="10" step="1">
+        <p class="desc">Define o quão escuro um detalhe precisa ser para virar linha. Controla os pelos e hachuras finas.</p>
+      </div>
+
+      <!-- Blocos Pretos Sólidos -->
+      <div class="control-box">
+        <div class="ctrl-header">
+          <label>⬛ Forçar Blocos Pretos (Preenchimento)</label>
+          <span class="val-display" id="valBlock">Alto (80)</span>
+        </div>
+        <input type="range" id="pBlock" min="0" max="150" value="80" step="5">
+        <p class="desc">Preenche áreas escuras inteiras (como tribais e bordas grossas) sem deixar buracos no meio.</p>
+      </div>
+      
+      <!-- Detalhamento -->
+      <div class="control-box">
+        <div class="ctrl-header">
+          <label>🔍 Nível de Detalhe (Raio)</label>
+          <span class="val-display" id="valDetail">Fino (15px)</span>
+        </div>
+        <input type="range" id="pDetail" min="3" max="50" value="15" step="1">
+        <p class="desc">Raio de busca do contraste. Valores menores pegam detalhes finos. Valores maiores engrossam os traços.</p>
+      </div>
     </div>
 
-    <div class="ctrl-group" style="margin-top:16px;">
-      <div class="hd"><label>Tamanho do Ponto (Rastelado)</label><span class="val-badge" id="dotSizeV">2 px</span></div>
-      <input type="range" id="dotSize" min="1" max="6" value="2" step="1">
-    </div>
-  </div>
+    <button class="action-btn" id="btnFinal">Salvar Decalque Hectográfico</button>
 
-  <!-- PAINEL 3: AJUSTES GERAIS -->
-  <div class="panel">
-    <div class="panel-title">✨ Ajustes Finais</div>
-    <div class="ctrl-group">
-      <div class="hd"><label>Limpeza de Pele (Ignorar poros/ruído)</label><span class="val-badge" id="smoothV">2</span></div>
-      <input type="range" id="smooth" min="0" max="8" value="2" step="1">
+    <div class="final-result" id="finalRes">
+      <h3 style="color:#e2e8f0;font-size:1.1rem">Decalque Pronto!</h3>
+      <p class="download-hint">Pressione e segure (ou clique com botão direito) na imagem abaixo para Salvar / Imprimir.</p>
+      <img id="outImg" alt="Decalque Final HD">
     </div>
-    <div class="ctrl-group" style="margin-top:16px;">
-      <label style="font-size:.85rem;color:#ccc;display:block;margin-bottom:6px">Cor da Tinta Hectográfica</label>
-      <select id="color">
-        <option value="purple">Roxo Hectográfico (Anubis / Spirit)</option>
-        <option value="blue" selected>Azul Marinho Clássico</option>
-        <option value="black">Preto Nanquim</option>
-      </select>
-    </div>
-  </div>
 
-  <button id="saveBtn" class="btn" disabled>💾 Salvar Decalque Pronto</button>
-
-  <div class="prev" id="prev">
-    <p class="hint">💡 <b>Pronto para Imprimir:</b> Pressione e segure na imagem abaixo (ou clique com o botão direito) para salvar na galeria e enviar para a impressora térmica.</p>
-    <img id="out" alt="Decalque Pronto">
   </div>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
-const fileInput=$('fileInput'), cv=$('cv'), ctx=cv.getContext('2d'), cmp=$('cmp'), before=$('before'), handle=$('handle'), busy=$('busy'), saveBtn=$('saveBtn');
-const MAX_SIDE = 2500, MIN_SIDE = 1200;
-const INKS = { purple:[45,15,140], blue:[20,30,150], black:[15,15,15] };
+const fileIn = $('fileIn'), cvs =$('cvs'), ctx = cvs.getContext('2d', { willReadFrequently: true });
+const viewer = $('viewer'), imgBefore =$('imgBefore'), slider = $('slider'), loading =$('loading');
+let W = 0, H = 0, imgDataRaw = null, grayArray = null, timer = null;
 
-// Matriz Bayer para pontilhismo perfeito
-const BAYER_8X8 = [
-   0, 32,  8, 40,  2, 34, 10, 42,
-  48, 16, 56, 24, 50, 18, 58, 26,
-  12, 44,  4, 36, 14, 46,  6, 38,
-  60, 28, 52, 20, 62, 30, 54, 22,
-   3, 35, 11, 43,  1, 33,  9, 41,
-  51, 19, 59, 27, 49, 17, 57, 25,
-  15, 47,  7, 39, 13, 45,  5, 37,
-  63, 31, 55, 23, 61, 29, 53, 21
-];
+// Cor exata da Tinta Hectográfica Roxa HD
+const INK_R = 45, INK_G = 15, INK_B = 140;
 
-let W=0, H=0, n=0, tone=null, outUrl=null, outBlob=null, timer=null, running=false, again=false;
-
-/* --- Blur para limpar pele e ruídos --- */
-function gblur(src, w, h, s){
-  if(s <= 0.1) return new Float32Array(src);
-  const r = Math.max(1, Math.ceil(s * 2.5)), k = new Float32Array(2 * r + 1);
-  let sum = 0;
-  for(let i = -r; i <= r; i++){ k[i+r] = Math.exp(-i*i / (2 * s * s)); sum += k[i+r]; }
-  for(let i = 0; i < k.length; i++) k[i] /= sum;
-  const tmp = new Float32Array(w * h), out = new Float32Array(w * h);
-  for(let y = 0; y < h; y++){
-    let o = y * w;
-    for(let x = 0; x < w; x++){
-      let a = 0;
-      for(let i = -r; i <= r; i++) a += src[o + Math.max(0, Math.min(w - 1, x + i))] * k[i + r];
-      tmp[o + x] = a;
-    }
-  }
-  for(let y = 0; y < h; y++){
-    for(let x = 0; x < w; x++){
-      let a = 0;
-      for(let i = -r; i <= r; i++) a += tmp[Math.max(0, Math.min(h - 1, y + i)) * w + x] * k[i + r];
-      out[y * w + x] = a;
-    }
-  }
-  return out;
-}
-
-/* --- O MOTOR V3: Linhas + Engrossamento + Sombras + Blocos Negros --- */
-function processStencilV3(src, w, h, lineSens, lineThick, shadowRatio, solidRatio, dotSize) {
-  const out = new Uint8Array(w * h);
-  const edgeMap = new Uint8Array(w * h);
-  const thickEdgeMap = new Uint8Array(w * h);
-  
-  // Limiar de detecção da Borda
-  const limit = (0.25 / lineSens); 
-  const blackThreshold = 0.82; // O que é considerado "Bloco de Preto" (82% de escuridão)
-
-  // 1. ACHAR BORDAS (Operador Sobel)
-  for(let y=1; y<h-1; y++) {
-    for(let x=1; x<w-1; x++) {
-      let i = y * w + x;
-      let p00 = src[i-w-1], p01 = src[i-w], p02 = src[i-w+1];
-      let p10 = src[i-1],                   p12 = src[i+1];
-      let p20 = src[i+w-1], p21 = src[i+w], p22 = src[i+w+1];
-      let gx = -p00 + p02 - 2*p10 + 2*p12 - p20 + p22;
-      let gy = -p00 - 2*p01 - p02 + p20 + 2*p21 + p22;
-      if (gx*gx + gy*gy > limit*limit) edgeMap[i] = 1;
-    }
-  }
-
-  // 2. ENGROSSAR LINHAS (Dilatação Morfológica)
-  const radius = lineThick - 1;
-  if (radius > 0) {
-    for(let y=0; y<h; y++) {
-      for(let x=0; x<w; x++) {
-        if (edgeMap[y*w + x]) {
-          for(let dy = -radius; dy <= radius; dy++) {
-            let ny = y + dy;
-            if (ny < 0 || ny >= h) continue;
-            for(let dx = -radius; dx <= radius; dx++) {
-              let nx = x + dx;
-              if (nx < 0 || nx >= w) continue;
-              // Cria uma linha arredondada e suave
-              if (dx*dx + dy*dy <= radius*radius + 0.5) {
-                thickEdgeMap[ny*w + nx] = 1;
-              }
-            }
-          }
-        }
-      }
-    }
-  } else {
-    thickEdgeMap.set(edgeMap);
-  }
-
-  // 3. RENDERIZAÇÃO FINAL (Juntando tudo)
+// O segredo para rodar rápido: Box Blur Rápido
+function fastBoxBlur(src, w, h, radius) {
+  const tr = new Float32Array(w * h), out = new Float32Array(w * h);
   for(let y=0; y<h; y++) {
-    for(let x=0; x<w; x++) {
-      let i = y * w + x;
-      
-      // Se for uma linha desenhada, pinta de escuro e vai pro próximo pixel
-      if (thickEdgeMap[i]) {
-        out[i] = 1;
-        continue;
-      }
-
-      let darkness = 1.0 - src[i]; 
-      if (darkness < 0.03) continue; // Branco puro (ignora para otimizar)
-
-      let isBlackBlock = (darkness > blackThreshold);
-
-      // Lógica do tamanho do ponto usando a Matriz Bayer
-      let dx = Math.floor(x / dotSize);
-      let dy = Math.floor(y / dotSize);
-      let bayerVal = BAYER_8X8[(dy % 8) * 8 + (dx % 8)] / 65.0;
-
-      // Tratamento de BLOCOS SÓLIDOS DE PRETO
-      if (isBlackBlock) {
-         if (solidRatio === 0) {
-             // VAZADO: Não faz nada. A borda já foi desenhada pelo thickEdgeMap!
-         } else if (solidRatio === 1) {
-             // 100% PREENCHIDO
-             out[i] = 1;
-         } else {
-             // INTERMEDIÁRIO (Sombreado pesado)
-             let targetDarkness = 0.4 + (solidRatio * 0.8);
-             if (targetDarkness > bayerVal) out[i] = 1;
-         }
-      } 
-      // Tratamento de SOMBRAS NORMAIS (Degradê)
-      else {
-         if (shadowRatio > 0) {
-             let targetDarkness = Math.pow(darkness, 1.2) * (shadowRatio * 1.5);
-             if (targetDarkness > bayerVal) out[i] = 1;
-         }
-      }
+    let sum = 0, idx = y * w;
+    for(let i=-radius; i<=radius; i++) sum += src[idx + Math.max(0, Math.min(w-1, i))];
+    tr[idx] = sum / (2*radius+1);
+    for(let x=1; x<w; x++) {
+      sum += src[idx + Math.min(w-1, x+radius)] - src[idx + Math.max(0, x-radius-1)];
+      tr[idx + x] = sum / (2*radius+1);
+    }
+  }
+  for(let x=0; x<w; x++) {
+    let sum = 0;
+    for(let i=-radius; i<=radius; i++) sum += tr[Math.max(0, Math.min(h-1, i))*w + x];
+    out[x] = sum / (2*radius+1);
+    for(let y=1; y<h; y++) {
+      sum += tr[Math.min(h-1, y+radius)*w + x] - tr[Math.max(0, y-radius-1)*w + x];
+      out[y*w + x] = sum / (2*radius+1);
     }
   }
   return out;
 }
 
-/* --- Loader e Eventos --- */
-fileInput.addEventListener('change', e => {
-  const file = e.target.files[0]; if (!file) return;
-  $('uploadText').innerText = '✅ ' + file.name;
-  const url = URL.createObjectURL(file), im = new Image();
+// O MOTOR PRINCIPAL DE PROCESSAMENTO (Adaptive Local Thresholding)
+function renderDecalque() {
+  if (!grayArray) return;
   
-  im.onload = () => {
-    const long = Math.max(im.naturalWidth, im.naturalHeight);
-    const scale = long < MIN_SIDE ? Math.min(3, MIN_SIDE / long) : (long > MAX_SIDE ? MAX_SIDE / long : 1);
-    W = Math.round(im.naturalWidth * scale); H = Math.round(im.naturalHeight * scale); n = W * H;
+  const cleanRadius = parseInt($('pClean').value);
+  const detailRadius = parseInt($('pDetail').value);
+  const sens = parseInt($('pSens').value); // Diferença de cor pra virar linha
+  const blockThresh = parseInt($('pBlock').value); // 0 a 255. Abaixo disso é preto absoluto.
 
-    cv.width = W; cv.height = H;
-    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
-    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(im, 0, 0, W, H);
+  // 1. Anti-Tremelido (Limpeza de ruído)
+  let baseImg = grayArray;
+  if (cleanRadius > 0) {
+    baseImg = fastBoxBlur(grayArray, W, H, cleanRadius);
+    // Passo extra para suavizar ainda mais o ruído
+    if(cleanRadius > 2) baseImg = fastBoxBlur(baseImg, W, H, cleanRadius-1);
+  }
 
-    const d = ctx.getImageData(0, 0, W, H).data;
-    let rawGray = new Float32Array(n);
-    const hist = new Uint32Array(256);
+  // 2. Cria o mapa de Médias Locais (O segredo para pegar hachuras finas perfeitamente)
+  const localMeans = fastBoxBlur(baseImg, W, H, detailRadius);
 
-    for (let i = 0; i < n; i++) {
-      const v = (0.299 * d[i*4] + 0.587 * d[i*4+1] + 0.114 * d[i*4+2]);
-      rawGray[i] = v / 255.0;
-      hist[v | 0]++;
+  // 3. Renderiza a imagem final
+  const outData = ctx.createImageData(W, H);
+  const data = outData.data;
+
+  for (let i = 0; i < W * H; i++) {
+    const px = baseImg[i];
+    const mean = localMeans[i];
+    
+    // Regra A: É escuro o suficiente absoluto para ser um BLOCO SÓLIDO?
+    let isBlack = (px < blockThresh);
+
+    // Regra B: É mais escuro que o ambiente ao redor dele? (LINHAS E HACHURAS)
+    // Se o pixel atual for menor que a (Média Local - Sensibilidade), é uma linha!
+    if (!isBlack && px < mean - sens) {
+      isBlack = true;
     }
 
-    // Esticamento de Histograma (Para achar o Preto Real e o Branco Real)
-    let acc = 0, lo = 0, hi = 255;
-    for (let i = 0; i < 256; i++) { acc += hist[i]; if (acc >= n * 0.01) { lo = i; break; } }
-    acc = 0;
-    for (let i = 255; i >= 0; i--) { acc += hist[i]; if (acc >= n * 0.01) { hi = i; break; } }
-    if (hi - lo < 20) { lo = 0; hi = 255; }
-
-    tone = new Float32Array(n);
-    const range = (hi - lo) / 255.0, minV = lo / 255.0;
-    for (let i = 0; i < n; i++) {
-      const t = (rawGray[i] - minV) / range;
-      tone[i] = t < 0 ? 0 : t > 1 ? 1 : t;
-    }
-
-    $('orig').src = url;
-    cmp.style.display = 'block';
-    setSlider(50);
-    saveBtn.disabled = false;
-    schedule(0);
-  };
-  im.src = url;
-});
-
-function render() {
-  if (!tone) return;
-
-  const lineSens = parseFloat($('lineSens').value);
-  const lineThick = parseInt($('lineThick').value);
-  const shadowRatio = parseInt($('shadowInt').value) / 100.0;
-  const solidRatio = parseInt($('solidBlack').value) / 100.0;
-  const dotSize = parseInt($('dotSize').value);
-  const smoothVal = parseInt($('smooth').value);
-
-  const smoothTone = smoothVal > 0 ? gblur(tone, W, H, smoothVal * 0.8) : tone;
-  const stencilMap = processStencilV3(smoothTone, W, H, lineSens, lineThick, shadowRatio, solidRatio, dotSize);
-
-  const c = INKS[$('color').value];
-  const imgData = ctx.createImageData(W, H);
-  const o = imgData.data;
-
-  for (let i = 0; i < n; i++) {
-    const k = i * 4;
-    if (stencilMap[i] === 1) {
-      o[k] = c[0]; o[k+1] = c[1]; o[k+2] = c[2]; o[k+3] = 255;
+    const idx = i * 4;
+    if (isBlack) {
+      data[idx] = INK_R;     // R
+      data[idx+1] = INK_G;   // G
+      data[idx+2] = INK_B;   // B
+      data[idx+3] = 255;     // Alpha
     } else {
-      o[k] = 255; o[k+1] = 255; o[k+2] = 255; o[k+3] = 255;
+      data[idx] = 255;       // Branco
+      data[idx+1] = 255;
+      data[idx+2] = 255;
+      data[idx+3] = 255;
     }
   }
 
-  ctx.putImageData(imgData, 0, 0);
-
-  cv.toBlob(b => {
-    if (!b) return;
-    outBlob = b;
-    if (outUrl) URL.revokeObjectURL(outUrl);
-    outUrl = URL.createObjectURL(b);
-    $('out').src = outUrl;
-    $('prev').style.display = 'block';
+  ctx.putImageData(outData, 0, 0);
+  
+  // Atualiza a imagem de download final
+  cvs.toBlob(blob => {
+    $('outImg').src = URL.createObjectURL(blob);
   }, 'image/png');
 }
 
-function schedule(delay = 200) {
+// Lógica de Carregamento da Imagem
+fileIn.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  $('upArea').style.display = 'none';$('workArea').style.display = 'flex';
+  
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    // Redimensiona mantendo proporção para alta definição mas sem travar o cel
+    const max = 2200;
+    let w = img.width, h = img.height;
+    if (Math.max(w, h) > max) {
+      const scale = max / Math.max(w, h);
+      w = Math.round(w * scale); h = Math.round(h * scale);
+    }
+    W = w; H = h;
+    cvs.width = W; cvs.height = H;
+    
+    // Desenha e pega os dados GrayScale
+    ctx.fillStyle = '#fff'; ctx.fillRect(0,0,W,H);
+    ctx.drawImage(img, 0, 0, W, H);
+    const raw = ctx.getImageData(0,0,W,H).data;
+    
+    grayArray = new Float32Array(W * H);
+    for(let i=0; i < W*H; i++) {
+      // Fórmula Luminosidade Rec. 709
+      grayArray[i] = 0.2126 * raw[i*4] + 0.7152 * raw[i*4+1] + 0.0722 * raw[i*4+2];
+    }
+    
+    $('origImg').src = url;
+    setSliderPos(50);
+    triggerRender();
+  };
+  img.src = url;
+});
+
+function triggerRender() {
   clearTimeout(timer);
-  timer = setTimeout(async () => {
-    if (!tone) return;
-    if (running) { again = true; return; }
-    running = true; busy.style.display = 'flex';
-    await new Promise(r => setTimeout(r, 40)); // da tempo da UI mostrar o loader
-    try { render(); } catch (err) { console.error(err); }
-    busy.style.display = 'none'; running = false;
-    if (again) { again = false; schedule(0); }
-  }, delay);
+  loading.style.display = 'flex';
+  // Joga pra próxima frame pra UI não travar e mostrar o Loading
+  timer = setTimeout(() => {
+    renderDecalque();
+    loading.style.display = 'none';
+  }, 100);
 }
 
-/* Eventos dos Sliders */
-$('lineSens').addEventListener('input', e => { $('lineSensV').innerText = e.target.value; schedule(); });$('lineThick').addEventListener('input', e => { $('lineThickV').innerText = e.target.value + ' px'; schedule(); });$('shadowInt').addEventListener('input', e => { $('shadowIntV').innerText = e.target.value + '\%'; schedule(); });$('solidBlack').addEventListener('input', e => { $('solidBlackV').innerText = e.target.value + '\%'; schedule(); });$('dotSize').addEventListener('input', e => { $('dotSizeV').innerText = e.target.value + ' px'; schedule(); });$('smooth').addEventListener('input', e => { $('smoothV').innerText = e.target.value; schedule(); });$('color').addEventListener('change', () => schedule(0));
+// Atualização dos textos dos controles
+const updateTxt = (id, val, suffix='') => $(id).innerText = val + suffix;
+$('pClean').oninput = e => { updateTxt('valClean', e.target.value == 0 ? 'Desligado' : 'Nível ' + e.target.value); triggerRender(); }
+$('pSens').oninput = e => { updateTxt('valSens', e.target.value); triggerRender(); }
+$('pBlock').oninput = e => { updateTxt('valBlock', e.target.value); triggerRender(); }$('pDetail').oninput = e => { updateTxt('valDetail', e.target.value, 'px'); triggerRender(); }
 
-/* Interação de Arrasto (Antes/Depois) */
-let drag = false;
-function setSlider(p) { p = Math.max(0, Math.min(100, p)); before.style.clipPath = `inset(0 ${100 - p}% 0 0)`; handle.style.left = p + '%'; }
-function moveTo(x) { const r = cmp.getBoundingClientRect(); setSlider((x - r.left) / r.width * 100); }
-cmp.addEventListener('mousedown', e => { drag = true; moveTo(e.clientX); });
-window.addEventListener('mousemove', e => { if (drag) moveTo(e.clientX); });
-window.addEventListener('mouseup', () => drag = false);
-cmp.addEventListener('touchstart', e => { drag = true; moveTo(e.touches[0].clientX); }, { passive: true });
-window.addEventListener('touchmove', e => { if (drag) moveTo(e.touches[0].clientX); }, { passive: true });
-window.addEventListener('touchend', () => drag = false);
+// Slider Antes/Depois
+let isDragging = false;
+function setSliderPos(percent) {
+  percent = Math.max(0, Math.min(100, percent));
+  imgBefore.style.clipPath = `inset(0 ${100 - percent}% 0 0)`;
+  slider.style.left = percent + '%';
+}
+function onMove(clientX) {
+  const rect = viewer.getBoundingClientRect();
+  const x = clientX - rect.left;
+  setSliderPos((x / rect.width) * 100);
+}
+viewer.addEventListener('mousedown', e => { isDragging = true; onMove(e.clientX); });
+window.addEventListener('mousemove', e => { if (isDragging) onMove(e.clientX); });
+window.addEventListener('mouseup', () => isDragging = false);
+viewer.addEventListener('touchstart', e => { isDragging = true; onMove(e.touches[0].clientX); }, {passive:true});
+window.addEventListener('touchmove', e => { if (isDragging) onMove(e.touches[0].clientX); }, {passive:true});
+window.addEventListener('touchend', () => isDragging = false);
 
-/* Botão Salvar */
-saveBtn.addEventListener('click', async () => {
-  if (!outBlob) return;
-  const file = new File([outBlob], 'stencil-pro-v3.png', { type: 'image/png' });
-  try {
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: 'Decalque Tatuagem V3' });
-    } else {
-      const a = document.createElement('a'); a.download = 'stencil-pro-v3.png'; a.href = outUrl; a.click();
-    }
-  } catch (err) { if (err.name !== 'AbortError') console.error('Erro:', err); }
-});
+// Botão de Salvar
+$('btnFinal').onclick = () => {
+  $('finalRes').style.display = 'block';$('finalRes').scrollIntoView({behavior: "smooth"});
+};
 </script>
 </body>
 </html>
