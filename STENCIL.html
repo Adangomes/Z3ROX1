@@ -3,76 +3,104 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Tattoo Stencil Ultra Precision - Nível Profissional</title>
+<title>Tattoo Stencil Ultra Precision - V3</title>
 <style>
-:root{--bg:#121214;--card:#1e1e24;--accent:#6c5ce7;--accent2:#5b4bc4;--text:#f1f2f6;--border:#333}
+:root{--bg:#0f0f11;--card:#18181c;--accent:#6c5ce7;--accent2:#5b4bc4;--text:#f1f2f6;--border:#333;--sec:#25252b}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);padding:12px;display:flex;justify-content:center;touch-action:manipulation}
-.app{max-width:680px;width:100%;background:var(--card);padding:20px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
-h1{font-size:1.4rem;text-align:center;margin-bottom:4px;color:#fff}
-.subtitle{text-align:center;color:#aaa;font-size:.85rem;margin-bottom:16px}
-.upload{border:2px dashed var(--accent);border-radius:12px;padding:18px;text-align:center;cursor:pointer;background:rgba(108,92,231,.08);margin-bottom:16px;font-weight:600}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);padding:10px;display:flex;justify-content:center;touch-action:manipulation}
+.app{max-width:700px;width:100%;background:var(--card);padding:20px;border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,.6)}
+h1{font-size:1.5rem;text-align:center;margin-bottom:4px;color:#fff;font-weight:800}
+.subtitle{text-align:center;color:#aaa;font-size:.85rem;margin-bottom:20px}
+.upload{border:2px dashed var(--accent);border-radius:12px;padding:20px;text-align:center;cursor:pointer;background:rgba(108,92,231,.08);margin-bottom:16px;font-weight:600;transition:all .2s}
+.upload:hover{background:rgba(108,92,231,.15)}
 input[type=file]{display:none}
-.cmp{position:relative;width:100%;background:#fff;border-radius:12px;overflow:hidden;border:1px solid var(--border);user-select:none;-webkit-user-select:none;touch-action:pan-y;margin-bottom:16px;display:none}
+.cmp{position:relative;width:100%;background:#fff;border-radius:12px;overflow:hidden;border:1px solid var(--border);user-select:none;-webkit-user-select:none;touch-action:pan-y;margin-bottom:20px;display:none}
 .cmp canvas{width:100%;height:auto;display:block;background:#fff}
 .before{position:absolute;inset:0;z-index:2;clip-path:inset(0 50% 0 0)}
 .before img{width:100%;height:100%;object-fit:fill;display:block;pointer-events:none}
-.handle{position:absolute;top:0;bottom:0;left:50%;width:3px;background:#fff;z-index:10;transform:translateX(-50%);cursor:ew-resize;box-shadow:0 0 8px rgba(0,0,0,.8)}
-.knob{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;border:2px solid #fff;color:#fff}
-.badge{position:absolute;top:10px;padding:4px 10px;border-radius:6px;font-size:.75rem;font-weight:bold;background:rgba(0,0,0,.7);z-index:11;color:#fff}
+.handle{position:absolute;top:0;bottom:0;left:50%;width:4px;background:#fff;z-index:10;transform:translateX(-50%);cursor:ew-resize;box-shadow:0 0 10px rgba(0,0,0,.8)}
+.knob{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:38px;height:38px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;border:3px solid #fff;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+.badge{position:absolute;top:10px;padding:6px 12px;border-radius:8px;font-size:.75rem;font-weight:bold;background:rgba(0,0,0,.75);z-index:11;color:#fff;backdrop-filter:blur(4px)}
 .bl{left:10px}.br{right:10px}
-.busy{position:absolute;inset:0;z-index:20;background:rgba(18,18,20,.65);display:none;align-items:center;justify-content:center;font-weight:bold;color:#fff;font-size:1.1rem}
-.controls{display:flex;flex-direction:column;gap:14px;margin-bottom:20px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 12px;}
-.hd{display:flex;justify-content:space-between;font-size:.88rem;margin-bottom:4px;color:#ddd;font-weight:500}
-input[type=range],select{accent-color:var(--accent);width:100%}
-select{background:#2a2a32;color:#fff;border:1px solid var(--border);padding:10px;border-radius:8px;font-size:.9rem}
-.btn{width:100%;background:var(--accent);color:#fff;border:none;padding:16px;border-radius:10px;font-size:1rem;font-weight:bold;cursor:pointer;transition:background .2s}
-.btn:disabled{background:#444;cursor:not-allowed}
-.btn:hover:not(:disabled){background:var(--accent2)}
-.prev{margin-top:16px;text-align:center;display:none;background:rgba(255,255,255,.05);padding:12px;border-radius:12px;border:1px dashed var(--border)}
-.prev img{max-width:100%;border-radius:8px;margin-top:8px;background:#fff}
-.hint{font-size:.8rem;color:#aaa}
+.busy{position:absolute;inset:0;z-index:20;background:rgba(15,15,17,.75);display:none;align-items:center;justify-content:center;font-weight:bold;color:#fff;font-size:1.2rem;backdrop-filter:blur(3px)}
+
+.panel{background:var(--sec);padding:16px;border-radius:12px;margin-bottom:12px;border:1px solid rgba(255,255,255,.05)}
+.panel-title{font-size:.9rem;color:#fff;margin-bottom:12px;font-weight:700;display:flex;align-items:center;gap:6px}
+.ctrl-group{margin-bottom:14px}
+.ctrl-group:last-child{margin-bottom:0}
+.hd{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:6px;color:#ccc;font-weight:500}
+.val-badge{background:var(--accent);color:#fff;padding:2px 8px;border-radius:10px;font-size:.75rem;font-weight:bold}
+
+input[type=range]{accent-color:var(--accent);width:100%;height:6px;background:#444;border-radius:4px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#fff;border-radius:50%;cursor:pointer}
+select{width:100%;background:#1e1e24;color:#fff;border:1px solid var(--border);padding:10px;border-radius:8px;font-size:.9rem;outline:none}
+
+.btn{width:100%;background:var(--accent);color:#fff;border:none;padding:16px;border-radius:12px;font-size:1.05rem;font-weight:bold;cursor:pointer;transition:all .2s;box-shadow:0 4px 12px rgba(108,92,231,.3)}
+.btn:disabled{background:#333;color:#777;cursor:not-allowed;box-shadow:none}
+.btn:hover:not(:disabled){background:var(--accent2);transform:translateY(-2px)}
+.prev{margin-top:16px;text-align:center;display:none;background:rgba(255,255,255,.03);padding:16px;border-radius:12px;border:1px dashed var(--border)}
+.prev img{max-width:100%;border-radius:8px;margin-top:10px;background:#fff}
+.hint{font-size:.85rem;color:#aaa;line-height:1.4}
 </style>
 </head>
 <body>
 <div class="app">
-  <h1>Stencil Pro V2</h1>
-  <p class="subtitle">Linhas apenas onde tem linha, pontilhismo perfeito na sombra.</p>
+  <h1>Stencil Pro V3</h1>
+  <p class="subtitle">Controle Absoluto: Sombras, Linhas e Preenchimentos separados.</p>
 
-  <div class="upload" onclick="fileInput.click()"><span id="uploadText">📷 Selecionar foto para decalque</span><input type="file" id="fileInput" accept="image/*"></div>
+  <div class="upload" onclick="fileInput.click()"><span id="uploadText">📸 Toque aqui para escolher a imagem</span><input type="file" id="fileInput" accept="image/*"></div>
 
   <div class="cmp" id="cmp">
-    <span class="badge bl">Foto Original</span><span class="badge br">Decalque Pro</span>
+    <span class="badge bl">Foto Original</span><span class="badge br">Decalque Gerado</span>
     <canvas id="cv"></canvas>
     <div class="before" id="before"><img id="orig" alt="Original"></div>
     <div class="handle" id="handle"><div class="knob">↔</div></div>
-    <div class="busy" id="busy">Processando Decalque…</div>
+    <div class="busy" id="busy">Gerando Matriz...</div>
   </div>
 
-  <div class="controls">
-    <div>
-      <div class="hd"><label for="lineSens">Força do Contorno (Linhas)</label><span id="lineSensV">1.5</span></div>
-      <input type="range" id="lineSens" min="0.2" max="3.0" value="1.5" step="0.1">
-      <p style="font-size: 0.75rem; color: #888; margin-top: 4px;">↑ Maior: Pega linhas mais fracas. ↓ Menor: Apenas contornos principais.</p>
+  <!-- PAINEL 1: CONTORNOS -->
+  <div class="panel">
+    <div class="panel-title">✏️ Linhas e Contornos</div>
+    <div class="ctrl-group">
+      <div class="hd"><label>Sensibilidade da Borda (Captura linhas fracas)</label><span class="val-badge" id="lineSensV">1.5</span></div>
+      <input type="range" id="lineSens" min="0.1" max="3.0" value="1.5" step="0.1">
     </div>
+    <div class="ctrl-group">
+      <div class="hd"><label>Grossura da Linha</label><span class="val-badge" id="lineThickV">1 px</span></div>
+      <input type="range" id="lineThick" min="1" max="5" value="1" step="1">
+    </div>
+  </div>
+
+  <!-- PAINEL 2: SOMBRAS E PREENCHIMENTOS -->
+  <div class="panel">
+    <div class="panel-title">🌑 Sombra & Blocos de Preto</div>
     
-    <div style="margin-top: 8px;">
-      <div class="hd"><label for="dotwork">Intensidade da Sombra (Pontilhismo)</label><span id="dotworkV">50%</span></div>
-      <input type="range" id="dotwork" min="0" max="100" value="50" step="5">
+    <div class="ctrl-group">
+      <div class="hd"><label>Intensidade da Sombra (0% = Só Contorno)</label><span class="val-badge" id="shadowIntV">50%</span></div>
+      <input type="range" id="shadowInt" min="0" max="100" value="50" step="5">
     </div>
 
-    <div style="margin-top: 8px;">
-      <div class="hd"><label for="dotSize">Tamanho do Ponto da Sombra</label><span id="dotSizeV">2</span></div>
-      <input type="range" id="dotSize" min="1" max="5" value="2" step="1">
+    <div class="ctrl-group" style="margin-top:20px; border-top: 1px dashed #444; padding-top:14px;">
+      <div class="hd"><label>Preenchimento de Blocos Escuros</label><span class="val-badge" id="solidBlackV">100%</span></div>
+      <input type="range" id="solidBlack" min="0" max="100" value="100" step="10">
+      <p style="font-size: 0.7rem; color: #888; margin-top: 6px;">0% = Fica Vazado (Só linha em volta) | 50% = Sombreado Denso | 100% = Preto Sólido</p>
     </div>
 
-    <div style="margin-top: 8px;">
-      <div class="hd"><label for="smooth">Limpeza de Pele (Ignorar poros)</label><span id="smoothV">2</span></div>
+    <div class="ctrl-group" style="margin-top:16px;">
+      <div class="hd"><label>Tamanho do Ponto (Rastelado)</label><span class="val-badge" id="dotSizeV">2 px</span></div>
+      <input type="range" id="dotSize" min="1" max="6" value="2" step="1">
+    </div>
+  </div>
+
+  <!-- PAINEL 3: AJUSTES GERAIS -->
+  <div class="panel">
+    <div class="panel-title">✨ Ajustes Finais</div>
+    <div class="ctrl-group">
+      <div class="hd"><label>Limpeza de Pele (Ignorar poros/ruído)</label><span class="val-badge" id="smoothV">2</span></div>
       <input type="range" id="smooth" min="0" max="8" value="2" step="1">
     </div>
-
-    <div style="margin-top: 12px;">
-      <label style="font-size:.85rem;color:#ccc;display:block;margin-bottom:4px">Cor do Papel Hectográfico</label>
+    <div class="ctrl-group" style="margin-top:16px;">
+      <label style="font-size:.85rem;color:#ccc;display:block;margin-bottom:6px">Cor da Tinta Hectográfica</label>
       <select id="color">
         <option value="purple">Roxo Hectográfico (Anubis / Spirit)</option>
         <option value="blue" selected>Azul Marinho Clássico</option>
@@ -81,10 +109,10 @@ select{background:#2a2a32;color:#fff;border:1px solid var(--border);padding:10px
     </div>
   </div>
 
-  <button id="saveBtn" class="btn" disabled>📸 Salvar Decalque Pronto</button>
+  <button id="saveBtn" class="btn" disabled>💾 Salvar Decalque Pronto</button>
 
   <div class="prev" id="prev">
-    <p class="hint">💡 <b>Dica de Impressão:</b> Pressione e segure na imagem abaixo para salvar e enviar para impressora térmica.</p>
+    <p class="hint">💡 <b>Pronto para Imprimir:</b> Pressione e segure na imagem abaixo (ou clique com o botão direito) para salvar na galeria e enviar para a impressora térmica.</p>
     <img id="out" alt="Decalque Pronto">
   </div>
 </div>
@@ -92,9 +120,10 @@ select{background:#2a2a32;color:#fff;border:1px solid var(--border);padding:10px
 <script>
 const $ = id => document.getElementById(id);
 const fileInput=$('fileInput'), cv=$('cv'), ctx=cv.getContext('2d'), cmp=$('cmp'), before=$('before'), handle=$('handle'), busy=$('busy'), saveBtn=$('saveBtn');
-const MAX_SIDE = 3000, MIN_SIDE = 1500;
-const INKS = { purple:[40,20,130], blue:[25,35,145], black:[20,20,20] };
+const MAX_SIDE = 2500, MIN_SIDE = 1200;
+const INKS = { purple:[45,15,140], blue:[20,30,150], black:[15,15,15] };
 
+// Matriz Bayer para pontilhismo perfeito
 const BAYER_8X8 = [
    0, 32,  8, 40,  2, 34, 10, 42,
   48, 16, 56, 24, 50, 18, 58, 26,
@@ -108,82 +137,119 @@ const BAYER_8X8 = [
 
 let W=0, H=0, n=0, tone=null, outUrl=null, outBlob=null, timer=null, running=false, again=false;
 
-/* ---------- Blur Gaussiano (Para ignorar poros e ruídos) ---------- */
+/* --- Blur para limpar pele e ruídos --- */
 function gblur(src, w, h, s){
   if(s <= 0.1) return new Float32Array(src);
-  const r = Math.max(1, Math.ceil(s * 3)), k = new Float32Array(2 * r + 1);
+  const r = Math.max(1, Math.ceil(s * 2.5)), k = new Float32Array(2 * r + 1);
   let sum = 0;
   for(let i = -r; i <= r; i++){ k[i+r] = Math.exp(-i*i / (2 * s * s)); sum += k[i+r]; }
   for(let i = 0; i < k.length; i++) k[i] /= sum;
   const tmp = new Float32Array(w * h), out = new Float32Array(w * h);
   for(let y = 0; y < h; y++){
-    const o = y * w;
+    let o = y * w;
     for(let x = 0; x < w; x++){
       let a = 0;
-      for(let i = -r; i <= r; i++){
-        let xx = Math.max(0, Math.min(w - 1, x + i));
-        a += src[o + xx] * k[i + r];
-      }
+      for(let i = -r; i <= r; i++) a += src[o + Math.max(0, Math.min(w - 1, x + i))] * k[i + r];
       tmp[o + x] = a;
     }
   }
   for(let y = 0; y < h; y++){
     for(let x = 0; x < w; x++){
       let a = 0;
-      for(let i = -r; i <= r; i++){
-        let yy = Math.max(0, Math.min(h - 1, y + i));
-        a += tmp[yy * w + x] * k[i + r];
-      }
+      for(let i = -r; i <= r; i++) a += tmp[Math.max(0, Math.min(h - 1, y + i)) * w + x] * k[i + r];
       out[y * w + x] = a;
     }
   }
   return out;
 }
 
-/* ---------- O NOVO MOTOR: Separa Linha da Sombra ---------- */
-function processStencil(src, w, h, lineSens, dotDensity, dotSize) {
+/* --- O MOTOR V3: Linhas + Engrossamento + Sombras + Blocos Negros --- */
+function processStencilV3(src, w, h, lineSens, lineThick, shadowRatio, solidRatio, dotSize) {
   const out = new Uint8Array(w * h);
-  const limit = (0.2 / lineSens); // Limiar de detecção de borda (Sobel)
+  const edgeMap = new Uint8Array(w * h);
+  const thickEdgeMap = new Uint8Array(w * h);
+  
+  // Limiar de detecção da Borda
+  const limit = (0.25 / lineSens); 
+  const blackThreshold = 0.82; // O que é considerado "Bloco de Preto" (82% de escuridão)
 
+  // 1. ACHAR BORDAS (Operador Sobel)
   for(let y=1; y<h-1; y++) {
     for(let x=1; x<w-1; x++) {
       let i = y * w + x;
-      
-      // Matriz 3x3 em volta do pixel
-      let p00 = src[(y-1)*w + (x-1)], p01 = src[(y-1)*w + x], p02 = src[(y-1)*w + (x+1)];
-      let p10 = src[y*w + (x-1)],                             p12 = src[y*w + (x+1)];
-      let p20 = src[(y+1)*w + (x-1)], p21 = src[(y+1)*w + x], p22 = src[(y+1)*w + (x+1)];
-
-      // Operador Sobel (Calcula a "força" da borda)
+      let p00 = src[i-w-1], p01 = src[i-w], p02 = src[i-w+1];
+      let p10 = src[i-1],                   p12 = src[i+1];
+      let p20 = src[i+w-1], p21 = src[i+w], p22 = src[i+w+1];
       let gx = -p00 + p02 - 2*p10 + 2*p12 - p20 + p22;
       let gy = -p00 - 2*p01 - p02 + p20 + 2*p21 + p22;
-      let edgeStrength = Math.sqrt(gx*gx + gy*gy);
+      if (gx*gx + gy*gy > limit*limit) edgeMap[i] = 1;
+    }
+  }
 
-      let darkness = 1.0 - src[i]; // Quão escuro é o pixel (0=branco, 1=preto)
-
-      // 1. É UMA LINHA DE CONTORNO?
-      if (edgeStrength > limit) {
-         out[i] = 1; // Marca como linha sólida
+  // 2. ENGROSSAR LINHAS (Dilatação Morfológica)
+  const radius = lineThick - 1;
+  if (radius > 0) {
+    for(let y=0; y<h; y++) {
+      for(let x=0; x<w; x++) {
+        if (edgeMap[y*w + x]) {
+          for(let dy = -radius; dy <= radius; dy++) {
+            let ny = y + dy;
+            if (ny < 0 || ny >= h) continue;
+            for(let dx = -radius; dx <= radius; dx++) {
+              let nx = x + dx;
+              if (nx < 0 || nx >= w) continue;
+              // Cria uma linha arredondada e suave
+              if (dx*dx + dy*dy <= radius*radius + 0.5) {
+                thickEdgeMap[ny*w + nx] = 1;
+              }
+            }
+          }
+        }
       }
-      // 2. SE NÃO É LINHA, É UMA SOMBRA?
-      else if (darkness > 0.05 && dotDensity > 0) {
-         
-         const mx = Math.floor(x / dotSize) % 8;
-         const my = Math.floor(y / dotSize) % 8;
-         const bayerVal = BAYER_8X8[my * 8 + mx] / 65.0;
-         
-         let targetDarkness = Math.pow(darkness, 1.2) * (dotDensity * 1.5);
+    }
+  } else {
+    thickEdgeMap.set(edgeMap);
+  }
 
-         if (targetDarkness > bayerVal) {
-             // Desenha o "ponto" do tamanho configurado
-             for(let dy=0; dy<dotSize; dy++){
-                for(let dx=0; dx<dotSize; dx++){
-                   let py = y+dy, px = x+dx;
-                   if(py < h && px < w && out[py*w + px] === 0) {
-                       out[py*w + px] = 1;
-                   }
-                }
-             }
+  // 3. RENDERIZAÇÃO FINAL (Juntando tudo)
+  for(let y=0; y<h; y++) {
+    for(let x=0; x<w; x++) {
+      let i = y * w + x;
+      
+      // Se for uma linha desenhada, pinta de escuro e vai pro próximo pixel
+      if (thickEdgeMap[i]) {
+        out[i] = 1;
+        continue;
+      }
+
+      let darkness = 1.0 - src[i]; 
+      if (darkness < 0.03) continue; // Branco puro (ignora para otimizar)
+
+      let isBlackBlock = (darkness > blackThreshold);
+
+      // Lógica do tamanho do ponto usando a Matriz Bayer
+      let dx = Math.floor(x / dotSize);
+      let dy = Math.floor(y / dotSize);
+      let bayerVal = BAYER_8X8[(dy % 8) * 8 + (dx % 8)] / 65.0;
+
+      // Tratamento de BLOCOS SÓLIDOS DE PRETO
+      if (isBlackBlock) {
+         if (solidRatio === 0) {
+             // VAZADO: Não faz nada. A borda já foi desenhada pelo thickEdgeMap!
+         } else if (solidRatio === 1) {
+             // 100% PREENCHIDO
+             out[i] = 1;
+         } else {
+             // INTERMEDIÁRIO (Sombreado pesado)
+             let targetDarkness = 0.4 + (solidRatio * 0.8);
+             if (targetDarkness > bayerVal) out[i] = 1;
+         }
+      } 
+      // Tratamento de SOMBRAS NORMAIS (Degradê)
+      else {
+         if (shadowRatio > 0) {
+             let targetDarkness = Math.pow(darkness, 1.2) * (shadowRatio * 1.5);
+             if (targetDarkness > bayerVal) out[i] = 1;
          }
       }
     }
@@ -191,10 +257,10 @@ function processStencil(src, w, h, lineSens, dotDensity, dotSize) {
   return out;
 }
 
-/* ---------- Carregar Imagem ---------- */
+/* --- Loader e Eventos --- */
 fileInput.addEventListener('change', e => {
   const file = e.target.files[0]; if (!file) return;
-  $('uploadText').innerText = '📷 ' + file.name;
+  $('uploadText').innerText = '✅ ' + file.name;
   const url = URL.createObjectURL(file), im = new Image();
   
   im.onload = () => {
@@ -217,7 +283,7 @@ fileInput.addEventListener('change', e => {
       hist[v | 0]++;
     }
 
-    // Normaliza Contraste Automático
+    // Esticamento de Histograma (Para achar o Preto Real e o Branco Real)
     let acc = 0, lo = 0, hi = 255;
     for (let i = 0; i < 256; i++) { acc += hist[i]; if (acc >= n * 0.01) { lo = i; break; } }
     acc = 0;
@@ -240,22 +306,19 @@ fileInput.addEventListener('change', e => {
   im.src = url;
 });
 
-/* ---------- Renderização Principal ---------- */
 function render() {
   if (!tone) return;
 
-  const lineSens   = parseFloat($('lineSens').value);
-  const dotVal     = parseInt($('dotwork').value) / 100.0;
-  const dotSize    = parseInt($('dotSize').value);
-  const smoothVal  = parseInt($('smooth').value);
+  const lineSens = parseFloat($('lineSens').value);
+  const lineThick = parseInt($('lineThick').value);
+  const shadowRatio = parseInt($('shadowInt').value) / 100.0;
+  const solidRatio = parseInt($('solidBlack').value) / 100.0;
+  const dotSize = parseInt($('dotSize').value);
+  const smoothVal = parseInt($('smooth').value);
 
-  // Aplica blur sutil para evitar transformar poros em linhas
   const smoothTone = smoothVal > 0 ? gblur(tone, W, H, smoothVal * 0.8) : tone;
+  const stencilMap = processStencilV3(smoothTone, W, H, lineSens, lineThick, shadowRatio, solidRatio, dotSize);
 
-  // Processa o stencil (Linha vs Sombra)
-  const stencilMap = processStencil(smoothTone, W, H, lineSens, dotVal, dotSize);
-
-  // Aplica cor do papel hectográfico
   const c = INKS[$('color').value];
   const imgData = ctx.createImageData(W, H);
   const o = imgData.data;
@@ -263,9 +326,9 @@ function render() {
   for (let i = 0; i < n; i++) {
     const k = i * 4;
     if (stencilMap[i] === 1) {
-      o[k] = c[0]; o[k+1] = c[1]; o[k+2] = c[2]; o[k+3] = 255; // Tinta
+      o[k] = c[0]; o[k+1] = c[1]; o[k+2] = c[2]; o[k+3] = 255;
     } else {
-      o[k] = 255; o[k+1] = 255; o[k+2] = 255; o[k+3] = 255; // Papel branco
+      o[k] = 255; o[k+1] = 255; o[k+2] = 255; o[k+3] = 255;
     }
   }
 
@@ -281,23 +344,23 @@ function render() {
   }, 'image/png');
 }
 
-function schedule(delay = 180) {
+function schedule(delay = 200) {
   clearTimeout(timer);
   timer = setTimeout(async () => {
     if (!tone) return;
     if (running) { again = true; return; }
     running = true; busy.style.display = 'flex';
-    await new Promise(r => setTimeout(r, 30));
+    await new Promise(r => setTimeout(r, 40)); // da tempo da UI mostrar o loader
     try { render(); } catch (err) { console.error(err); }
     busy.style.display = 'none'; running = false;
     if (again) { again = false; schedule(0); }
   }, delay);
 }
 
-/* ---------- Eventos dos Controles ---------- */
-$('lineSens').addEventListener('input', e => { $('lineSensV').innerText = e.target.value; schedule(); });$('dotwork').addEventListener('input', e => { $('dotworkV').innerText = e.target.value + '\%'; schedule(); });$('dotSize').addEventListener('input', e => { $('dotSizeV').innerText = e.target.value; schedule(); });$('smooth').addEventListener('input', e => { $('smoothV').innerText = e.target.value; schedule(); });$('color').addEventListener('change', () => schedule(0));
+/* Eventos dos Sliders */
+$('lineSens').addEventListener('input', e => { $('lineSensV').innerText = e.target.value; schedule(); });$('lineThick').addEventListener('input', e => { $('lineThickV').innerText = e.target.value + ' px'; schedule(); });$('shadowInt').addEventListener('input', e => { $('shadowIntV').innerText = e.target.value + '\%'; schedule(); });$('solidBlack').addEventListener('input', e => { $('solidBlackV').innerText = e.target.value + '\%'; schedule(); });$('dotSize').addEventListener('input', e => { $('dotSizeV').innerText = e.target.value + ' px'; schedule(); });$('smooth').addEventListener('input', e => { $('smoothV').innerText = e.target.value; schedule(); });$('color').addEventListener('change', () => schedule(0));
 
-/* Slider de Comparação Antes/Depois */
+/* Interação de Arrasto (Antes/Depois) */
 let drag = false;
 function setSlider(p) { p = Math.max(0, Math.min(100, p)); before.style.clipPath = `inset(0 ${100 - p}% 0 0)`; handle.style.left = p + '%'; }
 function moveTo(x) { const r = cmp.getBoundingClientRect(); setSlider((x - r.left) / r.width * 100); }
@@ -308,17 +371,17 @@ cmp.addEventListener('touchstart', e => { drag = true; moveTo(e.touches[0].clien
 window.addEventListener('touchmove', e => { if (drag) moveTo(e.touches[0].clientX); }, { passive: true });
 window.addEventListener('touchend', () => drag = false);
 
-/* Salvar Imagem */
+/* Botão Salvar */
 saveBtn.addEventListener('click', async () => {
   if (!outBlob) return;
-  const file = new File([outBlob], 'stencil-pro-v2.png', { type: 'image/png' });
+  const file = new File([outBlob], 'stencil-pro-v3.png', { type: 'image/png' });
   try {
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: 'Decalque Tatuagem' });
+      await navigator.share({ files: [file], title: 'Decalque Tatuagem V3' });
     } else {
-      const a = document.createElement('a'); a.download = 'stencil-pro-v2.png'; a.href = outUrl; a.click();
+      const a = document.createElement('a'); a.download = 'stencil-pro-v3.png'; a.href = outUrl; a.click();
     }
-  } catch (err) { if (err.name !== 'AbortError') console.error('Erro ao salvar:', err); }
+  } catch (err) { if (err.name !== 'AbortError') console.error('Erro:', err); }
 });
 </script>
 </body>
