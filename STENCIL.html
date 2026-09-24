@@ -2,13 +2,14 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gerador de Decalque de Tatuagem</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Tattoo Stencil Pro - Decalque & Pontilhismo</title>
   <style>
     :root {
       --bg-color: #121214;
       --card-bg: #1e1e24;
       --accent: #6c5ce7;
+      --accent-hover: #5b4bc4;
       --text: #f1f2f6;
       --border: #333;
     }
@@ -23,13 +24,14 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg-color);
       color: var(--text);
-      padding: 16px;
+      padding: 12px;
       display: flex;
       justify-content: center;
+      touch-action: manipulation;
     }
 
     .app-container {
-      max-width: 600px;
+      max-width: 650px;
       width: 100%;
       background: var(--card-bg);
       padding: 20px;
@@ -38,77 +40,175 @@
     }
 
     h1 {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       text-align: center;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
 
     p.subtitle {
       text-align: center;
       color: #aaa;
       font-size: 0.85rem;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
 
     .upload-box {
       border: 2px dashed var(--accent);
       border-radius: 12px;
-      padding: 24px;
+      padding: 18px;
       text-align: center;
       cursor: pointer;
-      background: rgba(108, 92, 231, 0.05);
+      background: rgba(108, 92, 231, 0.08);
       transition: 0.2s;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
 
     .upload-box:hover {
-      background: rgba(108, 92, 231, 0.15);
+      background: rgba(108, 92, 231, 0.18);
     }
 
     input[type="file"] {
       display: none;
     }
 
+    /* SLIDER DE COMPARAÇÃO ANTES / DEPOIS */
+    .comparison-wrapper {
+      position: relative;
+      width: 100%;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      user-select: none;
+      touch-action: pan-y;
+      margin-bottom: 16px;
+      display: none; /* Exibe ao carregar a foto */
+    }
+
+    .comparison-container {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .comparison-container img, 
+    .comparison-container canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      pointer-events: none;
+    }
+
+    .before-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 50%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 2;
+      border-right: 2px solid #fff;
+    }
+
+    .before-layer img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .slider-handle {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 4px;
+      background: #fff;
+      z-index: 10;
+      transform: translateX(-50%);
+      cursor: ew-resize;
+      box-shadow: 0 0 8px rgba(0,0,0,0.8);
+    }
+
+    .slider-circle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 38px;
+      height: 38px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+
+    .badge {
+      position: absolute;
+      top: 10px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: #fff;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 3;
+    }
+    .badge-left { left: 10px; }
+    .badge-right { right: 10px; }
+
+    /* CONTROLES */
     .controls {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
       margin-bottom: 20px;
     }
 
     .control-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
     }
 
     .control-header {
       display: flex;
       justify-content: space-between;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
     }
 
-    input[type="range"] {
+    .row-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    select, input[type="range"] {
       accent-color: var(--accent);
       width: 100%;
     }
 
-    .canvas-wrapper {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #000;
-      border-radius: 12px;
-      overflow: hidden;
-      min-height: 250px;
-      margin-bottom: 20px;
-    }
-
-    canvas {
-      max-width: 100%;
-      height: auto;
-      display: block;
+    select {
+      background: #2a2a32;
+      color: #fff;
+      border: 1px solid var(--border);
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 0.9rem;
     }
 
     .btn {
@@ -116,12 +216,16 @@
       background: var(--accent);
       color: white;
       border: none;
-      padding: 14px;
-      border-radius: 8px;
+      padding: 16px;
+      border-radius: 10px;
       font-size: 1rem;
       font-weight: bold;
       cursor: pointer;
       transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
 
     .btn:disabled {
@@ -130,28 +234,71 @@
     }
 
     .btn:hover:not(:disabled) {
-      opacity: 0.9;
+      background: var(--accent-hover);
+    }
+
+    .preview-container {
+      margin-top: 16px;
+      text-align: center;
+      display: none;
+      background: rgba(255,255,255,0.03);
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px dashed var(--border);
+    }
+
+    .preview-container img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+
+    .hint-text {
+      font-size: 0.8rem;
+      color: #aaa;
     }
   </style>
 </head>
 <body>
 
   <div class="app-container">
-    <h1>Tattoo Stencil Generator</h1>
-    <p class="subtitle">Transforme suas fotos em decalques para tatuagem</p>
+    <h1>Tattoo Stencil Pro</h1>
+    <p class="subtitle">Decalque profissional com contorno limpo e pontilhismo de sombra</p>
 
     <div class="upload-box" onclick="document.getElementById('fileInput').click()">
-      <span id="uploadText">📁 Clique ou arraste uma foto aqui</span>
+      <span id="uploadText">📷 Toque aqui para escolher uma foto</span>
       <input type="file" id="fileInput" accept="image/*">
     </div>
 
+    <!-- COMPARADOR ANTES / DEPOIS COM SLIDER INTERATIVO -->
+    <div class="comparison-wrapper" id="comparisonWrapper">
+      <span class="badge badge-left">Original</span>
+      <span class="badge badge-right">Decalque</span>
+
+      <div class="comparison-container" id="comparisonContainer">
+        <!-- Camada Decalque (Fundo) -->
+        <canvas id="stencilCanvas"></canvas>
+
+        <!-- Camada Original (Recortada no topo) -->
+        <div class="before-layer" id="beforeLayer">
+          <img id="originalImage" alt="Original">
+        </div>
+
+        <!-- Alça do Slider -->
+        <div class="slider-handle" id="sliderHandle">
+          <div class="slider-circle">↔</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTROLES DO ESTÊNCIL -->
     <div class="controls">
       <div class="control-group">
         <div class="control-header">
-          <label for="threshold">Sensibilidade das Linhas</label>
-          <span id="thresholdVal">40</span>
+          <label for="threshold">Nitidez dos Contornos</label>
+          <span id="thresholdVal">97</span>
         </div>
-        <input type="range" id="threshold" min="5" max="150" value="40">
+        <input type="range" id="threshold" min="85" max="115" value="97" step="0.5">
       </div>
 
       <div class="control-group">
@@ -159,27 +306,62 @@
           <label for="thickness">Espessura do Traço</label>
           <span id="thicknessVal">1.5</span>
         </div>
-        <input type="range" id="thickness" min="0.5" max="3" step="0.1" value="1.5">
+        <input type="range" id="thickness" min="0.5" max="4" value="1.5" step="0.5">
+      </div>
+
+      <div class="control-group">
+        <div class="control-header">
+          <label for="stippling">Sombra em Pontilhismo</label>
+          <span id="stipplingVal">60%</span>
+        </div>
+        <input type="range" id="stippling" min="0" max="100" value="60" step="5">
+      </div>
+
+      <div class="row-group">
+        <div style="flex: 1; min-width: 160px;">
+          <label style="font-size: 0.85rem; color: #ccc; display: block; margin-bottom: 4px;">Cor do Tinta / Hectográfico</label>
+          <select id="colorSelect">
+            <option value="purple">Roxo Hectográfico (Anubis/Palhaço)</option>
+            <option value="red">Vermelho Stencil</option>
+            <option value="black">Preto Clássico</option>
+          </select>
+        </div>
       </div>
     </div>
 
-    <div class="canvas-wrapper">
-      <canvas id="stencilCanvas"></canvas>
-    </div>
+    <button id="saveBtn" class="btn" disabled>
+      <span>📸</span> Salvar Decalque na Galeria
+    </button>
 
-    <button id="downloadBtn" class="btn" disabled>Baixar Decalque (PNG)</button>
+    <div class="preview-container" id="previewContainer">
+      <p class="hint-text">💡 <b>Dica no Celular:</b> Se preferir, **pressione e segure** na imagem abaixo para selecionar <b>"Adicionar às Fotos"</b>.</p>
+      <img id="outputImage" alt="Decalque de Tatuagem">
+    </div>
   </div>
 
   <script>
     const fileInput = document.getElementById('fileInput');
     const canvas = document.getElementById('stencilCanvas');
     const ctx = canvas.getContext('2d');
+    const originalImage = document.getElementById('originalImage');
+    const comparisonWrapper = document.getElementById('comparisonWrapper');
+    const comparisonContainer = document.getElementById('comparisonContainer');
+    const beforeLayer = document.getElementById('beforeLayer');
+    const sliderHandle = document.getElementById('sliderHandle');
+
     const thresholdInput = document.getElementById('threshold');
     const thicknessInput = document.getElementById('thickness');
-    const downloadBtn = document.getElementById('downloadBtn');
+    const stipplingInput = document.getElementById('stippling');
+    const colorSelect = document.getElementById('colorSelect');
+    
+    const saveBtn = document.getElementById('saveBtn');
+    const outputImage = document.getElementById('outputImage');
+    const previewContainer = document.getElementById('previewContainer');
 
-    let currentImage = null;
+    let currentImgObject = null;
+    let isDragging = false;
 
+    // 1. CARREGAR IMAGEM
     fileInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -190,72 +372,169 @@
       reader.onload = (event) => {
         const img = new Image();
         img.onload = () => {
-          currentImage = img;
+          currentImgObject = img;
           canvas.width = img.width;
           canvas.height = img.height;
+          originalImage.src = event.target.result;
+          
+          comparisonWrapper.style.display = 'block';
           processStencil();
-          downloadBtn.disabled = false;
+          saveBtn.disabled = false;
         };
         img.src = event.target.result;
       };
       reader.readAsDataURL(file);
     });
 
+    // 2. SLIDER DE COMPARAÇÃO (SWIPE COM O DEDO)
+    function setSliderPosition(clientX) {
+      const rect = comparisonContainer.getBoundingClientRect();
+      let x = clientX - rect.left;
+      if (x < 0) x = 0;
+      if (x > rect.width) x = rect.width;
+      
+      const percent = (x / rect.width) * 100;
+      beforeLayer.style.width = percent + '%';
+      sliderHandle.style.left = percent + '%';
+    }
+
+    comparisonContainer.addEventListener('mousedown', (e) => { isDragging = true; setSliderPosition(e.clientX); });
+    window.addEventListener('mousemove', (e) => { if (isDragging) setSliderPosition(e.clientX); });
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    comparisonContainer.addEventListener('touchstart', (e) => { isDragging = true; setSliderPosition(e.touches[0].clientX); }, { passive: true });
+    window.addEventListener('touchmove', (e) => { if (isDragging) setSliderPosition(e.touches[0].clientX); }, { passive: true });
+    window.addEventListener('touchend', () => { isDragging = false; });
+
+    // 3. FILTRO DE BLUR RÁPIDO PARA ALGORITMO DOG (Difference of Gaussians)
+    function boxBlur1D(src, dst, w, h, r, horizontal) {
+      const scale = 1 / (2 * r + 1);
+      if (horizontal) {
+        for (let y = 0; y < h; y++) {
+          let sum = 0;
+          const row = y * w;
+          for (let x = -r; x < w + r; x++) {
+            const px = Math.min(Math.max(x, 0), w - 1);
+            sum += src[row + px];
+            if (x >= r) {
+              const rem = Math.min(Math.max(x - 2 * r - 1, 0), w - 1);
+              if (x >= 2 * r + 1) sum -= src[row + rem];
+              dst[row + (x - r)] = sum * scale;
+            }
+          }
+        }
+      } else {
+        for (let x = 0; x < w; x++) {
+          let sum = 0;
+          for (let y = -r; y < h + r; y++) {
+            const py = Math.min(Math.max(y, 0), h - 1);
+            sum += src[py * w + x];
+            if (y >= r) {
+              const rem = Math.min(Math.max(y - 2 * r - 1, 0), h - 1);
+              if (y >= 2 * r + 1) sum -= src[rem * w + x];
+              dst[(y - r) * w + x] = sum * scale;
+            }
+          }
+        }
+      }
+    }
+
+    function fastBlur(src, w, h, r) {
+      if (r <= 0) return new Float32Array(src);
+      const tmp = new Float32Array(w * h);
+      const dst = new Float32Array(w * h);
+      boxBlur1D(src, tmp, w, h, r, true);
+      boxBlur1D(tmp, dst, w, h, r, false);
+      return dst;
+    }
+
+    // 4. MOTOR PRINCIPAL DE PROCESSAMENTO DO DECALQUE
     function processStencil() {
-      if (!currentImage) return;
+      if (!currentImgObject) return;
 
       const w = canvas.width;
       const h = canvas.height;
 
-      // Desenha imagem original
-      ctx.drawImage(currentImage, 0, 0, w, h);
+      ctx.drawImage(currentImgObject, 0, 0, w, h);
       const imgData = ctx.getImageData(0, 0, w, h);
       const src = imgData.data;
 
-      // 1. Converte para Grayscale
-      const gray = new Uint8ClampedArray(w * h);
+      // Converte para escala de cinza
+      const gray = new Float32Array(w * h);
       for (let i = 0; i < src.length; i += 4) {
         gray[i / 4] = 0.299 * src[i] + 0.587 * src[i + 1] + 0.114 * src[i + 2];
       }
 
-      // 2. Filtro Sobel para detecção de bordas/linhas
+      const thickness = parseFloat(thicknessInput.value);
+      const threshold = parseFloat(thresholdInput.value) / 100;
+      const stipplingPower = parseFloat(stipplingInput.value) / 100;
+      const colorVal = colorSelect.value;
+
+      // Definição da cor da tinta (Hectográfico, Vermelho ou Preto)
+      let rInk = 0, gInk = 0, bInk = 0;
+      if (colorVal === 'purple') { rInk = 35; gInk = 25; bInk = 135; }      // Roxo/Azul Hectográfico
+      else if (colorVal === 'red') { rInk = 210; gInk = 30; bInk = 40; }    // Vermelho Stencil
+      else { rInk = 0; gInk = 0; bInk = 0; }                               // Preto Clássico
+
+      // Algoritmo XDoG para extração de contornos
+      const blur1 = fastBlur(gray, w, h, Math.max(1, Math.round(thickness)));
+      const blur2 = fastBlur(gray, w, h, Math.max(2, Math.round(thickness * 3)));
+
       const output = ctx.createImageData(w, h);
       const dst = output.data;
 
-      const threshold = parseFloat(thresholdInput.value);
-      const thickness = parseFloat(thicknessInput.value);
+      // Matriz Bayer 4x4 para gerar o Pontilhismo (Stippling) limpo
+      const bayer = [
+        [0, 8, 2, 10],
+        [12, 4, 14, 6],
+        [3, 11, 1, 9],
+        [15, 7, 13, 5]
+      ];
 
-      for (let y = 1; y < h - 1; y++) {
-        for (let x = 1; x < w - 1; x++) {
-          const idx = y * w + x;
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const i = y * w + x;
+          const pixelIdx = i * 4;
 
-          // Matriz Sobel Horizontal & Vertical
-          const gx = 
-            -gray[idx - w - 1] + gray[idx - w + 1]
-            -2 * gray[idx - 1] + 2 * gray[idx + 1]
-            -gray[idx + w - 1] + gray[idx + w + 1];
+          const g1 = blur1[i];
+          const g2 = blur2[i];
 
-          const gy = 
-            -gray[idx - w - 1] - 2 * gray[idx - w] - gray[idx - w + 1]
-            +gray[idx + w - 1] + 2 * gray[idx + w] + gray[idx + w + 1];
+          let ratio = g2 === 0 ? 1 : g1 / g2;
+          let xdog = (1 + 12.0) * ratio - 12.0;
 
-          const edge = Math.sqrt(gx * gx + gy * gy) * thickness;
+          const isContour = xdog < threshold;
 
-          const pixelIdx = idx * 4;
-          // Se for borda > limite (threshold), pinta de preto (0), senão branco (255)
-          const color = edge > threshold ? 0 : 255;
+          // Cálculo do Pontilhismo de Sombra
+          const shadowDepth = 255 - gray[i]; // Quanto mais escuro, maior a sombra
+          const bayerValue = (bayer[y % 4][x % 4] / 16) * 255;
+          const isStippledShadow = (stipplingPower > 0) && 
+                                   (shadowDepth > 50) && 
+                                   ((shadowDepth * stipplingPower * 1.8) > bayerValue);
 
-          dst[pixelIdx] = color;     // R
-          dst[pixelIdx + 1] = color; // G
-          dst[pixelIdx + 2] = color; // B
-          dst[pixelIdx + 3] = 255;   // Alpha
+          if (isContour || isStippledShadow) {
+            dst[pixelIdx] = rInk;
+            dst[pixelIdx + 1] = gInk;
+            dst[pixelIdx + 2] = bInk;
+            dst[pixelIdx + 3] = 255; // Opaco
+          } else {
+            // Fundo Branco Limpo
+            dst[pixelIdx] = 255;
+            dst[pixelIdx + 1] = 255;
+            dst[pixelIdx + 2] = 255;
+            dst[pixelIdx + 3] = 255;
+          }
         }
       }
 
       ctx.putImageData(output, 0, 0);
+
+      // Atualiza imagem de toque longo
+      const dataUrl = canvas.toDataURL('image/png');
+      outputImage.src = dataUrl;
+      previewContainer.style.display = 'block';
     }
 
-    // Controles interativos
+    // 5. EVENTOS DOS CONTROLES DA INTERFACE
     thresholdInput.addEventListener('input', (e) => {
       document.getElementById('thresholdVal').innerText = e.target.value;
       processStencil();
@@ -266,12 +545,37 @@
       processStencil();
     });
 
-    // Download do decalque gerado
-    downloadBtn.addEventListener('click', () => {
-      const link = document.createElement('a');
-      link.download = 'decalque-tatuagem.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
+    stipplingInput.addEventListener('input', (e) => {
+      document.getElementById('stipplingVal').innerText = e.target.value + '%';
+      processStencil();
+    });
+
+    colorSelect.addEventListener('change', processStencil);
+
+    // 6. BOTÃO DE SALVAR NA GALERIA
+    saveBtn.addEventListener('click', async () => {
+      try {
+        canvas.toBlob(async (blob) => {
+          if (!blob) return;
+
+          const file = new File([blob], 'decalque-tatuagem.png', { type: 'image/png' });
+
+          if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: 'Decalque Tatuagem',
+              text: 'Decalque profissional gerado pelo Tattoo Stencil Pro'
+            });
+          } else {
+            const a = document.createElement('a');
+            a.download = 'decalque-tatuagem.png';
+            a.href = canvas.toDataURL('image/png');
+            a.click();
+          }
+        }, 'image/png');
+      } catch (err) {
+        console.error("Erro ao salvar:", err);
+      }
     });
   </script>
 </body>
