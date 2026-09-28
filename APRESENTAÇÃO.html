@@ -93,9 +93,9 @@ const SLIDES=[
 {t:'rows',h:'Três perfis de acesso',items:['Coordenador|Cuida de toda a parte administrativa.','Professor|Controla a chamada e o histórico das suas turmas.','Aluno|Confirma a própria presença com validações de segurança.','Rotas protegidas|Cada perfil só enxerga o que é dele.']},
 {t:'rows',h:'Coordenador',items:['Cursos e disciplinas|Cadastro completo, com edição e exclusão.','Professores e alunos|O aluno tem foto cadastral.','Turmas|Ligam disciplina, professor e horário.','Matrículas|Colocam cada aluno na sua turma.']},
 {t:'rows',h:'Professor',items:['Turmas atribuídas|Vê só as turmas que são dele.','Ciclo da chamada|Abre, acompanha e encerra.','Histórico de presenças|Pode ajustar um registro.','Justificativa de faltas|Toda alteração fica registrada.']},
-{t:'rows',h:'Aluno',items:['Lê o QR ou digita o código|O código tem 6 caracteres.','Confirma o local|GPS dentro do raio permitido.','Confirma o rosto|Captura pela câmera do dispositivo.','Recebe o resultado|Presença registrada ou recusada.']},
-{t:'steps',h:'Como funciona a chamada',items:['Professor abre a chamada|O sistema gera o primeiro token.','Telão mostra o QR|O código troca com o tempo.','Aluno valida|Token, local e rosto.','Painel atualiza|Presença aparece ao vivo.']},
-{t:'qr',h:'Token rotativo',p:'Estilo TOTP: o QR Code e o código de 6 caracteres têm validade curta e são renovados. Uma foto do QR compartilhada com quem está fora da sala perde o valor.'},
+{t:'rows',h:'Aluno',items:['Lê o QR Code|Abre a confirmação da aula.','Informa RA e e-mail|Confere se é aluno da turma.','Confirma o rosto|Captura pela câmera do dispositivo.','Autoriza o GPS|Precisa estar a até 100 m da aula.','Digita o código do telão|Último passo, fecha a presença.']},
+{t:'steps',h:'Como funciona a chamada',items:['Professor abre a chamada|O telão passa a exibir o código em loop.','Aluno lê o QR|E informa RA e e-mail.','Rosto e GPS|Câmera confirma o rosto, GPS confere até 100 m.','Digita o código do telão|Último passo antes de fechar.','Painel atualiza|Presença aparece ao vivo.']},
+{t:'qr',h:'Token rotativo',p:'Estilo TOTP: no telão fica um código de 6 caracteres que muda em loop. É o último passo do aluno, digitado depois do rosto e do GPS, e uma foto do telão compartilhada com quem está fora da sala perde o valor rápido.'},
 {t:'code',h:'Código: token rotativo',p:'O código muda a cada 30 segundos. Quem tem o segredo da chamada calcula o mesmo código no mesmo instante.',w:'js/utils/codigo-rotativo.js e o QR Code do professor',tabs:[{n:'codigo-rotativo.js',c:`// gera o código de 6 caracteres da janela atual
 function gerarCodigo(segredo, agora = Date.now()) {
   const janela = Math.floor(agora / 30000); // muda a cada 30 s
@@ -133,11 +133,13 @@ function distancia(lat1, lng1, lat2, lng2) {
 video.srcObject = stream;            // mostra a câmera ao vivo`},{n:'foto',c:`// congela um quadro e converte em imagem
 canvas.getContext('2d').drawImage(video, 0, 0);
 const foto = canvas.toDataURL('image/jpeg', 0.7);`}]},
-{t:'code',h:'Código: confirmar presença',p:'O aluno passa por quatro etapas em ordem. Se qualquer uma falhar, a presença não é gravada.',w:'js/aluno/confirmar-presenca.js, que chama os outros módulos',tabs:[{n:'confirmar-presenca.js',c:`async function confirmar(codigo) {
-  await validarCodigo(codigo);        // 1. token da chamada
-  const pos  = await obterPosicao();  // 2. GPS
-  const foto = await capturarRosto(); // 3. câmera
-  await registrarPresenca({ codigo, pos, foto }); // 4. banco
+{t:'code',h:'Código: confirmar presença',p:'O aluno passa por cinco etapas em ordem. Se qualquer uma falhar, a presença não é gravada.',w:'js/aluno/confirmar-presenca.js, que chama os outros módulos',tabs:[{n:'confirmar-presenca.js',c:`async function confirmar() {
+  await lerQrCode();                     // 1. abre a confirmação da aula
+  const aluno = await identificar(ra, email); // 2. RA e e-mail
+  const foto  = await capturarRosto();   // 3. câmera (face-id)
+  const pos   = await obterPosicao();    // 4. GPS, até 100 m da aula
+  const codigo = await lerCodigoDigitado();   // 5. código do telão
+  await registrarPresenca({ aluno, foto, pos, codigo });
 }`}]},
 {t:'code',h:'Código: painel em tempo real',p:'O painel do professor assina os novos registros da tabela. Quando o aluno confirma, o banco avisa e a lista atualiza.',w:'tabela presencas do Supabase (Realtime)',tabs:[{n:'chamada.js',c:`cliente
   .channel('presencas')
