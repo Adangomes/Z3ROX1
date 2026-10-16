@@ -56,7 +56,7 @@ h2+.lead{margin-top:0;color:var(--fg)}
 .qr u.z{opacity:0}
 .qr b{position:absolute;left:0;right:0;height:5px;background:var(--y);box-shadow:0 0 18px 4px var(--y);animation:scan 2.4s ease-in-out infinite alternate}
 @keyframes scan{from{top:0}to{top:calc(100% - 5px)}}
-.conn{margin:.2rem 0 1rem;font-weight:700;color:var(--c);font-size:clamp(.95rem,2vw,1.2rem)}
+.conn{margin:.2rem 0 1rem;font-weight:700;color:var(--c);font-size:clamp(.95rem,2.1vw,1.2rem)}
 .slide.code h2{font-size:clamp(1.6rem,4.6vw,3rem);margin-bottom:.7rem}
 .slide.code .lead{font-size:clamp(.95rem,2.1vw,1.25rem);margin:0 0 .5rem}
 .tabs{display:flex;gap:.3rem;flex-wrap:wrap}
@@ -210,34 +210,60 @@ git push origin main   # o GitHub Pages publica sozinho`}]},
 {t:'rows',h:'A importância de cada linguagem',items:['HTML|Monta a estrutura das telas: formulários, tabelas, botões e o telão.','CSS|Deixa o sistema legível e responsivo, no celular do aluno e no projetor.','JavaScript|É a lógica: token, GPS, câmera, login e conversa com o banco.','SQL|Cria as tabelas, liga os dados e define as regras de segurança.']},
 {t:'rows',h:'A importância de cada ferramenta',items:['Supabase|Entrega banco, login e tempo real sem servidor próprio.','supabase-js|Deixa o código falar com o banco de forma simples.','GitHub Pages|Publica de graça e a cada push.','Git|Guarda a história do projeto e permite trabalhar em dupla.']},
 {t:'text',h:'Demonstração',p:'Hora de abrir o sistema: o professor inicia a chamada, projeta o telão, o aluno confirma e a presença aparece ao vivo.'},
-{t:'rows',h:'Próximos passos',items:['Reconhecimento facial real|Trocar a simulação por um motor de verdade.','Relatórios completos|Filtros por período e turma.','Avisos de faltas|Alertas para alunos e professores.','Testes automatizados|A camada db.js já ajuda nisso.']},
+{t:'rows',h:'Próximos passos',items:['Reconhecimento facial real|Tooth simulation por motor de verdade.','Relatórios completos|Filtros por período e turma.','Avisos de faltas|Alertas para alunos e professores.','Testes automatizados|A camada db.js já ajuda nisso.']},
 {t:'end',h:'Obrigado!',p:'Perguntas?',s:'Adalberto e Diego, Análise e Desenvolvimento de Sistemas'}
 ];
 
-/* ============ MOTOR DE ÁUDIO PROFISSIONAL ============ */
-let currentAudio = null;
+/* ============ MOTOR DE VOZ NATIVA OTIMIZADA ============ */
+const synth = window.speechSynthesis;
 
-function tocarAudioSlide(indice) {
-    if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
+function buscarVozMasculinaNatural() {
+    const voces = synth.getVoices();
+    // Prioriza vozes da Microsoft (Edge) ou Google de alta qualidade em PT-BR
+    return voces.find(v => v.lang.includes('pt') && (
+        v.name.includes('Antonio') || 
+        v.name.includes('Daniel') || 
+        v.name.includes('Felipe') ||
+        v.name.includes('Luciano') ||
+        v.name.includes('Microsoft Antônio') ||
+        v.name.includes('Natural')
+    )) || voces.find(v => v.lang.includes('pt-BR')) || voces[0];
+}
+
+function falarSlideAtual() {
+    synth.cancel(); // Para qualquer fala anterior
+    const s = SLIDES[n];
+    if (!s) return;
+    
+    // Monta o texto de forma limpa para leitura
+    let texto = s.h + ". ";
+    if (s.p) texto += s.p + ". ";
+    if (s.s) texto += s.s + ". ";
+    if (s.items) {
+        s.items.forEach(item => {
+            let partes = item.split('|');
+            texto += partes[0] + (partes[1] ? ", " + partes[1] : "") + ". ";
+        });
     }
 
-    // Toca o MP3 da pasta audios/ correspondente ao slide atual (ex: audios/slide1.mp3)
-    currentAudio = new Audio(`audios/slide${indice + 1}.mp3`);
+    const utterance = new SpeechSynthesisUtterance(texto);
+    utterance.lang = 'pt-BR';
     
-    // Se o slide avançar no modo automático, passa para o próximo quando o áudio terminar
-    currentAudio.onended = () => {
-        if (timer) {
-            next();
-        }
-    };
+    // Ajuste de velocidade mais natural (0.90) e tom ligeiramente mais grave
+    utterance.rate = 0.90;
+    utterance.pitch = 0.88;
 
-    currentAudio.play().catch(e => {
-        console.log("Clique na tela para liberar o áudio do navegador.");
-    });
+    const voz = buscarVozMasculinaNatural();
+    if (voz) utterance.voice = voz;
+
+    synth.speak(utterance);
 }
-/* ==================================================== */
+
+// Garante que as vozes carreguem assincronamente no navegador
+if (synth.onvoiceschanged !== undefined) {
+    synth.onvoiceschanged = () => synth.getVoices();
+}
+/* ====================================================== */
 
 const $=s=>document.querySelector(s),deck=$('#deck'),RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const E=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
@@ -286,25 +312,26 @@ else if(a)a.classList.remove('leaving');
 kick=d*7;n=to;count(b);
 $('#cnt').textContent=`${n+1} / ${SLIDES.length}`;$('#prog').style.transform=`scaleX(${(n+1)/SLIDES.length})`;history.replaceState(null,'','#'+(n+1));
 
-// Toca o áudio MP3 profissional do slide
+// Dispara a voz nativa automática ao trocar de slide
 if (!first) {
-    tocarAudioSlide(to);
+    setTimeout(falarSlideAtual, 300);
 }
 }
 
 const next=()=>go(n+1),prev=()=>go(n-1);
 $('#nx').onclick=next;$('#pv').onclick=prev;
 
+// Botão de Play Automático (passa de slide a cada 8 segundos)
 $('#pl').onclick=()=>{
     if(timer){
         clearInterval(timer);
         timer=null;
         $('#pl').textContent='⏵';
-        if(currentAudio) currentAudio.pause();
+        synth.cancel();
     }else{
-        timer=true;
+        timer=setInterval(()=>n>=SLIDES.length-1?go(0):next(),8000);
         $('#pl').textContent='⏸';
-        tocarAudioSlide(n);
+        falarSlideAtual();
     }
 };
 
