@@ -80,11 +80,7 @@ h2+.lead{margin-top:0;color:var(--fg)}
 <button id="pv" aria-label="Anterior">◀</button><button id="nx" aria-label="Próximo">▶</button>
 <button id="pl" aria-label="Reprodução automática">⏵</button><button id="th" aria-label="Tema">◐</button><button id="fs" aria-label="Tela cheia">⛶</button></div>
 <script>
-/* ============ EDITE AQUI ============
-   Cada objeto é uma tela. Tipos: cover, text, rows, steps, chips, stats, qr, end
-   h = título · p = texto · s = linha extra · items = lista
-   rows/steps: "Título|Descrição"   chips: "Texto"   stats: "número|sufixo|legenda"
-   fx (opcional, 0 a 5) = efeito de transição da tela. */
+/* ============ EDITE AQUI ============ */
 const SLIDES=[
 {t:'cover',h:'UniChamada',p:'Presença por QR Code rotativo, GPS e câmera, com dados em tempo real.',s:'Adalberto e Diego, Análise e Desenvolvimento de Sistemas'},
 {t:'rows',h:'Quem fez',items:['Adalberto|Curso de Análise e Desenvolvimento de Sistemas.','Diego|Curso de Análise e Desenvolvimento de Sistemas.','Projeto|Sistema de Gestão Acadêmica e Frequência Inteligente.','Código aberto|github.com/Adangomes/UNICHAMADA']},
@@ -212,12 +208,61 @@ git push origin main   # o GitHub Pages publica sozinho`}]},
 {t:'text',h:'Do localStorage ao Supabase',p:'O projeto começou simulando tabelas relacionais no localStorage. Hoje roda em banco Supabase de verdade, com dados persistentes e presença em tempo real.'},
 {t:'rows',h:'Contra fraude',items:['Token com validade|Não adianta repassar o QR.','GPS|O aluno precisa estar no local.','Biometria facial|Confirma quem está na chamada.','Auditoria|Ajustes ficam registrados com justificativa.']},
 {t:'stats',h:'Em números',items:['3||perfis de acesso','6||módulos de gestão do coordenador','93||commits no repositório','0||frameworks no front-end']},
-{t:'rows',h:'A importância de cada linguagem',items:['HTML|Monta a estrutura das telas: formulários, tabelas, botões e o telão.','CSS|Deixa o sistema legível e responsivo, no celular do aluno e no projetor.','JavaScript|É a lógica: token, GPS, câmera, login e conversa com o banco.','SQL|Cria as tabelas, liga os dados e define as regras de segurança.']},
+{t:'rows',h:'A importância de cada linguagem',items:['HTML|Monta a estrutura das telas: formulários, tabelas, botões e o telão.','CSS|Deixa o sistema legível e responsivo, no celular do aluno e no projetor.','JavaScript|É a lógica: token, GPS, câmera, login e conversa com o banco.','SQL|Cria as tables, liga os dados e define as regras de segurança.']},
 {t:'rows',h:'A importância de cada ferramenta',items:['Supabase|Entrega banco, login e tempo real sem servidor próprio.','supabase-js|Deixa o código falar com o banco de forma simples.','GitHub Pages|Publica de graça e a cada push.','Git|Guarda a história do projeto e permite trabalhar em dupla.']},
 {t:'text',h:'Demonstração',p:'Hora de abrir o sistema: o professor inicia a chamada, projeta o telão, o aluno confirma e a presença aparece ao vivo.'},
 {t:'rows',h:'Próximos passos',items:['Reconhecimento facial real|Trocar a simulação por um motor de verdade.','Relatórios completos|Filtros por período e turma.','Avisos de faltas|Alertas para alunos e professores.','Testes automatizados|A camada db.js já ajuda nisso.']},
 {t:'end',h:'Obrigado!',p:'Perguntas?',s:'Adalberto e Diego, Análise e Desenvolvimento de Sistemas'}
 ];
+
+/* ============ VOZ AUTOMÁTICA (MASCULINA, PAUSADA E CALMA) ============ */
+const synth = window.speechSynthesis;
+
+function buscarVozMasculina() {
+    const voces = synth.getVoices();
+    return voces.find(v => v.lang.includes('pt') && (
+        v.name.includes('Antonio') || 
+        v.name.includes('Daniel') || 
+        v.name.includes('Google português do Brasil') || 
+        v.name.includes('Online (Natural)') ||
+        v.name.toLowerCase().includes('male')
+    )) || voces.find(v => v.lang.includes('pt-BR')) || voces[0];
+}
+
+function falarSlideAtual() {
+    synth.cancel(); // Para falas anteriores
+    const s = SLIDES[n];
+    if (!s) return;
+    
+    // Reticências (...) forçam pausas naturais humanas entre os trechos
+    let texto = s.h + "... ";
+    if (s.p) texto += s.p + "... ";
+    if (s.s) texto += s.s + "... ";
+    if (s.items) {
+        s.items.forEach(item => {
+            let partes = item.split('|');
+            texto += partes[0] + (partes[1] ? ": " + partes[1] : "") + "... ";
+        });
+    }
+
+    const utterance = new SpeechSynthesisUtterance(texto);
+    utterance.lang = 'pt-BR';
+    
+    // Ritmo bem cadenciado e tom de voz mais grave
+    utterance.rate = 0.80;  
+    utterance.pitch = 0.82; 
+
+    const voz = buscarVozMasculina();
+    if (voz) utterance.voice = voz;
+
+    synth.speak(utterance);
+}
+
+if (synth.onvoiceschanged !== undefined) {
+    synth.onvoiceschanged = () => synth.getVoices();
+}
+/* ======================================================================= */
+
 /* ============ MOTOR (não precisa mexer) ============ */
 const $=s=>document.querySelector(s),deck=$('#deck'),RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const E=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
@@ -254,6 +299,7 @@ d=>({i:[{clipPath:'circle(0% at 50% 50%)'},{clipPath:'circle(80% at 50% 50%)'}],
 let n=-1,busy=false,kick=0,timer=null;
 function count(el){el.querySelectorAll('[data-n]').forEach(c=>{const t=+c.dataset.n,s=c.dataset.s,t0=performance.now();
 const f=now=>{const p=Math.min(1,(now-t0)/1400);c.textContent=Math.round(t*(1-Math.pow(1-p,3)))+s;if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f)})}
+
 function go(to,first){to=Math.max(0,Math.min(SLIDES.length-1,to));if(to===n||busy)return;
 const d=to>n?1:-1,b=els[to],a=els[n];busy=true;setTimeout(()=>busy=false,first?0:600);
 b.classList.add('on');
@@ -263,10 +309,20 @@ if(!first&&!RM){const f=FX[(SLIDES[to].fx??to)%FX.length](d);
  if(a){const an=a.animate(f.o,{duration:600,easing:'ease-in',fill:'forwards'});an.onfinish=()=>{an.cancel();a.classList.remove('leaving')}}}
 else if(a)a.classList.remove('leaving');
 kick=d*7;n=to;count(b);
-$('#cnt').textContent=`${n+1} / ${SLIDES.length}`;$('#prog').style.transform=`scaleX(${(n+1)/SLIDES.length})`;history.replaceState(null,'','#'+(n+1))}
+$('#cnt').textContent=`${n+1} / ${SLIDES.length}`;$('#prog').style.transform=`scaleX(${(n+1)/SLIDES.length})`;history.replaceState(null,'','#'+(n+1));
+
+// <--- GATILHO DA VOZ ADICIONADO AQUI NA MUDANÇA DE SLIDE --->
+if (!first) {
+    setTimeout(falarSlideAtual, 350);
+}
+}
+
 const next=()=>go(n+1),prev=()=>go(n-1);
 $('#nx').onclick=next;$('#pv').onclick=prev;
-$('#pl').onclick=()=>{if(timer){clearInterval(timer);timer=null;$('#pl').textContent='⏵'}else{timer=setInterval(()=>n>=SLIDES.length-1?go(0):next(),6500);$('#pl').textContent='⏸'}};
+
+// Botão Play Automático ajustado para 8.5 segundos por slide (dá tempo da voz calma ler)
+$('#pl').onclick=()=>{if(timer){clearInterval(timer);timer=null;$('#pl').textContent='⏵';synth.cancel();}else{timer=setInterval(()=>n>=SLIDES.length-1?go(0):next(),8500);$('#pl').textContent='⏸';falarSlideAtual();}};
+
 $('#th').onclick=()=>{const r=document.documentElement,dark=getComputedStyle(r).getPropertyValue('--bg').trim()==='#0c1250';r.dataset.theme=dark?'light':'dark';cols()};
 $('#fs').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.();
 addEventListener('keydown',e=>{const k=e.key;if(['ArrowRight','ArrowDown','PageDown',' '].includes(k)){e.preventDefault();next()}else if(['ArrowLeft','ArrowUp','PageUp'].includes(k))prev();else if(k==='Home')go(0);else if(k==='End')go(SLIDES.length-1);else if(k==='f')$('#fs').click()});
@@ -293,55 +349,6 @@ if(!RM)requestAnimationFrame(draw)}
 addEventListener('resize',()=>{rs();if(RM)draw()});matchMedia('(prefers-color-scheme: dark)').addEventListener('change',cols);
 cols();rs();draw();
 go(Math.max(0,(parseInt(location.hash.slice(1))||1)-1),true);
-   /* ============ VOZ AUTOMÁTICA (RITMO MAIS NATURAL E PAUSADO) ============ */
-const synth = window.speechSynthesis;
-
-function buscarVozMasculina() {
-    const voces = synth.getVoices();
-    return voces.find(v => v.lang.includes('pt') && (
-        v.name.includes('Antonio') || 
-        v.name.includes('Daniel') || 
-        v.name.includes('Google português do Brasil') || 
-        v.name.includes('Online (Natural)') ||
-        v.name.toLowerCase().includes('male')
-    )) || voces.find(v => v.lang.includes('pt-BR')) || voces[0];
-}
-
-function falarSlideAtual() {
-    synth.cancel(); // Para leituras anteriores
-    const s = SLIDES[n];
-    if (!s) return;
-    
-    // Pontuações extras (...) forçam o navegador a fazer pausas humanas reais
-    let texto = s.h + "... ";
-    if (s.p) texto += s.p + "... ";
-    if (s.s) texto += s.s + "... ";
-    if (s.items) {
-        s.items.forEach(item => {
-            let partes = item.split('|');
-            texto += partes[0] + (partes[1] ? ": " + partes[1] : "") + "... ";
-        });
-    }
-
-    const utterance = new SpeechSynthesisUtterance(texto);
-    utterance.lang = 'pt-BR';
-    
-    // Ajustes de ritmo e tom:
-    utterance.rate = 0.82;  // <--- Fala mais pausada e calma (padrão é 1.0)
-    utterance.pitch = 0.85; // <--- Tom masculino levemente mais grave
-
-    const voz = buscarVozMasculina();
-    if (voz) utterance.voice = voz;
-
-    synth.speak(utterance);
-}
-
-if (synth.onvoiceschanged !== undefined) {
-    synth.onvoiceschanged = () => synth.getVoices();
-}
-/* ======================================================================= */
-
-
 </script>
 </body>
 </html>
