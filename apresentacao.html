@@ -293,9 +293,7 @@ if(!RM)requestAnimationFrame(draw)}
 addEventListener('resize',()=>{rs();if(RM)draw()});matchMedia('(prefers-color-scheme: dark)').addEventListener('change',cols);
 cols();rs();draw();
 go(Math.max(0,(parseInt(location.hash.slice(1))||1)-1),true);
-
-</body>
-</html>// Adiciona voz automática ao mudar de slide
+   // Adiciona voz automática ao mudar de slide
 let synth = window.speechSynthesis;
 function falarTextoAtual() {
     synth.cancel(); // Para qualquer fala anterior
@@ -322,4 +320,7 @@ go = function(to, first) {
     originalGo(to, first);
     setTimeout(falarTextoAtual, 400); // Aguarda a transição do slide
 };
+
 </script>
+</body>
+</html>
