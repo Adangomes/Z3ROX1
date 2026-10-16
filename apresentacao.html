@@ -293,33 +293,54 @@ if(!RM)requestAnimationFrame(draw)}
 addEventListener('resize',()=>{rs();if(RM)draw()});matchMedia('(prefers-color-scheme: dark)').addEventListener('change',cols);
 cols();rs();draw();
 go(Math.max(0,(parseInt(location.hash.slice(1))||1)-1),true);
-   // Adiciona voz automática ao mudar de slide
-let synth = window.speechSynthesis;
-function falarTextoAtual() {
-    synth.cancel(); // Para qualquer fala anterior
-    const slideAtual = SLIDES[n];
-    if (!slideAtual) return;
+   /* ============ VOZ AUTOMÁTICA (RITMO MAIS NATURAL E PAUSADO) ============ */
+const synth = window.speechSynthesis;
+
+function buscarVozMasculina() {
+    const voces = synth.getVoices();
+    return voces.find(v => v.lang.includes('pt') && (
+        v.name.includes('Antonio') || 
+        v.name.includes('Daniel') || 
+        v.name.includes('Google português do Brasil') || 
+        v.name.includes('Online (Natural)') ||
+        v.name.toLowerCase().includes('male')
+    )) || voces.find(v => v.lang.includes('pt-BR')) || voces[0];
+}
+
+function falarSlideAtual() {
+    synth.cancel(); // Para leituras anteriores
+    const s = SLIDES[n];
+    if (!s) return;
     
-    let texto = slideAtual.h + ". " + (slideAtual.p || "");
-    if (slideAtual.items) {
-        slideAtual.items.forEach(item => {
+    // Pontuações extras (...) forçam o navegador a fazer pausas humanas reais
+    let texto = s.h + "... ";
+    if (s.p) texto += s.p + "... ";
+    if (s.s) texto += s.s + "... ";
+    if (s.items) {
+        s.items.forEach(item => {
             let partes = item.split('|');
-            texto += ". " + partes[0] + (partes[1] ? ": " + partes[1] : "");
+            texto += partes[0] + (partes[1] ? ": " + partes[1] : "") + "... ";
         });
     }
-    
-    let utterance = new SpeechSynthesisUtterance(texto);
+
+    const utterance = new SpeechSynthesisUtterance(texto);
     utterance.lang = 'pt-BR';
-    utterance.rate = 1.0; // Velocidade da fala
+    
+    // Ajustes de ritmo e tom:
+    utterance.rate = 0.82;  // <--- Fala mais pausada e calma (padrão é 1.0)
+    utterance.pitch = 0.85; // <--- Tom masculino levemente mais grave
+
+    const voz = buscarVozMasculina();
+    if (voz) utterance.voice = voz;
+
     synth.speak(utterance);
 }
 
-// Modifica a função 'go' original para também falar o texto
-const originalGo = go;
-go = function(to, first) {
-    originalGo(to, first);
-    setTimeout(falarTextoAtual, 400); // Aguarda a transição do slide
-};
+if (synth.onvoiceschanged !== undefined) {
+    synth.onvoiceschanged = () => synth.getVoices();
+}
+/* ======================================================================= */
+
 
 </script>
 </body>
