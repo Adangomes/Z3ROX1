@@ -2,8 +2,8 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tesla CyberFlyer - Frota dos Devs (Vale do Itapocu)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tesla CyberFlyer - Frota dos Devs</title>
     <style>
         body {
             margin: 0;
@@ -12,19 +12,26 @@
             background-color: #050814;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #fff;
+            touch-action: none;
         }
         #ui-container {
             position: absolute;
             top: 20px;
             left: 20px;
-            background: rgba(15, 23, 42, 0.9);
+            background: rgba(15, 23, 42, 0.92);
             padding: 20px;
             border-radius: 12px;
             border: 1px solid rgba(56, 189, 248, 0.3);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(10px);
             z-index: 10;
-            width: 320px;
+            width: 300px;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .hidden-ui {
+            transform: translateX(-120%);
+            opacity: 0;
+            pointer-events: none;
         }
         h1 {
             font-size: 1.1rem;
@@ -70,47 +77,77 @@
             margin-top: 5px;
             font-size: 0.85rem;
         }
-        button:hover {
-            opacity: 0.9;
+        button:hover { opacity: 0.9; }
+
+        /* Botão para reabrir menu durante o voo */
+        #menuToggleBtn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #38bdf8;
+            color: #38bdf8;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 5;
+            display: none;
+            font-weight: bold;
         }
+
+        /* Controles Virtuais para Celular */
+        #mobile-controls {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            display: none;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .control-pad {
+            display: grid;
+            grid-template-columns: 60px 60px 60px;
+            gap: 5px;
+            pointer-events: auto;
+        }
+        .control-btn {
+            background: rgba(56, 189, 248, 0.2);
+            border: 1px solid #38bdf8;
+            color: white;
+            padding: 15px 0;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            text-align: center;
+            user-select: none;
+            backdrop-filter: blur(5px);
+        }
+        .control-btn:active { background: rgba(56, 189, 248, 0.6); }
+
         #github-radar {
             position: absolute;
-            bottom: 30px;
+            bottom: 120px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(15, 23, 42, 0.95);
             border: 2px solid #38bdf8;
-            padding: 15px 25px;
+            padding: 12px 20px;
             border-radius: 12px;
             text-align: center;
             display: none;
             z-index: 10;
             box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
-        }
-        #github-radar h3 {
-            margin: 0 0 5px 0;
-            color: #38bdf8;
-            font-size: 1rem;
-        }
-        #github-radar p {
-            margin: 0;
-            color: #e2e8f0;
-            font-size: 0.9rem;
-        }
-        #controls-hint {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(0,0,0,0.6);
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            color: #94a3b8;
             pointer-events: none;
         }
+        #github-radar h3 { margin: 0 0 3px 0; color: #38bdf8; font-size: 0.95rem; }
+        #github-radar p { margin: 0; color: #e2e8f0; font-size: 0.85rem; }
     </style>
 </head>
 <body>
+
+    <button id="menuToggleBtn">⚙️ Menu / Config</button>
 
     <div id="ui-container">
         <h1>🛸 Tesla CyberFlyer (Devs)</h1>
@@ -127,33 +164,42 @@
         </div>
 
         <div class="input-group">
-            <label>Selecionar Carro (Piloto Atual)</label>
+            <label>Selecionar Carro (Piloto)</label>
             <select id="carSelect">
                 <option value="0">Carro de Adalberto</option>
             </select>
         </div>
 
         <button id="addCarBtn">➕ Cadastrar Novo Carro</button>
-        <button id="loginBtn" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%);">🎮 Entrar e Pilotar Este Carro</button>
+        <button id="loginBtn" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%);">🚀 Entrar e Pilotar (Modo Imersivo)</button>
     </div>
 
-    <div id="controls-hint">
-        <b>Comandos de Voo:</b><br>
-        W / S: Frente / Ré<br>
-        A / D: Virar Esquerda / Direita<br>
-        Espaço / Shift: Subir / Descer
-    </div>
-
+    <!-- Radar GitHub Próximo -->
     <div id="github-radar">
         <h3 id="radarTitle">📡 Veículo Próximo Detectado!</h3>
         <p id="radarInfo">GitHub: github.com/dev</p>
+    </div>
+
+    <!-- Controles Mobile na Tela -->
+    <div id="mobile-controls">
+        <div class="control-pad">
+            <div></div>
+            <div class="control-btn" id="btn-up">⬆️</div>
+            <div></div>
+            <div class="control-btn" id="btn-left">⬅️</div>
+            <div class="control-btn" id="btn-down">⬇️</div>
+            <div class="control-btn" id="btn-right">➡️</div>
+        </div>
+        <div class="control-pad" style="grid-template-columns: 70px 70px;">
+            <div class="control-btn" id="btn-elev-up" style="background: rgba(16, 185, 129, 0.3); border-color: #10b981;">🚀 Subir</div>
+            <div class="control-btn" id="btn-elev-down" style="background: rgba(239, 68, 68, 0.3); border-color: #ef4444;">⬇️ Descer</div>
+        </div>
     </div>
 
     <!-- Three.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script>
-        // --- 1. CONFIGURAÇÃO DA CENA 3D ---
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x050814);
         scene.fog = new THREE.FogExp2(0x050814, 0.012);
@@ -174,7 +220,7 @@
         dirLight.position.set(20, 50, 20);
         scene.add(dirLight);
 
-        // Chão (O Vale do Itapocu visto de cima)
+        // Chão (O Vale)
         const planeGeo = new THREE.PlaneGeometry(200, 200);
         const planeMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.9 });
         const plane = new THREE.Mesh(planeGeo, planeMat);
@@ -185,33 +231,48 @@
         grid.position.y = 0.05;
         scene.add(grid);
 
-        // --- 2. SISTEMA DE CARROS VOADORES ---
+        // --- SISTEMA DE CARROS E FOGO DOS PROPULSORES ---
         const cars = [];
         let activeCarIndex = 0;
+        const fireParticles = [];
 
         function createFlyingCar(name, github, x, z) {
             const carGroup = new THREE.Group();
 
-            // Corpo futurista do CyberFlyer
+            // Corpo
             const bodyGeo = new THREE.BoxGeometry(2, 0.6, 4);
             const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.9, roughness: 0.1 });
             const body = new THREE.Mesh(bodyGeo, bodyMat);
             body.position.y = 0.3;
             carGroup.add(body);
 
-            // Asas / Propulsores laterais
+            // Asas
             const wingGeo = new THREE.BoxGeometry(4.5, 0.1, 1.2);
             const wingMat = new THREE.MeshStandardMaterial({ color: 0x0ea5e9, emissive: 0x0284c7, emissiveIntensity: 0.5 });
             const wings = new THREE.Mesh(wingGeo, wingMat);
             wings.position.y = 0.3;
             carGroup.add(wings);
 
-            // Teto de vidro cockpit
+            // Cockpit
             const glassGeo = new THREE.BoxGeometry(1.4, 0.5, 2);
             const glassMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.6 });
             const glass = new THREE.Mesh(glassGeo, glassMat);
             glass.position.set(0, 0.6, 0.2);
             carGroup.add(glass);
+
+            // Fogo / Propulsores traseiros (Laranja neon brilhante)
+            const fireGeo = new THREE.ConeGeometry(0.4, 1.5, 8);
+            const fireMat = new THREE.MeshBasicMaterial({ color: 0xff5500 });
+            
+            const fireLeft = new THREE.Mesh(fireGeo, fireMat);
+            fireLeft.rotation.x = Math.PI / 2;
+            fireLeft.position.set(-0.6, 0.3, 2.2);
+            carGroup.add(fireLeft);
+
+            const fireRight = new THREE.Mesh(fireGeo, fireMat);
+            fireRight.rotation.x = Math.PI / 2;
+            fireRight.position.set(0.6, 0.3, 2.2);
+            carGroup.add(fireRight);
 
             carGroup.position.set(x, 2, z);
             scene.add(carGroup);
@@ -221,16 +282,16 @@
                 name: name,
                 github: github,
                 speed: 0,
-                turnSpeed: 0
+                fireLeft: fireLeft,
+                fireRight: fireRight
             });
 
             updateCarSelect();
         }
 
-        // Criar carros iniciais de exemplo na cidade
         createFlyingCar("Adalberto", "adalberto-dev", 0, 0);
-        createFlyingCar("Cleiton (Guaramirim)", "cleiton-code", 15, -20);
-        createFlyingCar("Mariana (Schroeder)", "mari-tech", -20, 15);
+        createFlyingCar("Cleiton", "cleiton-code", 15, -20);
+        createFlyingCar("Mariana", "mari-tech", -20, 15);
 
         function updateCarSelect() {
             const select = document.getElementById('carSelect');
@@ -244,28 +305,68 @@
             select.value = activeCarIndex;
         }
 
-        // --- 3. BOTÕES DE CADASTRO E LOGIN ---
+        // --- INTERAÇÃO DE UI ---
+        const uiContainer = document.getElementById('ui-container');
+        const menuToggleBtn = document.getElementById('menuToggleBtn');
+        const mobileControls = document.getElementById('mobile-controls');
+
         document.getElementById('addCarBtn').addEventListener('click', () => {
             const name = document.getElementById('devName').value;
             const github = document.getElementById('devGithub').value;
-            // Posição aleatória no mapa
-            const rx = (Math.random() - 0.5) * 60;
-            const rz = (Math.random() - 0.5) * 60;
-            createFlyingCar(name, github, rx, rz);
-            alert(`Carro voador de ${name} cadastrado com sucesso no céu!`);
+            createFlyingCar(name, github, (Math.random() - 0.5) * 60, (Math.random() - 0.5) * 60);
+            alert(`Carro de ${name} adicionado ao céu!`);
         });
 
         document.getElementById('loginBtn').addEventListener('click', () => {
             activeCarIndex = parseInt(document.getElementById('carSelect').value);
-            alert(`Logado no carro de ${cars[activeCarIndex].name}! Use W, A, S, D para voar.`);
+            // Esconde menu e mostra controles de voo / botão de voltar
+            uiContainer.classList.add('hidden-ui');
+            menuToggleBtn.style.display = 'block';
+            mobileControls.style.display = 'flex';
         });
 
-        // --- 4. CONTROLES DE VOO (TECLADO) ---
-        const keys = {};
-        window.addEventListener('keydown', (e) => keys[e.key.toLowerCase()] = true);
-        window.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
+        menuToggleBtn.addEventListener('click', () => {
+            uiContainer.classList.remove('hidden-ui');
+            menuToggleBtn.style.display = 'none';
+            mobileControls.style.display = 'none';
+        });
 
-        // --- 5. LOOP DE ANIMAÇÃO E RADAR DE PROXIMIDADE ---
+        // --- CONTROLES (TECLADO E TOUCH CELULAR) ---
+        const controlsState = { forward: false, backward: false, left: false, right: false, up: false, down: false };
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'w' || e.key === 'ArrowUp') controlsState.forward = true;
+            if (e.key === 's' || e.key === 'ArrowDown') controlsState.backward = true;
+            if (e.key === 'a' || e.key === 'ArrowLeft') controlsState.left = true;
+            if (e.key === 'd' || e.key === 'ArrowRight') controlsState.right = true;
+            if (e.key === ' ') controlsState.up = true;
+            if (e.key === 'Shift') controlsState.down = true;
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'w' || e.key === 'ArrowUp') controlsState.forward = false;
+            if (e.key === 's' || e.key === 'ArrowDown') controlsState.backward = false;
+            if (e.key === 'a' || e.key === 'ArrowLeft') controlsState.left = false;
+            if (e.key === 'd' || e.key === 'ArrowRight') controlsState.right = false;
+            if (e.key === ' ') controlsState.up = false;
+            if (e.key === 'Shift') controlsState.down = false;
+        });
+
+        // Eventos touch para os botões do celular
+        function bindTouch(id, action) {
+            const el = document.getElementById(id);
+            el.addEventListener('touchstart', (e) => { e.preventDefault(); controlsState[action] = true; });
+            el.addEventListener('touchend', (e) => { e.preventDefault(); controlsState[action] = false; });
+            el.addEventListener('mousedown', () => controlsState[action] = true);
+            el.addEventListener('mouseup', () => controlsState[action] = false);
+        }
+        bindTouch('btn-up', 'forward');
+        bindTouch('btn-down', 'backward');
+        bindTouch('btn-left', 'left');
+        bindTouch('btn-right', 'right');
+        bindTouch('btn-elev-up', 'up');
+        bindTouch('btn-elev-down', 'down');
+
+        // --- LOOP DE ANIMAÇÃO ---
         const radarBox = document.getElementById('github-radar');
         const radarInfo = document.getElementById('radarInfo');
         const radarTitle = document.getElementById('radarTitle');
@@ -273,29 +374,32 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            // Movimentação do carro ativo
             const currentCar = cars[activeCarIndex];
             if (currentCar) {
-                if (keys['w'] || keys['arrowup']) currentCar.speed = 0.3;
-                else if (keys['s'] || keys['arrowdown']) currentCar.speed = -0.15;
-                else currentCar.speed *= 0.92; // Inércia
+                if (controlsState.forward) currentCar.speed = 0.35;
+                else if (controlsState.backward) currentCar.speed = -0.15;
+                else currentCar.speed *= 0.92;
 
-                if (keys['a'] || keys['arrowleft']) currentCar.mesh.rotation.y += 0.03;
-                if (keys['d'] || keys['arrowright']) currentCar.mesh.rotation.y -= 0.03;
+                if (controlsState.left) currentCar.mesh.rotation.y += 0.035;
+                if (controlsState.right) currentCar.mesh.rotation.y -= 0.035;
 
-                if (keys[' ']) currentCar.mesh.position.y += 0.15; // Subir
-                if (keys['shift']) currentCar.mesh.position.y = Math.max(1, currentCar.mesh.position.y - 0.15); // Descer
+                if (controlsState.up) currentCar.mesh.position.y += 0.18;
+                if (controlsState.down) currentCar.mesh.position.y = Math.max(1, currentCar.mesh.position.y - 0.18);
 
-                // Move pra frente na direção que o carro está apontando
                 currentCar.mesh.translateZ(-currentCar.speed);
 
-                // Câmera persegue o carro voador por trás (visão em terceira pessoa estilo jogo)
-                const offset = new THREE.Vector3(0, 3, 7).applyAxisAngle(new THREE.Vector3(0, 1, 0), currentCar.mesh.rotation.y);
+                // Animação do fogo nos propulsores (escala oscila conforme acelera)
+                const fireScale = Math.max(0.5, Math.abs(currentCar.speed) * 3 + Math.random() * 0.3);
+                currentCar.fireLeft.scale.set(fireScale, fireScale, fireScale);
+                currentCar.fireRight.scale.set(fireScale, fireScale, fireScale);
+
+                // Câmera persegue o carro
+                const offset = new THREE.Vector3(0, 3.5, 8).applyAxisAngle(new THREE.Vector3(0, 1, 0), currentCar.mesh.rotation.y);
                 camera.position.lerp(currentCar.mesh.position.clone().add(offset), 0.1);
                 camera.lookAt(currentCar.mesh.position.clone().add(new THREE.Vector3(0, 1, 0)));
             }
 
-            // Radar de Proximidade: verifica se o carro ativo chegou perto de outro
+            // Radar de proximidade com outros carros
             let detected = false;
             if (currentCar) {
                 for (let i = 0; i < cars.length; i++) {
@@ -303,8 +407,7 @@
                     const otherCar = cars[i];
                     const distance = currentCar.mesh.position.distanceTo(otherCar.mesh.position);
 
-                    // Se chegar a menos de 8 metros de distância no ar
-                    if (distance < 8) {
+                    if (distance < 9) {
                         radarTitle.innerText = `📡 Veículo de ${otherCar.name} Próximo!`;
                         radarInfo.innerHTML = `GitHub: <b>github.com/${otherCar.github}</b><br><span style="font-size:0.75rem; color:#94a3b8;">Distância: ${distance.toFixed(1)}m</span>`;
                         radarBox.style.display = 'block';
@@ -313,15 +416,12 @@
                     }
                 }
             }
-            if (!detected) {
-                radarBox.style.display = 'none';
-            }
+            if (!detected) radarBox.style.display = 'none';
 
             renderer.render(scene, camera);
         }
         animate();
 
-        // Responsivo
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
