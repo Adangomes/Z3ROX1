@@ -15,6 +15,7 @@
             touch-action: none;
         }
 
+        /* Overlay de Autenticacao */
         #auth-overlay {
             position: absolute;
             top: 0;
@@ -102,6 +103,7 @@
             display: none;
         }
 
+        /* HUD Principal */
         #hud {
             position: absolute;
             top: 20px;
@@ -124,6 +126,29 @@
             color: #38bdf8;
         }
 
+        /* Minimapa Radar Orbital */
+        #minimap-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 110px;
+            height: 110px;
+            background: rgba(10, 15, 30, 0.65);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            border-radius: 50%;
+            backdrop-filter: blur(5px);
+            display: none;
+            z-index: 10;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+        }
+
+        #minimapCanvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        /* Controles Mobile Touch */
         #mobile-controls {
             position: absolute;
             bottom: 20px;
@@ -160,6 +185,7 @@
             background: rgba(56, 189, 248, 0.5);
         }
 
+        /* Radar Proximidade GitHub */
         #github-radar {
             position: absolute;
             bottom: 120px;
@@ -202,6 +228,7 @@
 </head>
 <body>
 
+    <!-- Overlay de Autenticacao -->
     <div id="auth-overlay">
         <div class="auth-card">
             <h1>PLANETA JARAS</h1>
@@ -217,6 +244,7 @@
         </div>
     </div>
 
+    <!-- HUD de Informações -->
     <div id="hud">
         <div>Piloto: <strong id="hudName">-</strong></div>
         <div>GitHub: <strong id="hudGithub">-</strong></div>
@@ -224,12 +252,19 @@
         <div>Nivel CyberFlyer: <strong id="hudLevel">1</strong></div>
     </div>
 
+    <!-- Minimapa Radar -->
+    <div id="minimap-container">
+        <canvas id="minimapCanvas" width="110" height="110"></canvas>
+    </div>
+
+    <!-- Card de Proximidade -->
     <div id="github-radar">
         <h3 id="radarTitle">Veiculo Orbital Proximo</h3>
         <p id="radarInfo">GitHub: github.com/dev</p>
         <a id="radarLink" href="#" target="_blank">Abrir Perfil no GitHub</a>
     </div>
 
+    <!-- Botoes Touch para Celular -->
     <div id="mobile-controls">
         <div class="control-pad">
             <div></div>
@@ -248,7 +283,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script>
-        // Banco de Dados simulando os devs posicionados no Planeta JARAS
+        // Banco de Dados simulado com os desenvolvedores
         const DATABASE = [
             { id: 1, name: "Adalberto", github: "adalberto-dev", commits: 140, x: 0, y: 36, z: 0 },
             { id: 2, name: "Cleiton", github: "cleiton-code", commits: 60, x: 15, y: 35, z: -20 },
@@ -268,7 +303,7 @@
         renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
-        // Iluminação Espacial
+        // Iluminação
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
         scene.add(ambientLight);
 
@@ -276,19 +311,18 @@
         sunLight.position.set(50, 100, 50);
         scene.add(sunLight);
 
-        // --- CONSTRUCAO DO PLANETA JARAS (Esfera 3D) ---
+        // --- CONSTRUCAO DO PLANETA JARAS ---
         const planetGeo = new THREE.SphereGeometry(30, 32, 32);
         const planetMat = new THREE.MeshStandardMaterial({ 
             color: 0x0f172a, 
             roughness: 0.8,
-            metalness: 0.2,
-            wireframe: false
+            metalness: 0.2
         });
         const planet = new THREE.Mesh(planetGeo, planetMat);
         planet.position.set(0, 0, 0);
         scene.add(planet);
 
-        // Atmosfera Brilhante ao redor do Planeta Jaras
+        // Atmosfera Brilhante
         const atmosGeo = new THREE.SphereGeometry(31.5, 32, 32);
         const atmosMat = new THREE.MeshBasicMaterial({ 
             color: 0x0ea5e9, 
@@ -368,6 +402,7 @@
         const loginBtn = document.getElementById('loginBtn');
         const authError = document.getElementById('auth-error');
         const hud = document.getElementById('hud');
+        const minimapContainer = document.getElementById('minimap-container');
         const mobileControls = document.getElementById('mobile-controls');
 
         loginBtn.addEventListener('click', () => {
@@ -379,6 +414,7 @@
                 authError.style.display = 'none';
                 authOverlay.style.display = 'none';
                 hud.style.display = 'block';
+                minimapContainer.style.display = 'block';
 
                 if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
                     mobileControls.style.display = 'flex';
@@ -394,7 +430,7 @@
             }
         });
 
-        // Controles de Voo Orbital
+        // Controles Teclado e Touch
         const controlsState = { forward: false, backward: false, left: false, right: false, up: false, down: false };
 
         window.addEventListener('keydown', (e) => {
@@ -429,6 +465,57 @@
         bindTouch('btn-elev-up', 'up');
         bindTouch('btn-elev-down', 'down');
 
+        // Minimapa Canvas
+        const minimapCanvas = document.getElementById('minimapCanvas');
+        const ctx = minimapCanvas.getContext('2d');
+
+        function updateMinimap() {
+            if (activeCarIndex === -1) return;
+
+            const playerCar = cars[activeCarIndex];
+            const mapCenter = 55;
+            const scale = 0.5;
+
+            ctx.clearRect(0, 0, 110, 110);
+
+            // Anel do radar
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(mapCenter, mapCenter, 45, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Ponto do Planeta JARAS
+            const planetMapX = mapCenter + (-playerCar.mesh.position.x * scale);
+            const planetMapZ = mapCenter + (-playerCar.mesh.position.z * scale);
+
+            ctx.fillStyle = '#0ea5e9';
+            ctx.beginPath();
+            ctx.arc(planetMapX, planetMapZ, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Outras naves
+            cars.forEach((car, index) => {
+                if (index === activeCarIndex) return;
+                const relX = mapCenter + (car.mesh.position.x - playerCar.mesh.position.x) * scale;
+                const relZ = mapCenter + (car.mesh.position.z - playerCar.mesh.position.z) * scale;
+
+                if (relX >= 5 && relX <= 105 && relZ >= 5 && relZ <= 105) {
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.beginPath();
+                    ctx.arc(relX, relZ, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+
+            // Sua nave (Centro)
+            ctx.fillStyle = '#38bdf8';
+            ctx.beginPath();
+            ctx.arc(mapCenter, mapCenter, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Loop Principal
         const radarBox = document.getElementById('github-radar');
         const radarInfo = document.getElementById('radarInfo');
         const radarTitle = document.getElementById('radarTitle');
@@ -437,7 +524,6 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            // Rotação sutil do Planeta JARAS
             planet.rotation.y += 0.001;
             atmosphere.rotation.y -= 0.0008;
 
@@ -456,14 +542,25 @@
 
                 currentCar.mesh.translateZ(-currentCar.speed);
 
+                // Trava de gravidade orbital
+                const distFromPlanet = currentCar.mesh.position.distanceTo(planet.position);
+                if (distFromPlanet > 90) {
+                    currentCar.mesh.position.setLength(90);
+                }
+
+                // Efeito do fogo
                 const fireScale = Math.max(0.5, Math.abs(currentCar.speed) * 3 + Math.random() * 0.3);
                 currentCar.fireLeft.scale.set(fireScale, fireScale, fireScale);
                 currentCar.fireRight.scale.set(fireScale, fireScale, fireScale);
 
+                // Camera
                 const offset = new THREE.Vector3(0, 3.5, 8).applyAxisAngle(new THREE.Vector3(0, 1, 0), currentCar.mesh.rotation.y);
                 camera.position.lerp(currentCar.mesh.position.clone().add(offset), 0.1);
                 camera.lookAt(currentCar.mesh.position.clone().add(new THREE.Vector3(0, 1, 0)));
 
+                updateMinimap();
+
+                // Proximidade com outros devs
                 let detected = false;
                 for (let i = 0; i < cars.length; i++) {
                     if (i === activeCarIndex) continue;
