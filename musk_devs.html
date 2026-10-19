@@ -3,99 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tesla CyberFlyer - Frota dos Devs</title>
+    <title>PLANETA JARAS - Musk Devs</title>
     <style>
         body {
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background-color: #050814;
+            background-color: #02040a;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #fff;
             touch-action: none;
         }
-        #ui-container {
+
+        #auth-overlay {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(15, 23, 42, 0.92);
-            padding: 20px;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(2, 4, 10, 0.96);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+
+        .auth-card {
+            background: rgba(10, 15, 30, 0.95);
+            padding: 30px;
             border-radius: 12px;
             border: 1px solid rgba(56, 189, 248, 0.3);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
-            z-index: 10;
-            width: 300px;
-            transition: transform 0.3s ease, opacity 0.3s ease;
+            box-shadow: 0 0 40px rgba(56, 189, 248, 0.15);
+            width: 320px;
+            text-align: center;
         }
-        .hidden-ui {
-            transform: translateX(-120%);
-            opacity: 0;
-            pointer-events: none;
-        }
-        h1 {
-            font-size: 1.1rem;
+
+        .auth-card h1 {
+            font-size: 1.3rem;
             margin: 0 0 5px 0;
             color: #38bdf8;
+            letter-spacing: 2px;
         }
-        p {
+
+        .auth-card p {
             font-size: 0.8rem;
             color: #94a3b8;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
+
         .input-group {
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            text-align: left;
         }
+
         label {
             display: block;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 3px;
+            margin-bottom: 5px;
             color: #cbd5e1;
         }
-        input, select {
+
+        input {
             width: 100%;
-            padding: 7px 10px;
-            background: #0b0f19;
+            padding: 10px;
+            background: #050814;
             border: 1px solid #334155;
             border-radius: 6px;
             color: #fff;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             box-sizing: border-box;
         }
-        button {
+
+        input:focus {
+            outline: none;
+            border-color: #38bdf8;
+        }
+
+        button.auth-btn {
             width: 100%;
-            padding: 9px;
-            background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+            padding: 11px;
+            background: linear-gradient(135deg, #0ea5e9 0%, #1d4ed8 100%);
             border: none;
             border-radius: 6px;
             color: white;
             font-weight: bold;
             cursor: pointer;
-            transition: opacity 0.2s;
-            margin-top: 5px;
             font-size: 0.85rem;
+            letter-spacing: 1px;
         }
-        button:hover { opacity: 0.9; }
 
-        /* Botão para reabrir menu durante o voo */
-        #menuToggleBtn {
+        #auth-error {
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-top: 10px;
+            display: none;
+        }
+
+        #hud {
             position: absolute;
             top: 20px;
             left: 20px;
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid #38bdf8;
-            color: #38bdf8;
-            padding: 10px 15px;
+            background: rgba(10, 15, 30, 0.85);
+            padding: 12px 18px;
             border-radius: 8px;
-            cursor: pointer;
-            z-index: 5;
+            border: 1px solid rgba(56, 189, 248, 0.3);
             display: none;
-            font-weight: bold;
+            z-index: 10;
         }
 
-        /* Controles Virtuais para Celular */
+        #hud div {
+            font-size: 0.75rem;
+            color: #cbd5e1;
+            margin-bottom: 3px;
+        }
+
+        #hud strong {
+            color: #38bdf8;
+        }
+
         #mobile-controls {
             position: absolute;
             bottom: 20px;
@@ -107,162 +135,205 @@
             z-index: 10;
             pointer-events: none;
         }
+
         .control-pad {
             display: grid;
             grid-template-columns: 60px 60px 60px;
             gap: 5px;
             pointer-events: auto;
         }
+
         .control-btn {
-            background: rgba(56, 189, 248, 0.2);
+            background: rgba(56, 189, 248, 0.15);
             border: 1px solid #38bdf8;
             color: white;
             padding: 15px 0;
-            font-size: 1.2rem;
+            font-size: 0.8rem;
             border-radius: 8px;
             text-align: center;
             user-select: none;
             backdrop-filter: blur(5px);
+            font-weight: bold;
         }
-        .control-btn:active { background: rgba(56, 189, 248, 0.6); }
+
+        .control-btn:active {
+            background: rgba(56, 189, 248, 0.5);
+        }
 
         #github-radar {
             position: absolute;
             bottom: 120px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(15, 23, 42, 0.95);
+            background: rgba(10, 15, 30, 0.95);
             border: 2px solid #38bdf8;
             padding: 12px 20px;
             border-radius: 12px;
             text-align: center;
             display: none;
             z-index: 10;
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
-            pointer-events: none;
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
         }
-        #github-radar h3 { margin: 0 0 3px 0; color: #38bdf8; font-size: 0.95rem; }
-        #github-radar p { margin: 0; color: #e2e8f0; font-size: 0.85rem; }
+
+        #github-radar h3 {
+            margin: 0 0 3px 0;
+            color: #38bdf8;
+            font-size: 0.9rem;
+        }
+
+        #github-radar p {
+            margin: 0;
+            color: #e2e8f0;
+            font-size: 0.8rem;
+        }
+
+        #radarLink {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 6px 12px;
+            background: #38bdf8;
+            color: #02040a;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.75rem;
+        }
     </style>
 </head>
 <body>
 
-    <button id="menuToggleBtn">⚙️ Menu / Config</button>
+    <div id="auth-overlay">
+        <div class="auth-card">
+            <h1>PLANETA JARAS</h1>
+            <p>Insira seu usuario do GitHub para conectar ao CyberFlyer orbital.</p>
+            
+            <div class="input-group">
+                <label>Usuario do GitHub</label>
+                <input type="text" id="githubInput" placeholder="ex: adalberto-dev">
+            </div>
 
-    <div id="ui-container">
-        <h1>🛸 Tesla CyberFlyer (Devs)</h1>
-        <p>Cadastre o dev e pilote o carro voador no céu!</p>
-        
-        <div class="input-group">
-            <label>Nome do Dev</label>
-            <input type="text" id="devName" value="Adalberto">
+            <button class="auth-btn" id="loginBtn">Decolar no Planeta</button>
+            <div id="auth-error">Usuario nao encontrado no banco de dados orbital.</div>
         </div>
-
-        <div class="input-group">
-            <label>Usuário do GitHub</label>
-            <input type="text" id="devGithub" value="adalberto-dev">
-        </div>
-
-        <div class="input-group">
-            <label>Selecionar Carro (Piloto)</label>
-            <select id="carSelect">
-                <option value="0">Carro de Adalberto</option>
-            </select>
-        </div>
-
-        <button id="addCarBtn">➕ Cadastrar Novo Carro</button>
-        <button id="loginBtn" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%);">🚀 Entrar e Pilotar (Modo Imersivo)</button>
     </div>
 
-    <!-- Radar GitHub Próximo -->
+    <div id="hud">
+        <div>Piloto: <strong id="hudName">-</strong></div>
+        <div>GitHub: <strong id="hudGithub">-</strong></div>
+        <div>Combustivel (Commits): <strong id="hudFuel">0</strong></div>
+        <div>Nivel CyberFlyer: <strong id="hudLevel">1</strong></div>
+    </div>
+
     <div id="github-radar">
-        <h3 id="radarTitle">📡 Veículo Próximo Detectado!</h3>
+        <h3 id="radarTitle">Veiculo Orbital Proximo</h3>
         <p id="radarInfo">GitHub: github.com/dev</p>
+        <a id="radarLink" href="#" target="_blank">Abrir Perfil no GitHub</a>
     </div>
 
-    <!-- Controles Mobile na Tela -->
     <div id="mobile-controls">
         <div class="control-pad">
             <div></div>
-            <div class="control-btn" id="btn-up">⬆️</div>
+            <div class="control-btn" id="btn-up">FRENTE</div>
             <div></div>
-            <div class="control-btn" id="btn-left">⬅️</div>
-            <div class="control-btn" id="btn-down">⬇️</div>
-            <div class="control-btn" id="btn-right">➡️</div>
+            <div class="control-btn" id="btn-left">ESQ</div>
+            <div class="control-btn" id="btn-down">TRAS</div>
+            <div class="control-btn" id="btn-right">DIR</div>
         </div>
-        <div class="control-pad" style="grid-template-columns: 70px 70px;">
-            <div class="control-btn" id="btn-elev-up" style="background: rgba(16, 185, 129, 0.3); border-color: #10b981;">🚀 Subir</div>
-            <div class="control-btn" id="btn-elev-down" style="background: rgba(239, 68, 68, 0.3); border-color: #ef4444;">⬇️ Descer</div>
+        <div class="control-pad" style="grid-template-columns: 75px 75px;">
+            <div class="control-btn" id="btn-elev-up" style="background: rgba(16, 185, 129, 0.25); border-color: #10b981;">SUBIR</div>
+            <div class="control-btn" id="btn-elev-down" style="background: rgba(239, 68, 68, 0.25); border-color: #ef4444;">DESCER</div>
         </div>
     </div>
 
-    <!-- Three.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script>
+        // Banco de Dados simulando os devs posicionados no Planeta JARAS
+        const DATABASE = [
+            { id: 1, name: "Adalberto", github: "adalberto-dev", commits: 140, x: 0, y: 36, z: 0 },
+            { id: 2, name: "Cleiton", github: "cleiton-code", commits: 60, x: 15, y: 35, z: -20 },
+            { id: 3, name: "Mariana", github: "mari-tech", commits: 250, x: -20, y: 34, z: 15 }
+        ];
+
+        // Configuracao da Cena 3D Espacial
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x050814);
-        scene.fog = new THREE.FogExp2(0x050814, 0.012);
+        scene.background = new THREE.Color(0x02040a);
+        scene.fog = new THREE.FogExp2(0x02040a, 0.008);
 
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 5, -10);
+        camera.position.set(0, 45, -20);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
-        // Luzes
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        // Iluminação Espacial
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
         scene.add(ambientLight);
 
-        const dirLight = new THREE.DirectionalLight(0x38bdf8, 1);
-        dirLight.position.set(20, 50, 20);
-        scene.add(dirLight);
+        const sunLight = new THREE.DirectionalLight(0x38bdf8, 1.2);
+        sunLight.position.set(50, 100, 50);
+        scene.add(sunLight);
 
-        // Chão (O Vale)
-        const planeGeo = new THREE.PlaneGeometry(200, 200);
-        const planeMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.9 });
-        const plane = new THREE.Mesh(planeGeo, planeMat);
-        plane.rotation.x = -Math.PI / 2;
-        scene.add(plane);
+        // --- CONSTRUCAO DO PLANETA JARAS (Esfera 3D) ---
+        const planetGeo = new THREE.SphereGeometry(30, 32, 32);
+        const planetMat = new THREE.MeshStandardMaterial({ 
+            color: 0x0f172a, 
+            roughness: 0.8,
+            metalness: 0.2,
+            wireframe: false
+        });
+        const planet = new THREE.Mesh(planetGeo, planetMat);
+        planet.position.set(0, 0, 0);
+        scene.add(planet);
 
-        const grid = new THREE.GridHelper(200, 40, 0x0ea5e9, 0x1e293b);
-        grid.position.y = 0.05;
-        scene.add(grid);
+        // Atmosfera Brilhante ao redor do Planeta Jaras
+        const atmosGeo = new THREE.SphereGeometry(31.5, 32, 32);
+        const atmosMat = new THREE.MeshBasicMaterial({ 
+            color: 0x0ea5e9, 
+            transparent: true, 
+            opacity: 0.12, 
+            wireframe: true 
+        });
+        const atmosphere = new THREE.Mesh(atmosGeo, atmosMat);
+        scene.add(atmosphere);
 
-        // --- SISTEMA DE CARROS E FOGO DOS PROPULSORES ---
+        // --- CONSTRUCAO DOS CYBERFLYERS ---
         const cars = [];
-        let activeCarIndex = 0;
-        const fireParticles = [];
+        let activeCarIndex = -1;
 
-        function createFlyingCar(name, github, x, z) {
+        function buildCyberFlyer(userData) {
             const carGroup = new THREE.Group();
 
-            // Corpo
+            const level = Math.floor(userData.commits / 50) + 1;
+            const isUpgraded = level > 2;
+
             const bodyGeo = new THREE.BoxGeometry(2, 0.6, 4);
-            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.9, roughness: 0.1 });
+            const bodyMat = new THREE.MeshStandardMaterial({ 
+                color: isUpgraded ? 0x0ea5e9 : 0x1e293b, 
+                metalness: 0.9, 
+                roughness: 0.1 
+            });
             const body = new THREE.Mesh(bodyGeo, bodyMat);
             body.position.y = 0.3;
             carGroup.add(body);
 
-            // Asas
-            const wingGeo = new THREE.BoxGeometry(4.5, 0.1, 1.2);
-            const wingMat = new THREE.MeshStandardMaterial({ color: 0x0ea5e9, emissive: 0x0284c7, emissiveIntensity: 0.5 });
+            const wingWidth = 4.5 + Math.min(level * 0.5, 3);
+            const wingGeo = new THREE.BoxGeometry(wingWidth, 0.1, 1.2);
+            const wingMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.6 });
             const wings = new THREE.Mesh(wingGeo, wingMat);
             wings.position.y = 0.3;
             carGroup.add(wings);
 
-            // Cockpit
             const glassGeo = new THREE.BoxGeometry(1.4, 0.5, 2);
             const glassMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.6 });
             const glass = new THREE.Mesh(glassGeo, glassMat);
             glass.position.set(0, 0.6, 0.2);
             carGroup.add(glass);
 
-            // Fogo / Propulsores traseiros (Laranja neon brilhante)
             const fireGeo = new THREE.ConeGeometry(0.4, 1.5, 8);
-            const fireMat = new THREE.MeshBasicMaterial({ color: 0xff5500 });
+            const fireMat = new THREE.MeshBasicMaterial({ color: isUpgraded ? 0x00ffff : 0xff5500 });
             
             const fireLeft = new THREE.Mesh(fireGeo, fireMat);
             fireLeft.rotation.x = Math.PI / 2;
@@ -274,64 +345,56 @@
             fireRight.position.set(0.6, 0.3, 2.2);
             carGroup.add(fireRight);
 
-            carGroup.position.set(x, 2, z);
+            carGroup.position.set(userData.x, userData.y, userData.z);
             scene.add(carGroup);
 
-            cars.push({
+            return {
                 mesh: carGroup,
-                name: name,
-                github: github,
+                data: userData,
+                level: level,
                 speed: 0,
                 fireLeft: fireLeft,
                 fireRight: fireRight
-            });
-
-            updateCarSelect();
+            };
         }
 
-        createFlyingCar("Adalberto", "adalberto-dev", 0, 0);
-        createFlyingCar("Cleiton", "cleiton-code", 15, -20);
-        createFlyingCar("Mariana", "mari-tech", -20, 15);
+        DATABASE.forEach(user => {
+            cars.push(buildCyberFlyer(user));
+        });
 
-        function updateCarSelect() {
-            const select = document.getElementById('carSelect');
-            select.innerHTML = '';
-            cars.forEach((car, index) => {
-                const opt = document.createElement('option');
-                opt.value = index;
-                opt.text = `Carro de ${car.name} (${car.github})`;
-                select.appendChild(opt);
-            });
-            select.value = activeCarIndex;
-        }
-
-        // --- INTERAÇÃO DE UI ---
-        const uiContainer = document.getElementById('ui-container');
-        const menuToggleBtn = document.getElementById('menuToggleBtn');
+        // Autenticacao
+        const authOverlay = document.getElementById('auth-overlay');
+        const githubInput = document.getElementById('githubInput');
+        const loginBtn = document.getElementById('loginBtn');
+        const authError = document.getElementById('auth-error');
+        const hud = document.getElementById('hud');
         const mobileControls = document.getElementById('mobile-controls');
 
-        document.getElementById('addCarBtn').addEventListener('click', () => {
-            const name = document.getElementById('devName').value;
-            const github = document.getElementById('devGithub').value;
-            createFlyingCar(name, github, (Math.random() - 0.5) * 60, (Math.random() - 0.5) * 60);
-            alert(`Carro de ${name} adicionado ao céu!`);
+        loginBtn.addEventListener('click', () => {
+            const username = githubInput.value.trim().toLowerCase();
+            const foundIndex = cars.findIndex(c => c.data.github.toLowerCase() === username);
+
+            if (foundIndex !== -1) {
+                activeCarIndex = foundIndex;
+                authError.style.display = 'none';
+                authOverlay.style.display = 'none';
+                hud.style.display = 'block';
+
+                if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                    mobileControls.style.display = 'flex';
+                }
+
+                const current = cars[activeCarIndex];
+                document.getElementById('hudName').innerText = current.data.name;
+                document.getElementById('hudGithub').innerText = current.data.github;
+                document.getElementById('hudFuel').innerText = current.data.commits;
+                document.getElementById('hudLevel').innerText = current.level;
+            } else {
+                authError.style.display = 'block';
+            }
         });
 
-        document.getElementById('loginBtn').addEventListener('click', () => {
-            activeCarIndex = parseInt(document.getElementById('carSelect').value);
-            // Esconde menu e mostra controles de voo / botão de voltar
-            uiContainer.classList.add('hidden-ui');
-            menuToggleBtn.style.display = 'block';
-            mobileControls.style.display = 'flex';
-        });
-
-        menuToggleBtn.addEventListener('click', () => {
-            uiContainer.classList.remove('hidden-ui');
-            menuToggleBtn.style.display = 'none';
-            mobileControls.style.display = 'none';
-        });
-
-        // --- CONTROLES (TECLADO E TOUCH CELULAR) ---
+        // Controles de Voo Orbital
         const controlsState = { forward: false, backward: false, left: false, right: false, up: false, down: false };
 
         window.addEventListener('keydown', (e) => {
@@ -342,6 +405,7 @@
             if (e.key === ' ') controlsState.up = true;
             if (e.key === 'Shift') controlsState.down = true;
         });
+
         window.addEventListener('keyup', (e) => {
             if (e.key === 'w' || e.key === 'ArrowUp') controlsState.forward = false;
             if (e.key === 's' || e.key === 'ArrowDown') controlsState.backward = false;
@@ -351,7 +415,6 @@
             if (e.key === 'Shift') controlsState.down = false;
         });
 
-        // Eventos touch para os botões do celular
         function bindTouch(id, action) {
             const el = document.getElementById(id);
             el.addEventListener('touchstart', (e) => { e.preventDefault(); controlsState[action] = true; });
@@ -366,17 +429,22 @@
         bindTouch('btn-elev-up', 'up');
         bindTouch('btn-elev-down', 'down');
 
-        // --- LOOP DE ANIMAÇÃO ---
         const radarBox = document.getElementById('github-radar');
         const radarInfo = document.getElementById('radarInfo');
         const radarTitle = document.getElementById('radarTitle');
+        const radarLink = document.getElementById('radarLink');
 
         function animate() {
             requestAnimationFrame(animate);
 
-            const currentCar = cars[activeCarIndex];
-            if (currentCar) {
-                if (controlsState.forward) currentCar.speed = 0.35;
+            // Rotação sutil do Planeta JARAS
+            planet.rotation.y += 0.001;
+            atmosphere.rotation.y -= 0.0008;
+
+            if (activeCarIndex !== -1) {
+                const currentCar = cars[activeCarIndex];
+
+                if (controlsState.forward) currentCar.speed = 0.35 + (currentCar.level * 0.03);
                 else if (controlsState.backward) currentCar.speed = -0.15;
                 else currentCar.speed *= 0.92;
 
@@ -384,39 +452,35 @@
                 if (controlsState.right) currentCar.mesh.rotation.y -= 0.035;
 
                 if (controlsState.up) currentCar.mesh.position.y += 0.18;
-                if (controlsState.down) currentCar.mesh.position.y = Math.max(1, currentCar.mesh.position.y - 0.18);
+                if (controlsState.down) currentCar.mesh.position.y -= 0.18;
 
                 currentCar.mesh.translateZ(-currentCar.speed);
 
-                // Animação do fogo nos propulsores (escala oscila conforme acelera)
                 const fireScale = Math.max(0.5, Math.abs(currentCar.speed) * 3 + Math.random() * 0.3);
                 currentCar.fireLeft.scale.set(fireScale, fireScale, fireScale);
                 currentCar.fireRight.scale.set(fireScale, fireScale, fireScale);
 
-                // Câmera persegue o carro
                 const offset = new THREE.Vector3(0, 3.5, 8).applyAxisAngle(new THREE.Vector3(0, 1, 0), currentCar.mesh.rotation.y);
                 camera.position.lerp(currentCar.mesh.position.clone().add(offset), 0.1);
                 camera.lookAt(currentCar.mesh.position.clone().add(new THREE.Vector3(0, 1, 0)));
-            }
 
-            // Radar de proximidade com outros carros
-            let detected = false;
-            if (currentCar) {
+                let detected = false;
                 for (let i = 0; i < cars.length; i++) {
                     if (i === activeCarIndex) continue;
                     const otherCar = cars[i];
                     const distance = currentCar.mesh.position.distanceTo(otherCar.mesh.position);
 
                     if (distance < 9) {
-                        radarTitle.innerText = `📡 Veículo de ${otherCar.name} Próximo!`;
-                        radarInfo.innerHTML = `GitHub: <b>github.com/${otherCar.github}</b><br><span style="font-size:0.75rem; color:#94a3b8;">Distância: ${distance.toFixed(1)}m</span>`;
+                        radarTitle.innerText = `Veiculo de ${otherCar.data.name} Orbital`;
+                        radarInfo.innerHTML = `GitHub: <b>github.com/${otherCar.data.github}</b><br><span style="font-size:0.7rem; color:#94a3b8;">Combustivel: ${otherCar.data.commits} | Nivel: ${otherCar.level}</span>`;
+                        radarLink.href = `https://github.com/${otherCar.data.github}`;
                         radarBox.style.display = 'block';
                         detected = true;
                         break;
                     }
                 }
+                if (!detected) radarBox.style.display = 'none';
             }
-            if (!detected) radarBox.style.display = 'none';
 
             renderer.render(scene, camera);
         }
