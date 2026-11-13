@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Adan Gomes Tattoo · Realismo preto e cinza e lettering</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500;1,700&family=Archivo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1eee8;--fg:#0e0e10;--mut:#55534e;--line:#cfcac0;--card:#e7e3da;--ink:#a50f1c;--logo:none;--blend:multiply;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c0c0d;--fg:#ece8df;--mut:#a29d92;--line:#2a2a2c;--card:#161617;--ink:#c8212f;--logo:invert(1);--blend:screen}}
+:root[data-theme="dark"]{--bg:#0c0c0d;--fg:#ece8df;--mut:#a29d92;--line:#2a2a2c;--card:#161617;--ink:#c8212f;--logo:invert(1);--blend:screen}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 17px/1.6 Archivo,system-ui,sans-serif;overflow-x:hidden}
+img{max-width:100%;display:block}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+h1,h2,h3{font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;line-height:1.02;margin:0}
+h1{font-size:clamp(44px,9vw,104px);font-style:italic}
+h2{font-size:clamp(34px,6vw,64px);margin-bottom:18px}
+h3{font-size:28px;margin-bottom:6px}
+p{margin:0 0 14px;max-width:62ch}
+section{padding:96px 0}
+.rv{clip-path:circle(var(--r,0%) at 50% 0%);will-change:clip-path}
+.hero{min-height:100svh;display:flex;align-items:center;position:relative;overflow:hidden;padding:70px 0 50px}
+.hero-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.22;filter:grayscale(1) contrast(1.1)}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,var(--bg))}
+.hero .wrap{position:relative;z-index:2}
+.logo{width:min(360px,70vw);filter:var(--logo);mix-blend-mode:var(--blend);margin-bottom:26px}
+.hero p{font-size:19px;color:var(--mut);margin:22px 0 30px}
+.btns{display:flex;flex-wrap:wrap;gap:12px}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:15px 26px;border-radius:999px;font-weight:700;text-decoration:none;border:2px solid var(--fg);transition:transform .25s,background .25s,color .25s}
+.btn:hover{transform:translateY(-3px)}
+.btn.main{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn.ghost:hover{background:var(--fg);color:var(--bg)}
+.drop-hero{position:absolute;left:50%;top:-30px;width:14px;height:20px;background:var(--ink);border-radius:50% 50% 50% 50%/62% 62% 38% 38%;z-index:1;animation:fall 2.6s cubic-bezier(.5,0,.9,.5) .4s both}
+@keyframes fall{to{transform:translateY(54svh) scaleY(1.3);opacity:0}}
+.styles{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));margin-top:34px}
+.st{border-top:3px solid var(--ink);padding:18px 0 6px}
+.st p{color:var(--mut)}
+.grid{columns:3 240px;column-gap:14px;margin-top:34px}
+.grid button{display:block;width:100%;margin:0 0 14px;padding:0;border:0;background:var(--card);cursor:zoom-in;overflow:hidden;position:relative;border-radius:4px;break-inside:avoid}
+.grid img{width:100%;height:auto;filter:grayscale(.15);transition:transform .8s cubic-bezier(.2,.7,.2,1),filter .5s}
+.grid button:hover img{transform:scale(1.06);filter:none}
+.grid span{position:absolute;left:0;right:0;bottom:0;padding:34px 14px 12px;color:#fff;font-weight:500;font-size:14px;background:linear-gradient(transparent,rgba(0,0,0,.78));text-align:left}
+.about{display:grid;gap:40px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));align-items:center}
+.about img{border-radius:4px;width:100%;max-height:620px;object-fit:cover}
+.steps{list-style:none;padding:0;margin:34px 0 0;display:grid;gap:0}
+.steps li{display:grid;grid-template-columns:58px 1fr;gap:12px;padding:22px 0;border-top:1px solid var(--line)}
+.steps b{font:italic 700 46px/1 'Cormorant Garamond',serif;color:var(--ink)}
+.steps p{color:var(--mut);margin:0}
+.cta{text-align:center;background:var(--ink);color:#fff;padding:110px 0}
+.cta h2,.cta p{margin-left:auto;margin-right:auto}
+.cta .btn{border-color:#fff;color:#fff;font-size:19px}
+.cta .btn.w{background:#fff;color:#7d0b15}
+footer{padding:34px 0 120px;color:var(--mut);font-size:15px;text-align:center}
+.wa{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:50;display:flex;align-items:center;gap:8px;background:#1fa855;color:#fff;text-decoration:none;font-weight:700;padding:13px 20px;border-radius:999px;box-shadow:0 8px 28px rgba(0,0,0,.35);transition:transform .25s}
+.wa:hover{transform:scale(1.05)}
+.cup{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:49;width:64px;color:var(--fg);pointer-events:none}
+.fall{position:fixed;z-index:48;width:9px;height:13px;right:41px;top:0;background:var(--ink);border-radius:50% 50% 50% 50%/62% 62% 38% 38%;pointer-events:none}
+.rip{position:fixed;z-index:48;right:30px;width:30px;height:8px;border:2px solid var(--ink);border-radius:50%;pointer-events:none}
+.lb{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:20px;animation:fi .3s}
+.lb img{max-height:88svh;max-width:94vw;object-fit:contain}
+.lb button{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:16px;background:#fff;color:#000;border:0;border-radius:999px;width:44px;height:44px;font-size:22px;cursor:pointer}
+@keyframes fi{from{opacity:0}}
+@media (prefers-reduced-motion:reduce){.rv{clip-path:none!important}.drop-hero{display:none}html{scroll-behavior:auto}*{transition:none!important}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script>
+const {useState,useEffect,useRef}=React;
+const h=React.createElement;
+const WA='https://wa.me/5547984196636?text='+encodeURIComponent('Olá! Vim pelo site e quero fazer um orçamento de tatuagem.');
+const IG='https://instagram.com/adangomestattoo26';
+const IMG={logo:'img/logo.png',hero:'img/foto2.jpg',work:'img/foto3.jpg'};
+const WORKS=[
+['img/foto4.jpg','Fechamento de braço · realismo'],['img/foto5.jpg','Polvo · antebraço'],['img/foto6.jpg','Retrato com carro · braço'],
+['img/foto7.jpg','Leão · ombro'],['img/foto2.jpg','Fechamento religioso'],['img/foto8.jpg','Lobo e xadrez · ombro'],['img/foto9.jpg','Lettering · perna']];
+const WAIcon=()=>h('svg',{width:22,height:22,viewBox:'0 0 24 24',fill:'currentColor','aria-hidden':true},h('path',{d:'M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z'}));
+const Btn=({cls,href,children})=>h('a',{className:'btn '+cls,href,target:'_blank',rel:'noopener'},children);
+
+function Cup(){return h('svg',{className:'cup',viewBox:'0 0 80 100','aria-hidden':true},
+ h('defs',null,h('clipPath',{id:'cp'},h('path',{d:'M8 20H72L66 88Q65 94 58 94H22Q15 94 14 88Z'}))),
+ h('g',{clipPath:'url(#cp)'},h('rect',{id:'liq',x:0,y:94,width:80,height:90,fill:'var(--ink)'})),
+ h('path',{d:'M8 20H72L66 88Q65 94 58 94H22Q15 94 14 88Z',fill:'none',stroke:'currentColor',strokeWidth:3}),
+ h('ellipse',{cx:40,cy:20,rx:32,ry:5,fill:'none',stroke:'currentColor',strokeWidth:3}));}
+
+function Gallery(){
+ const [open,setOpen]=useState(null);
+ useEffect(()=>{const k=e=>e.key==='Escape'&&setOpen(null);addEventListener('keydown',k);return()=>removeEventListener('keydown',k)},[]);
+ return h(React.Fragment,null,
+  h('div',{className:'grid'},WORKS.map(([s,t])=>h('button',{key:t,onClick:()=>setOpen([s,t]),'aria-label':'Ampliar: '+t},h('img',{src:s,alt:t,loading:'lazy'}),h('span',null,t)))),
+  open&&h('div',{className:'lb',onClick:()=>setOpen(null),role:'dialog','aria-label':open[1]},h('img',{src:open[0],alt:open[1]}),h('button',{'aria-label':'Fechar'},'×')));
+}
+
+function App(){
+ useEffect(()=>{
+  const liq=document.getElementById('liq');let last=scrollY,acc=0,live=0,ticking=false;
+  const splash=y=>{const r=document.createElement('div');r.className='rip';r.style.top=y+'px';document.body.appendChild(r);
+   r.animate([{transform:'scale(.3)',opacity:1},{transform:'scale(1.8)',opacity:0}],{duration:650,easing:'ease-out'}).onfinish=()=>r.remove()};
+  const drop=()=>{if(live>3)return;live++;const d=document.createElement('div');d.className='fall';document.body.appendChild(d);
+   const end=innerHeight-Math.max(innerHeight*.02,0)-86;
+   d.animate([{transform:'translateY(-20px) scaleY(.8)'},{transform:'translateY('+end+'px) scaleY(1.35)'}],{duration:620,easing:'cubic-bezier(.5,0,.9,.6)'}).onfinish=()=>{d.remove();live--;splash(end+16)}};
+  const upd=()=>{ticking=false;
+   const max=document.documentElement.scrollHeight-innerHeight,p=max>0?Math.min(1,scrollY/max):0;
+   if(liq)liq.setAttribute('y',String(94-p*74));
+   acc+=Math.abs(scrollY-last);last=scrollY;if(acc>150){acc=0;drop()}
+   document.querySelectorAll('.rv').forEach(el=>{const t=el.getBoundingClientRect().top;
+    const q=Math.max(0,Math.min(1,(innerHeight*.92-t)/(innerHeight*.55)));
+    el.style.setProperty('--r',(q*150)+'%')});};
+  const on=()=>{if(!ticking){ticking=true;requestAnimationFrame(upd)}};
+  addEventListener('scroll',on,{passive:true});addEventListener('resize',on);upd();
+  return()=>{removeEventListener('scroll',on);removeEventListener('resize',on)};
+ },[]);
+ return h(React.Fragment,null,
+ h('header',{className:'hero'},
+  h('div',{className:'hero-bg',style:{backgroundImage:'url('+IMG.hero+')'}}),h('div',{className:'drop-hero'}),
+  h('div',{className:'wrap'},
+   h('img',{className:'logo',src:IMG.logo,alt:'Adan Gomes Tattoo'}),
+   h('h1',null,'Arte que fica na pele para sempre.'),
+   h('p',null,'Realismo preto e cinza, lettering e fechamentos feitos sob medida. Mais de 10 anos de estrada, cada tatuagem desenhada para o seu corpo.'),
+   h('div',{className:'btns'},h(Btn,{cls:'main',href:WA},h(WAIcon),'Pedir orçamento no WhatsApp'),h('a',{className:'btn ghost',href:'#trabalhos'},'Ver trabalhos')))),
+ h('main',null,
+ h('section',{className:'rv'},h('div',{className:'wrap'},
+  h('h2',null,'O que eu faço'),
+  h('div',{className:'styles'},
+   h('div',{className:'st'},h('h3',null,'Realismo preto e cinza'),h('p',null,'Retratos, animais e cenas com profundidade, sombra suave e detalhe fino.')),
+   h('div',{className:'st'},h('h3',null,'Lettering'),h('p',null,'Frases, nomes e ornamentos desenhados à mão, com fluxo que acompanha o braço ou a perna.')),
+   h('div',{className:'st'},h('h3',null,'Fechamentos e braços'),h('p',null,'Projetos grandes que contam uma história, planejados do ombro ao punho.'))))),
+ h('section',{id:'trabalhos',className:'rv'},h('div',{className:'wrap'},h('h2',null,'Trabalhos'),h('p',{style:{color:'var(--mut)'}},'Toque em uma foto para ampliar. Tem mais no Instagram.'),h(Gallery))),
+ h('section',{className:'rv'},h('div',{className:'wrap about'},
+  h('img',{src:IMG.work,alt:'Tatuador trabalhando no estúdio',loading:'lazy'}),
+  h('div',null,h('h2',null,'Mais de 10 anos tatuando'),
+   h('p',null,'Cada projeto começa conversando. Eu entendo a sua ideia, estudo o local do corpo e desenho algo que seja só seu.'),
+   h('p',null,'Biossegurança, material descartável e acompanhamento do início ao retoque.'),
+   h(Btn,{cls:'ghost',href:IG},'Seguir @adangomestattoo26')))),
+ h('section',{className:'rv'},h('div',{className:'wrap'},
+  h('h2',null,'Como pedir seu orçamento'),
+  h('ol',{className:'steps'},
+   h('li',null,h('b',null,'1'),h('div',null,h('h3',null,'Chame no WhatsApp'),h('p',null,'Toque no botão e a conversa já abre com uma mensagem pronta.'))),
+   h('li',null,h('b',null,'2'),h('div',null,h('h3',null,'Conte a sua ideia'),h('p',null,'Envie referências, o local do corpo e o tamanho aproximado.'))),
+   h('li',null,h('b',null,'3'),h('div',null,h('h3',null,'Receba valor e data'),h('p',null,'Você recebe o orçamento e escolhe o melhor dia para tatuar.'))))))),
+ h('section',{className:'cta rv'},h('div',{className:'wrap'},
+  h('h2',null,'Vamos tirar sua ideia do papel?'),
+  h('p',null,'Chame agora e peça seu orçamento sem compromisso.'),
+  h('div',{className:'btns',style:{justifyContent:'center'}},h(Btn,{cls:'w',href:WA},h(WAIcon),'Orçamento no WhatsApp'),h(Btn,{cls:'',href:IG},'Instagram')))),
+ h('footer',null,'© 2026 Adan Gomes Tattoo · WhatsApp (47) 98419-6636 · @adangomestattoo26'),
+ h('a',{className:'wa',href:WA,target:'_blank',rel:'noopener','aria-label':'Pedir orçamento no WhatsApp'},h(WAIcon),'Orçamento'),
+ h(Cup));
+}
+ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+</script>
+</body>
+</html>
